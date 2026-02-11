@@ -295,15 +295,14 @@ class TextToQueryBenchmark:
         question = benchmark_item["question"]
         gold_query = benchmark_item["gold_query"]
         collection = benchmark_item["collection"]
-        custom_description = benchmark_item.get("description")
 
         print(f"\nProcessing question: {question}")
         print(f"Gold query: {gold_query}")
 
         # Generate query from natural language using existing llm_utils function
         try:
-            generated_query = generate_query(question, custom_description)
-            print(f"Generated query: {json.dumps(generated_query, ensure_ascii=False, indent=2)}")
+            generated_query = generate_query(question, None)
+            print(f"Generated query: {generated_query}")
         except Exception as e:
             print(f"Error generating query: {e}")
             return {
@@ -337,9 +336,9 @@ class TextToQueryBenchmark:
         evaluation = self.evaluator.evaluate(generated_results, gold_results)
 
         print(f"\nEvaluation Metrics:")
-        print(f"  Precision: {evaluation['precision']:.2%}")
-        print(f"  Recall: {evaluation['recall']:.2%}")
-        print(f"  F1 Score: {evaluation['f1_score']:.2%}")
+        print(f"  Precision: {evaluation['precision'] * 100:.2f}%")
+        print(f"  Recall: {evaluation['recall'] * 100:.2f}%")
+        print(f"  F1 Score: {evaluation['f1_score'] * 100:.2f}%")
 
         return {
             "question": question,
@@ -399,28 +398,30 @@ class TextToQueryBenchmark:
     def _generate_result_filename(self) -> str:
         """
         Generate a timestamped filename for the benchmark results.
+        Format: benchmark_YYYYMMDD_HHMMSS_###.json where ### is sequential across all runs.
 
         Returns:
-            Filename string with timestamp and sequential number
+            Filename string with precise timestamp and global sequential number
         """
         # Get current timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        # Find the next available number for this timestamp
-        existing_files = list(self.results_dir.glob(f"benchmark_{timestamp}_*.json"))
+        # Find ALL benchmark files (not just for this timestamp)
+        all_files = list(self.results_dir.glob(f"benchmark_*.json"))
 
-        if not existing_files:
-            number = 1
-        else:
-            # Extract numbers from existing files
-            numbers = []
-            for f in existing_files:
-                match = re.search(r'_(\d+)\.json$', f.name)
-                if match:
-                    numbers.append(int(match.group(1)))
-            number = max(numbers) + 1 if numbers else 1
+        # Extract the highest number from all existing files
+        max_number = 0
+        for f in all_files:
+            match = re.search(r'_(\d+)\.json$', f.name)
+            if match:
+                num = int(match.group(1))
+                max_number = max(max_number, num)
 
-        return f"benchmark_{timestamp}_{number:03d}.json"
+        # Increment for this run
+        next_number = max_number + 1
+
+        # Return filename with 3-digit zero-padded number
+        return f"benchmark_{timestamp}_{next_number:03d}.json"
 
     def save_results(self, results: Dict[str, Any], output_file: str = None):
         """
@@ -469,9 +470,9 @@ def main():
         print(f"Total benchmarks: {results['total_benchmarks']}")
         print(f"Successful tests: {results['successful_tests']}")
         print(f"Failed tests: {results['failed_tests']}")
-        print(f"\nAverage Precision: {results['average_precision']:.2%}")
-        print(f"Average Recall: {results['average_recall']:.2%}")
-        print(f"Average F1 Score: {results['average_f1_score']:.2%}")
+        print(f"\nAverage Precision: {results['average_precision'] * 100:.2f}%")
+        print(f"Average Recall: {results['average_recall'] * 100:.2f}%")
+        print(f"Average F1 Score: {results['average_f1_score'] * 100:.2f}%")
 
         # Save results with auto-generated filename
         result_path = benchmark.save_results(results)
