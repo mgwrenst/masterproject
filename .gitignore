@@ -1,0 +1,5 @@
+.idea/
+.venv/
+src/csv/
+results/
+.env

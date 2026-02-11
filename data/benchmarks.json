@@ -1,0 +1,15 @@
+[
+  {
+    "question": "Finn alle roller",
+    "collection": "person",
+    "gold_query": "db.person.distinct('selskaprolle')",
+    "description": "Alle distinkte roller som finnes."
+
+  },
+  {
+    "question": "Finn alle organisasjonstyper blant konkursbedriftene",
+    "collection": "selskap",
+    "gold_query": "db.selskap.distinct('organisasjonstype', {'konkursflagg': true})",
+    "description": "Informasjon om alle bedrifter som har gått konkurs, med dfelt som ogranisasjonstype."
+  }
+]
