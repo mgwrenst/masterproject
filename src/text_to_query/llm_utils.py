@@ -12,7 +12,7 @@ def load_schema():
     """Load schema from YAML file."""
     # Get the path relative to this file
     # From src/text_to_query/llm_utils.py -> ../../data/schema.yaml
-    schema_path = Path(__file__).parent.parent.parent / "data" / "schema_test.yaml"
+    schema_path = Path(__file__).parent.parent.parent / "data" / "schema.yaml"
 
     try:
         with open(schema_path, "r", encoding="utf-8") as f:

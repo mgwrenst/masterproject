@@ -52,8 +52,8 @@ def csv_to_mongodb(csv_directory, db_name, connection_string):
 
 
 if __name__ == "__main__":
-    csv_directory = "C:\\Users\\wren9\\PycharmProjects\\coderintheloop\\src\\csv\\processed"
-    database_name = "init_groundtruth"
+    csv_directory = "C:\\Users\\wren9\\PycharmProjects\\masterproject\\src\\csv\\processed" #C:\\Users\\wren9\\PycharmProjects\\masterproject\\src\\csv\\processed / C:\\Users\\wren9\\PycharmProjects\\coderintheloop\\src\\csv\\processed
+    database_name = "groundtruth"
     connection_string = "mongodb://localhost:27017"
 
     csv_to_mongodb(csv_directory, database_name, connection_string)
