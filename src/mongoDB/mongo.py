@@ -24,7 +24,7 @@ def csv_to_mongodb(csv_directory, db_name, connection_string):
             df = pd.read_csv(csv_file, sep=None, engine='python')
 
             # Handle NaN values
-            df = df.where(pd.notna(df), None)
+            df = df.where(pd.notna(df), None) # type: ignore[arg-type]
 
             # Convert to dict
             records = df.to_dict('records')
@@ -46,13 +46,13 @@ def csv_to_mongodb(csv_directory, db_name, connection_string):
     print("Collections created:")
     for coll in sorted(db.list_collection_names()):
         count = db[coll].count_documents({})
-        print(f"  📁 {coll}: {count:,} documents")
+        print(f" {coll}: {count:,} documents")
 
     client.close()
 
 
 if __name__ == "__main__":
-    csv_directory = "C:\\Users\\wren9\\PycharmProjects\\masterproject\\src\\csv\\processed" #C:\\Users\\wren9\\PycharmProjects\\masterproject\\src\\csv\\processed / C:\\Users\\wren9\\PycharmProjects\\coderintheloop\\src\\csv\\processed
+    csv_directory = "./data/processed" 
     database_name = "groundtruth"
     connection_string = "mongodb://localhost:27017"
 

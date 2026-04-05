@@ -2,9 +2,9 @@ import pandas as pd
 from pathlib import Path
 
 
-def process_csv_files(file_configs):
+def process_files(file_configs):
     """
-    Process multiple CSV files with individual configurations for each file.
+    Process CSV files with individual configurations for each file.
 
     Parameters:
     -----------
@@ -35,7 +35,7 @@ def process_csv_files(file_configs):
             print(f"  Original shape: {df.shape}")
             print(f"  Original columns: {list(df.columns)}")
 
-            # Drop 'Unnamed: 0' if it exists (this is usually an index column)
+            # Drop 'Unnamed: 0' if it exists
             if 'Unnamed: 0' in df.columns:
                 df = df.drop(columns=['Unnamed: 0'])
                 print(f"  Dropped index column: 'Unnamed: 0'")
@@ -75,9 +75,9 @@ def process_csv_files(file_configs):
 if __name__ == "__main__":
     file_configs = [
         {
-            'input_file': './files/aksjeeiebok.csv',
-            'output_file': './processed/aksjeeiebok.csv',
-            'delimiter': ';',  # Semicolon delimiter
+            'input_file': './data/files/aksjeeiebok.csv',
+            'output_file': './data/processed/aksjeeiebok.csv',
+            'delimiter': ';',
             'columns_to_rename': {
                 'Orgnr': 'orgNr',
                 'Selskap': 'selskap',
@@ -92,8 +92,8 @@ if __name__ == "__main__":
             }
         },
         {
-            'input_file': './files/bankrupt_2020_120925.csv',
-            'output_file': './processed/konkurs.csv',
+            'input_file': './data/files/bankrupt_2020_120925.csv',
+            'output_file': './data/processed/konkurs.csv',
             'columns_to_drop': ['nr'],
             'columns_to_rename': {
                 'company.uuid': 'uuid',
@@ -102,14 +102,15 @@ if __name__ == "__main__":
                 'company_details.bankrupt_flag': 'konkursFlagg',
                 'company_details.under_forced_liquidation_flag': 'likvidasjonFlagg',
                 'nace_code_primary.nace_code': 'naceKode',
+                'nace_name': 'naceNavn',
                 'organization_type.organization_type_code': 'organisasjonstype',
                 'company_establishment.dissolution_date': 'oppløstDato',
                 'company_establishment.establishment_date': 'etablertDato',
             }
         },
         {
-            'input_file': './files/companies_active_companies_pop_100925_v3.csv',
-            'output_file': './processed/selskap.csv',
+            'input_file': './data/files/companies_active_companies_pop_100925_v3.csv',
+            'output_file': './data/processed/selskap.csv',
             'columns_to_drop': ['nr'],
             'columns_to_rename': {
                 'company.uuid': 'uuid',
@@ -118,14 +119,15 @@ if __name__ == "__main__":
                 'company_details.bankrupt_flag': 'konkursFlagg',
                 'company_details.under_forced_liquidation_flag': 'likvidasjonFlagg',
                 'nace_code_primary.nace_code': 'naceKode',
+                'nace_name': 'naceNavn',
                 'organization_type.organization_type_code': 'organisasjonstype',
                 'company_establishment.dissolution_date': 'oppløstDato',
                 'company_establishment.establishment_date': 'etablertDato',
             }
         },
         {
-            'input_file': './files/ownerships_2023_2025.csv',
-            'output_file': './processed/eierskap.csv',
+            'input_file': './data/files/ownerships_2023_2025.csv',
+            'output_file': './data/processed/eierskap.csv',
             'columns_to_drop': ['nr',
                                 'shareholder_person.birth_month',
                                 'shareholder_person.birth_day',
@@ -172,8 +174,8 @@ if __name__ == "__main__":
             }
         },
         {
-            'input_file': './files/persons_active_companies_pop_100925_v3_keep.csv',
-            'output_file': './processed/personer.csv',
+            'input_file': './data/files/persons_active_companies_pop_100925_v3_keep.csv',
+            'output_file': './data/processed/personer.csv',
             'columns_to_drop': ['nr',
                                 'person.birth_day',
                                 'person.birth_month',
@@ -236,10 +238,10 @@ if __name__ == "__main__":
             }
         },
         {
-            'input_file': './files/politikere.csv',
-            'output_file': './processed/politikere.csv',
+            'input_file': './data/files/politikere.csv',
+            'output_file': './data/processed/politikere.csv',
             'delimiter': ';',  # Semicolon delimiter
         },
     ]
 
-    process_csv_files(file_configs)
+    process_files(file_configs)
