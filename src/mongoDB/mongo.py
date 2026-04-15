@@ -1,59 +1,65 @@
 import pandas as pd
 from pymongo import MongoClient
+from pymongo.database import Database
 from pathlib import Path
 
-def csv_to_mongodb(csv_directory, db_name, connection_string):
-    client = MongoClient(connection_string)
-    db = client[db_name]
+BASE_DIR      = Path(__file__).parent.parent  # src/
+PROCESSED_DIR = BASE_DIR / 'csv' / 'processed'
 
-    csv_files = list(Path(csv_directory).glob('*.csv'))
+CONNECTION_STRING = "mongodb://localhost:27017"
+DATABASE_NAME     = "groundtruth"
+
+
+def _import_csv(db: Database, csv_file: Path) -> None:
+    collection_name = csv_file.stem
+    print(f"  {csv_file.name} -> {collection_name}", end=" ... ")
+
+    df = pd.read_csv(csv_file, sep=None, engine='python')
+    df = df.where(pd.notna(df), None)  # type: ignore[arg-type]
+    records = df.to_dict('records')
+
+    db[collection_name].drop()
+
+    if not records:
+        print("⚠ empty, skipped")
+        return
+
+    result = db[collection_name].insert_many(records)
+    print(f"✓ {len(result.inserted_ids):,} documents")
+
+
+def _print_summary(db: Database) -> None:
+    print(f"\n{'─' * 50}")
+    print("Collections:")
+    for name in sorted(db.list_collection_names()):
+        count = db[name].count_documents({})
+        print(f"  {name}: {count:,} documents")
+
+
+def csv_to_mongodb(
+    csv_directory: Path,
+    db_name: str,
+    connection_string: str,
+) -> None:
+    csv_files = sorted(csv_directory.glob('*.csv'))
 
     if not csv_files:
         print(f"No CSV files found in {csv_directory}")
-        client.close()
         return
 
-    print(f"Found {len(csv_files)} CSV files\n")
+    print(f"Importing {len(csv_files)} file(s) into '{db_name}'\n{'─' * 50}")
 
-    for csv_file in csv_files:
-        collection_name = csv_file.stem
-        print(f"Importing {csv_file.name}...", end=" ")
+    with MongoClient(connection_string) as client:
+        db = client[db_name]
 
-        try:
-            # Auto-detect delimiter (comma, semicolon, tab, etc.)
-            df = pd.read_csv(csv_file, sep=None, engine='python')
+        for csv_file in csv_files:
+            try:
+                _import_csv(db, csv_file)
+            except Exception as exc:
+                print(f"✗ {exc!s:.80}")
 
-            # Handle NaN values
-            df = df.where(pd.notna(df), None) # type: ignore[arg-type]
-
-            # Convert to dict
-            records = df.to_dict('records')
-
-            # Drop and insert
-            db[collection_name].drop()
-
-            if records:
-                result = db[collection_name].insert_many(records)
-                print(f"✓ {len(result.inserted_ids)} documents")
-            else:
-                print(f"⚠ Empty")
-
-        except Exception as e:
-            print(f"✗ {str(e)[:60]}")
-
-    # Summary
-    print(f"\n{'=' * 60}")
-    print("Collections created:")
-    for coll in sorted(db.list_collection_names()):
-        count = db[coll].count_documents({})
-        print(f" {coll}: {count:,} documents")
-
-    client.close()
+        _print_summary(db)
 
 
 if __name__ == "__main__":
-    csv_directory = "./data/processed" 
-    database_name = "groundtruth"
-    connection_string = "mongodb://localhost:27017"
-
-    csv_to_mongodb(csv_directory, database_name, connection_string)
+    csv_to_mongodb(PROCESSED_DIR, DATABASE_NAME, CONNECTION_STRING)

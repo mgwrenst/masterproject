@@ -1,0 +1,497 @@
+beskrivelse: >
+  Database over norske selskaper, eierskap, roller og politikere.
+  Nestede felt brukes for å gruppere relatert informasjon.
+  For å spørre på nestede felt brukes punktnotasjon, f.eks. "status.konkurs" eller "rolle.tittel".
+
+samlinger:
+
+  - navn: "selskap"
+    beskrivelse: "Stamdata for registrerte norske selskaper med nestede status- og datofelter."
+    indekser:
+      - felt: "uuid"
+        type: "unik"
+      - felt: "orgNr"
+        type: "unik"
+      - felt: "status.konkurs"
+        type: "standard"
+    felt:
+      uuid:
+        type: "string"
+        påkrevd: true
+        beskrivelse: "Primærnøkkel — intern UUID"
+      navn:
+        type: "string"
+        påkrevd: true
+        beskrivelse: "Registrert selskapsnavn"
+      orgNr:
+        type: "string"
+        påkrevd: true
+        beskrivelse: "Organisasjonsnummer (9 siffer)"
+      organisasjonstype:
+        type: "string"
+        eksempelverdier: ["AS", "ASA", "ENK", "ANS", "DA"]
+        beskrivelse: "Selskapsform"
+      naceKode:
+        type: "string"
+        nullable: true
+        beskrivelse: "NACE-bransjekode"
+      datoer:
+        type: "object"
+        beskrivelse: "Datoer knyttet til selskapets levetid"
+        felt:
+          etablert:
+            type: "date"   # TODO: bekreft format — ISO 8601 string eller Date-objekt?
+            punktnotasjon: "datoer.etablert"
+            beskrivelse: "Stiftelsesdato"
+          oppløst:
+            type: "date"   # TODO: bekreft format
+            nullable: true
+            punktnotasjon: "datoer.oppløst"
+            beskrivelse: "Dato for nedleggelse. Null hvis selskapet er aktivt."
+      status:
+        type: "object"
+        beskrivelse: "Nåværende status for selskapet"
+        felt:
+          konkurs:
+            type: "integer"
+            verdier: [0, 1]
+            punktnotasjon: "status.konkurs"
+            beskrivelse: "1 = konkurs, 0 = ikke konkurs"
+          likvidasjon:
+            type: "integer"
+            verdier: [0, 1]
+            punktnotasjon: "status.likvidasjon"
+            beskrivelse: "1 = under likvidasjon, 0 = ikke under likvidasjon"
+
+  - navn: "personer"
+    beskrivelse: >
+      Én rad per person per selskapsrolle.
+      Join mot selskap via selskap.orgNr = selskap.orgNr.
+    indekser:
+      - felt: "UUID"
+        type: "standard"
+      - felt: "selskap.orgNr"
+        type: "standard"
+      - felt: "rolle.tittel"
+        type: "standard"
+      - felt: "rolle.sluttdato"
+        type: "standard"
+    felt:
+      UUID:
+        type: "string"
+        påkrevd: true
+        beskrivelse: "Intern UUID for personen"
+      personInfo:
+        type: "object"
+        beskrivelse: "Grunnleggende personopplysninger"
+        felt:
+          navn:
+            type: "string"
+            punktnotasjon: "personInfo.navn"
+            beskrivelse: "Fullt navn"
+          fødselsdato:
+            type: "date"   # TODO: bekreft format
+            nullable: true
+            punktnotasjon: "personInfo.fødselsdato"
+            beskrivelse: "Fødselsdato"
+          fødselsår:
+            type: "integer"
+            nullable: true
+            punktnotasjon: "personInfo.fødselsår"
+            beskrivelse: "Fødselsår"
+          kjønnUUID:
+            type: "string"
+            nullable: true
+            punktnotasjon: "personInfo.kjønnUUID"
+            beskrivelse: "Kjønnsreferanse"
+      adresse:
+        type: "object"
+        beskrivelse: "Adresseopplysninger for personen"
+        felt:
+          gateadresse:
+            type: "string"
+            nullable: true
+            punktnotasjon: "adresse.gateadresse"
+            beskrivelse: "Gateadresse"
+          postnummer:
+            type: "string"
+            nullable: true
+            punktnotasjon: "adresse.postnummer"
+            beskrivelse: "Postnummer (4 siffer som string)"
+          poststed:
+            type: "string"
+            nullable: true
+            punktnotasjon: "adresse.poststed"
+            beskrivelse: "Poststed"
+          kommuneNr:
+            type: "string"   # TODO: bekreft — string eller integer?
+            nullable: true
+            punktnotasjon: "adresse.kommuneNr"
+            beskrivelse: "Kommunenummer"
+          kommuneNavn:
+            type: "string"
+            nullable: true
+            punktnotasjon: "adresse.kommuneNavn"
+            beskrivelse: "Kommunenavn"
+          land:
+            type: "string"
+            nullable: true
+            punktnotasjon: "adresse.land"
+            beskrivelse: "Landnavn"
+          landkode:
+            type: "string"
+            nullable: true
+            punktnotasjon: "adresse.landkode"
+            beskrivelse: "ISO 3166-1 alpha-2 landkode"
+      registrering:
+        type: "object"
+        beskrivelse: "Tidspunkter for registrering og oppdatering"
+        felt:
+          registrertTid:
+            type: "datetime"   # TODO: bekreft format
+            punktnotasjon: "registrering.registrertTid"
+            beskrivelse: "Første registrering i databasen"
+          oppdatertTid:
+            type: "datetime"   # TODO: bekreft format
+            punktnotasjon: "registrering.oppdatertTid"
+            beskrivelse: "Siste oppdatering"
+      selskap:
+        type: "object"
+        beskrivelse: "Selskapet personen har en rolle i"
+        felt:
+          navn:
+            type: "string"
+            punktnotasjon: "selskap.navn"
+            beskrivelse: "Selskapsnavn (denormalisert)"
+          uuid:
+            type: "string"
+            punktnotasjon: "selskap.uuid"
+            beskrivelse: "UUID for selskapet"
+          orgNr:
+            type: "string"
+            punktnotasjon: "selskap.orgNr"
+            beskrivelse: "Organisasjonsnummer — join-nøkkel mot selskap.orgNr"
+          registrert:
+            type: "datetime"   # TODO: bekreft format
+            punktnotasjon: "selskap.registrert"
+            beskrivelse: "Registreringstidspunkt for selskapet"
+          oppdatert:
+            type: "datetime"   # TODO: bekreft format
+            punktnotasjon: "selskap.oppdatert"
+            beskrivelse: "Siste oppdateringstidspunkt for selskapet"
+      rolle:
+        type: "object"
+        beskrivelse: "Informasjon om personens rolle i selskapet"
+        felt:
+          tittel:
+            type: "string"
+            eksempelverdier: ["Styreleder", "Daglig leder", "Styremedlem", "Varamedlem"]
+            punktnotasjon: "rolle.tittel"
+            beskrivelse: "Rollebetegnelse"
+          uuid:
+            type: "string"
+            punktnotasjon: "rolle.uuid"
+            beskrivelse: "UUID for rolletypen"
+          rolleUUID:
+            type: "string"
+            punktnotasjon: "rolle.rolleUUID"
+            beskrivelse: "Unik identifikator for denne person–selskap–rolle-relasjonen"
+          rang:
+            type: "integer"   # TODO: bekreft rangeringslogikk
+            nullable: true
+            punktnotasjon: "rolle.rang"
+            beskrivelse: "Numerisk rangering — lavere tall = høyere rang"
+          startdato:
+            type: "date"   # TODO: bekreft format
+            nullable: true
+            punktnotasjon: "rolle.startdato"
+            beskrivelse: "Startdato for rollen"
+          sluttdato:
+            type: "date"   # TODO: bekreft format
+            nullable: true
+            punktnotasjon: "rolle.sluttdato"
+            beskrivelse: "Sluttdato for rollen. Null hvis rollen er aktiv."
+          registrert:
+            type: "datetime"   # TODO: bekreft format
+            punktnotasjon: "rolle.registrert"
+            beskrivelse: "Tidspunkt rollen ble registrert"
+          oppdatert:
+            type: "datetime"   # TODO: bekreft format
+            punktnotasjon: "rolle.oppdatert"
+            beskrivelse: "Tidspunkt rollen sist ble oppdatert"
+
+  - navn: "eierskap"
+    beskrivelse: >
+      Eierskapsforhold per år. Eier kan være person (eier.person) eller selskap (eier.selskap).
+      Join mot selskap via utsteder.orgNr = selskap.orgNr.
+    indekser:
+      - felt: "eierskapUUID"
+        type: "unik"
+      - felt: "utsteder.orgNr"
+        type: "standard"
+      - felt: "år"
+        type: "standard"
+      - felt: "eier.person.uuid"
+        type: "standard"
+    felt:
+      eierskapUUID:
+        type: "string"
+        påkrevd: true
+        beskrivelse: "Primærnøkkel"
+      år:
+        type: "integer"
+        påkrevd: true
+        beskrivelse: "Året eierskapet gjelder for"
+      aksjonærNavn:
+        type: "string"
+        beskrivelse: "Aksjonærnavn slik det er registrert i kildedata"
+      eier:
+        type: "object"
+        beskrivelse: "Eierens identitet — enten person eller selskap"
+        felt:
+          person:
+            type: "object"
+            beskrivelse: "Sett hvis eieren er en person. Null-felter hvis eieren er et selskap."
+            felt:
+              uuid:
+                type: "string"
+                nullable: true
+                punktnotasjon: "eier.person.uuid"
+                beskrivelse: "UUID for eierpersonen"
+              navn:
+                type: "string"
+                nullable: true
+                punktnotasjon: "eier.person.navn"
+                beskrivelse: "Fullt navn"
+              fødselsdato:
+                type: "date"   # TODO: bekreft format
+                nullable: true
+                punktnotasjon: "eier.person.fødselsdato"
+                beskrivelse: "Fødselsdato"
+              fødselsår:
+                type: "integer"
+                nullable: true
+                punktnotasjon: "eier.person.fødselsår"
+                beskrivelse: "Fødselsår"
+              adresse:
+                type: "string"
+                nullable: true
+                punktnotasjon: "eier.person.adresse"
+                beskrivelse: "Adresse"
+              postkode:
+                type: "string"
+                nullable: true
+                punktnotasjon: "eier.person.postkode"
+                beskrivelse: "Postkode"
+              poststed:
+                type: "string"
+                nullable: true
+                punktnotasjon: "eier.person.poststed"
+                beskrivelse: "Poststed"
+              kommuneNr:
+                type: "string"   # TODO: bekreft type
+                nullable: true
+                punktnotasjon: "eier.person.kommuneNr"
+                beskrivelse: "Kommunenummer"
+              kommune:
+                type: "string"
+                nullable: true
+                punktnotasjon: "eier.person.kommune"
+                beskrivelse: "Kommunenavn"
+          selskap:
+            type: "object"
+            beskrivelse: "Sett hvis eieren er et selskap. Null-felter hvis eieren er en person."
+            felt:
+              navn:
+                type: "string"
+                nullable: true
+                punktnotasjon: "eier.selskap.navn"
+                beskrivelse: "Selskapsnavn"
+              uuid:
+                type: "string"
+                nullable: true
+                punktnotasjon: "eier.selskap.uuid"
+                beskrivelse: "UUID for eierselskapet"
+              orgNr:
+                type: "string"
+                nullable: true
+                punktnotasjon: "eier.selskap.orgNr"
+                beskrivelse: "Organisasjonsnummer for eierselskapet"
+      utsteder:
+        type: "object"
+        beskrivelse: "Selskapet aksjene tilhører"
+        felt:
+          navn:
+            type: "string"
+            punktnotasjon: "utsteder.navn"
+            beskrivelse: "Selskapsnavn (denormalisert)"
+          uuid:
+            type: "string"
+            punktnotasjon: "utsteder.uuid"
+            beskrivelse: "UUID"
+          orgNr:
+            type: "string"
+            punktnotasjon: "utsteder.orgNr"
+            beskrivelse: "Organisasjonsnummer — join-nøkkel mot selskap.orgNr"
+      aksjer:
+        type: "object"
+        beskrivelse: "Aksjeinformasjon for dette eierskapsforholdet"
+        felt:
+          andel:
+            type: "float"
+            punktnotasjon: "aksjer.andel"
+            beskrivelse: "Eierandel i prosent (0.0–100.0)"
+          antall:
+            type: "integer"
+            punktnotasjon: "aksjer.antall"
+            beskrivelse: "Antall aksjer eid"
+          stemmeandel:
+            type: "float"
+            punktnotasjon: "aksjer.stemmeandel"
+            beskrivelse: "Stemmeandel i prosent"
+          stemmeantall:
+            type: "integer"
+            punktnotasjon: "aksjer.stemmeantall"
+            beskrivelse: "Antall stemmeaksjer eid"
+          totalAntall:
+            type: "integer"
+            punktnotasjon: "aksjer.totalAntall"
+            beskrivelse: "Totalt antall aksjer i selskapet"
+          totalStemmeantall:
+            type: "integer"
+            punktnotasjon: "aksjer.totalStemmeantall"
+            beskrivelse: "Totalt antall stemmeaksjer i selskapet"
+
+  - navn: "aksjeeiebok"
+    beskrivelse: >
+      Offisiell aksjeeierbok per selskap per år.
+      Join mot selskap via orgNr = selskap.orgNr.
+    indekser:
+      - felt: "orgNr"
+        type: "standard"
+      - felt: "år"
+        type: "standard"
+    felt:
+      orgNr:
+        type: "string"
+        påkrevd: true
+        beskrivelse: "Organisasjonsnummer — join-nøkkel mot selskap.orgNr"
+      selskap:
+        type: "string"
+        beskrivelse: "Selskapsnavn (denormalisert)"
+      år:
+        type: "integer"
+        påkrevd: true
+        beskrivelse: "Gjeldende år"
+      aksjeklasse:
+        type: "string"
+        eksempelverdier: ["A", "B"]   # TODO: bekreft mulige verdier
+        beskrivelse: "Aksjeklasse"
+      aksjonær:
+        type: "object"
+        beskrivelse: "Opplysninger om aksjonæren"
+        felt:
+          navn:
+            type: "string"
+            punktnotasjon: "aksjonær.navn"
+            beskrivelse: "Aksjonærens navn"
+          fødselsår:
+            type: "string"   # TODO: kan inneholde både årstall og orgnr
+            nullable: true
+            punktnotasjon: "aksjonær.fødselsår"
+            beskrivelse: "Fødselsår for person, eller orgnr hvis aksjonæren er et selskap"
+          postnr_sted:
+            type: "string"
+            nullable: true
+            punktnotasjon: "aksjonær.postnr_sted"
+            beskrivelse: "Postnummer og poststed som kombinert streng"
+          landkode:
+            type: "string"
+            nullable: true
+            punktnotasjon: "aksjonær.landkode"
+            beskrivelse: "ISO 3166-1 alpha-2 landkode"
+      aksjer:
+        type: "object"
+        beskrivelse: "Aksjeopplysninger"
+        felt:
+          antall:
+            type: "integer"
+            punktnotasjon: "aksjer.antall"
+            beskrivelse: "Antall aksjer denne aksjonæren eier"
+          antallSelskap:
+            type: "integer"
+            punktnotasjon: "aksjer.antallSelskap"
+            beskrivelse: "Totalt antall aksjer i selskapet"
+
+  - navn: "politikere"
+    beskrivelse: "Valgdata for politikere på kommunenivå. Én rad per politiker per valg."
+    indekser:
+      - felt: "kommune.nr"
+        type: "standard"
+      - felt: "parti.navn"
+        type: "standard"
+      - felt: "valg.innvalgt"
+        type: "standard"
+    felt:
+      personInfo:
+        type: "object"
+        beskrivelse: "Personopplysninger"
+        felt:
+          navn:
+            type: "string"
+            påkrevd: true
+            punktnotasjon: "personInfo.navn"
+            beskrivelse: "Fullt navn"
+          fødselsdato:
+            type: "date"   # TODO: bekreft format
+            nullable: true
+            punktnotasjon: "personInfo.fødselsdato"
+            beskrivelse: "Fødselsdato"
+      parti:
+        type: "object"
+        beskrivelse: "Partitilhørighet"
+        felt:
+          navn:
+            type: "string"
+            punktnotasjon: "parti.navn"
+            beskrivelse: "Partinavn"
+      kommune:
+        type: "object"
+        beskrivelse: "Kommunetilknytning"
+        felt:
+          navn:
+            type: "string"
+            punktnotasjon: "kommune.navn"
+            beskrivelse: "Kommunenavn"
+          nr:
+            type: "string"   # TODO: bekreft — string eller integer?
+            punktnotasjon: "kommune.nr"
+            beskrivelse: "Kommunenummer"
+      valg:
+        type: "object"
+        beskrivelse: "Valgresultater"
+        felt:
+          listeplass:
+            type: "integer"
+            punktnotasjon: "valg.listeplass"
+            beskrivelse: "Opprinnelig plassering på valglisten"
+          personstemmer:
+            type: "integer"
+            punktnotasjon: "valg.personstemmer"
+            beskrivelse: "Antall personstemmer mottatt"
+          stemmetillegg:
+            type: "integer"
+            punktnotasjon: "valg.stemmetillegg"
+            beskrivelse: "Stemmetillegg fra partiet"
+          slengere:
+            type: "integer"
+            punktnotasjon: "valg.slengere"
+            beskrivelse: "Stemmer fra velgere som krysset over fra andre partier"
+          endeligRangering:
+            type: "integer"
+            punktnotasjon: "valg.endeligRangering"
+            beskrivelse: "Endelig rangering etter valgoppgjør"
+          innvalgt:
+            type: "boolean"
+            punktnotasjon: "valg.innvalgt"
+            beskrivelse: "true hvis politikeren ble valgt inn"

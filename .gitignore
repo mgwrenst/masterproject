@@ -1,6 +1,5 @@
 .idea/
 .venv/
-data/files
-data/processed
-results/
 .env
+src/csv/files
+src/csv/processed

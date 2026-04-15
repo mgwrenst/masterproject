@@ -1,35 +1,44 @@
 # Coder In The Loop
 > Part of a Master’s project in Information Science at the University of Bergen (UiB).
 
-This project evaluate whether AI-generated MongoDB Query Language (MQL) from **Norwegian natural-language questions** can reliably serve as the foundation for a tool that lets **journalists** explore databases without technical knowledge.
+Evaluating whether an LLM can reliably translate **Norwegian natural-language questions** into **MongoDB queries**, enabling journalists to explore databases without technical knowledge
 
-The focus is **text-to-query** quality: correctness, safety, explainability, and usability for newsroom workflows. 
+---
 
-## Academic context
+## Background
 
-This repository is part of my Master's project in Information Science at the University of Bergen (UiB).
-
-## Why this exists
-
-Journalists often need to retrieve information from databases but may not have the technical skills required to write queries. As a result, they frequently depend on developers to translate editorial questions into exectuable query code. This project evaluate whether Large Language Models (LLMs) can reialbly convert journalists' natural-langauge requests into correct executable MongoDB queries, thereby enabling journalists to explore data more independently. 
-
+Journalists often need data from databases but lack the technical skills to write queries. This projects tests whether LLMs can bridge that gap - turning editorial questions into correct, executable MongoDB queries (MQL).
 
 ## Scope
 
-In scope:
-- Norwegian natural-language -> MQL generation
-- Evaluation
-- Running locally against a MongoDB instance (via MongoDB Compass)
+- Norwegian natural language → MongoDB Query Langauge (MQL)
+- Evaluation against a local MongoDB instance
+- Metrics: precsision, recall, F1
 
 ## Tech stack
 
-- Python (porject code + evaluation scripts)
-- MongoDB local instance
-- MongoDB Compass (for local DB setup)
+- Python — pipeline and evaluation scripts
+- MongoDB — local database instance
+- MongoDB Compass — local DB setup and inspection
+- OpenAI API — LLM query generation
+
+## Project structure
+
+├── config.py          # Model, database, and scoring settings
+├── pipeline.py        # Full evaluation pipeline
+├── main.py            # Entry point
+├── compare.py         # Compare results across runs
+├── benchmarks/        # Questions and gold queries
+│   ├── flat.json
+│   └── nested.json
+├── schemas/           # Database descriptions for the LLM
+│   ├── simple.yaml
+│   └── advanced.yaml
+└── results/           # Saved evaluation results (auto-created)
 
 ## How it works
 
-## Evlauation approach
+## Evalauation approach
 
 ### What you measure
 

@@ -1,0 +1,4721 @@
+{
+  "run": {
+    "label": "simpleNested_nested",
+    "timestamp": "20260414_221541",
+    "model": "gpt-4o-mini",
+    "schema": "simpleNested.yaml",
+    "benchmark": "nested.json",
+    "database": "groundtruthStructured",
+    "threshold": 1.0
+  },
+  "summary": {
+    "total": 51,
+    "scored": 50,
+    "matches": 36,
+    "match_rate": 0.72,
+    "avg_precision": 0.7343,
+    "avg_recall": 0.74,
+    "avg_f1": 0.7367,
+    "avg_projection_score": {
+      "avg_recall": 1.0,
+      "avg_precision": 1.0
+    },
+    "errors": {
+      "total": 1,
+      "llm_error": 1,
+      "db_error": 0
+    },
+    "by_op": {
+      "distinct": {
+        "n": 5,
+        "matches": 5,
+        "match_rate": 1.0,
+        "avg_f1": 1.0,
+        "avg_precision": 1.0,
+        "avg_recall": 1.0
+      },
+      "find": {
+        "n": 26,
+        "matches": 21,
+        "match_rate": 0.8077,
+        "avg_f1": 0.8077,
+        "avg_precision": 0.8077,
+        "avg_recall": 0.8077
+      },
+      "aggregate": {
+        "n": 19,
+        "matches": 10,
+        "match_rate": 0.5263,
+        "avg_f1": 0.5702,
+        "avg_precision": 0.5639,
+        "avg_recall": 0.5789
+      }
+    },
+    "by_category": {
+      "distinct": {
+        "n": 5,
+        "matches": 5,
+        "match_rate": 1.0,
+        "avg_f1": 1.0,
+        "avg_precision": 1.0,
+        "avg_recall": 1.0
+      },
+      "find_projection": {
+        "n": 26,
+        "matches": 21,
+        "match_rate": 0.8077,
+        "avg_f1": 0.8077,
+        "avg_precision": 0.8077,
+        "avg_recall": 0.8077
+      },
+      "aggregate": {
+        "n": 19,
+        "matches": 10,
+        "match_rate": 0.5263,
+        "avg_f1": 0.5702,
+        "avg_precision": 0.5639,
+        "avg_recall": 0.5789
+      }
+    }
+  },
+  "questions": [
+    {
+      "id": 1,
+      "question": "Finn alle typer roller som en person kan ha",
+      "category": "distinct",
+      "op": "distinct",
+      "gold_query": {
+        "op": "distinct",
+        "collection": "personer",
+        "field": "rolle.tittel",
+        "filter": {}
+      },
+      "generated_query": {
+        "op": "distinct",
+        "collection": "personer",
+        "field": "rolle.tittel",
+        "filter": {}
+      },
+      "sample": {
+        "gold": [
+          {
+            "_value": "accountant"
+          },
+          {
+            "_value": "board_chairman"
+          },
+          {
+            "_value": "board_member"
+          }
+        ],
+        "generated": [
+          {
+            "_value": "accountant"
+          },
+          {
+            "_value": "board_chairman"
+          },
+          {
+            "_value": "board_member"
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 9,
+        "gold_n": 9,
+        "gen_n": 9,
+        "projection_score": null
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 2,
+      "question": "Finn alle distinkte organisasjonstyper blant konkursbedriftene",
+      "category": "distinct",
+      "op": "distinct",
+      "gold_query": {
+        "op": "distinct",
+        "collection": "selskap",
+        "field": "organisasjonstype",
+        "filter": {
+          "status.konkurs": 1
+        }
+      },
+      "generated_query": {
+        "op": "distinct",
+        "collection": "selskap",
+        "field": "organisasjonstype",
+        "filter": {
+          "status.konkurs": 1
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "_value": NaN
+          },
+          {
+            "_value": "AS"
+          },
+          {
+            "_value": "ENK"
+          }
+        ],
+        "generated": [
+          {
+            "_value": NaN
+          },
+          {
+            "_value": "AS"
+          },
+          {
+            "_value": "ENK"
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 5,
+        "gold_n": 5,
+        "gen_n": 5,
+        "projection_score": null
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 3,
+      "question": "Finn alle organisasjonstypene som finnes i databasen, dropp null-verdier",
+      "category": "distinct",
+      "op": "distinct",
+      "gold_query": {
+        "op": "distinct",
+        "collection": "selskap",
+        "field": "organisasjonstype",
+        "filter": {
+          "organisasjonstype": {
+            "$ne": null
+          }
+        }
+      },
+      "generated_query": {
+        "op": "distinct",
+        "collection": "selskap",
+        "field": "organisasjonstype",
+        "filter": {}
+      },
+      "sample": {
+        "gold": [
+          {
+            "_value": NaN
+          },
+          {
+            "_value": "AS"
+          },
+          {
+            "_value": "ASA"
+          }
+        ],
+        "generated": [
+          {
+            "_value": NaN
+          },
+          {
+            "_value": "AS"
+          },
+          {
+            "_value": "ASA"
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 7,
+        "gold_n": 7,
+        "gen_n": 7,
+        "projection_score": null
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 4,
+      "question": "Finn navn og organisasjonsnummer på konkursbedrifter samt dato for oppløsningen",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "selskap",
+        "filter": {
+          "status.konkurs": 1
+        },
+        "projection": {
+          "navn": 1,
+          "orgNr": 1,
+          "datoer.oppløst": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "selskap",
+        "filter": {
+          "status.konkurs": 1
+        },
+        "projection": {
+          "navn": 1,
+          "orgNr": 1,
+          "datoer.oppløst": 1
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "navn": "REGNSKAPSKONTORET BIZ AS",
+            "orgNr": 886520972,
+            "datoer": {
+              "oppløst": "2025-03-06T00:00:00Z"
+            }
+          },
+          {
+            "navn": "MB7A AS",
+            "orgNr": 918345914,
+            "datoer": {
+              "oppløst": "2021-01-25T00:00:00Z"
+            }
+          },
+          {
+            "navn": "SMAKERIET BERGEN AS",
+            "orgNr": 929068475,
+            "datoer": {
+              "oppløst": "2025-05-08T00:00:00Z"
+            }
+          }
+        ],
+        "generated": [
+          {
+            "_id": "69de6b3591ba31caa9bcd016",
+            "navn": "REGNSKAPSKONTORET BIZ AS",
+            "orgNr": 886520972,
+            "datoer": {
+              "oppløst": "2025-03-06T00:00:00Z"
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bcd017",
+            "navn": "MB7A AS",
+            "orgNr": 918345914,
+            "datoer": {
+              "oppløst": "2021-01-25T00:00:00Z"
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bcd018",
+            "navn": "SMAKERIET BERGEN AS",
+            "orgNr": 929068475,
+            "datoer": {
+              "oppløst": "2025-05-08T00:00:00Z"
+            }
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 581,
+        "gold_n": 581,
+        "gen_n": 581,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": 1.0
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 5,
+      "question": "Finn alle selskaper som både er i konkurs og under likvidasjon",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "selskap",
+        "filter": {
+          "status.konkurs": 1,
+          "status.likvidasjon": 1
+        },
+        "projection": {
+          "navn": 1,
+          "orgNr": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "selskap",
+        "filter": {
+          "status.konkurs": 1,
+          "status.likvidasjon": 1
+        }
+      },
+      "sample": {
+        "gold": [],
+        "generated": []
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 0,
+        "gold_n": 0,
+        "gen_n": 0,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 6,
+      "question": "Finn antall konkurser per organisasjonstype, sortert etter antall",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$match": {
+              "status.konkurs": 1
+            }
+          },
+          {
+            "$group": {
+              "_id": "$organisasjonstype",
+              "antall": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$sort": {
+              "antall": -1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$organisasjonstype",
+              "antallKonkurser": {
+                "$sum": "$status.konkurs"
+              }
+            }
+          },
+          {
+            "$sort": {
+              "antallKonkurser": -1
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "AS",
+            "antall": 574
+          },
+          {
+            "_id": "ENK",
+            "antall": 4
+          },
+          {
+            "_id": "nan",
+            "antall": 2
+          }
+        ],
+        "generated": [
+          {
+            "_id": "AS",
+            "antallKonkurser": 574
+          },
+          {
+            "_id": "ENK",
+            "antallKonkurser": 4
+          },
+          {
+            "_id": "nan",
+            "antallKonkurser": 2
+          }
+        ]
+      },
+      "scores": {
+        "precision": 0.7143,
+        "recall": 1.0,
+        "f1": 0.8333,
+        "tp": 5,
+        "gold_n": 5,
+        "gen_n": 7,
+        "projection_score": null
+      },
+      "match": false,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 7,
+      "question": "Finn organisasjonstypen med færrest konkurser",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$match": {
+              "status.konkurs": 1,
+              "organisasjonstype": {
+                "$ne": null
+              }
+            }
+          },
+          {
+            "$group": {
+              "_id": "$organisasjonstype",
+              "antall": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$sort": {
+              "antall": 1
+            }
+          },
+          {
+            "$limit": 1
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$organisasjonstype",
+              "konkurser": {
+                "$sum": "$status.konkurs"
+              }
+            }
+          },
+          {
+            "$sort": {
+              "konkurser": 1
+            }
+          },
+          {
+            "$limit": 1
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "NUF",
+            "antall": 1
+          }
+        ],
+        "generated": [
+          {
+            "_id": "SPA",
+            "konkurser": 0
+          }
+        ]
+      },
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "gold_n": 1,
+        "gen_n": 1,
+        "projection_score": null
+      },
+      "match": false,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 8,
+      "question": "Finn alle selskaper etablert etter år 2020",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "selskap",
+        "filter": {
+          "datoer.etablert": {
+            "$gte": "2020-01-01"
+          }
+        },
+        "projection": {
+          "navn": 1,
+          "orgNr": 1,
+          "datoer.etablert": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "selskap",
+        "filter": {
+          "datoer.etablert": {
+            "$gt": "2020-01-01"
+          }
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "navn": "SMAKERIET BERGEN AS",
+            "orgNr": 929068475,
+            "datoer": {
+              "etablert": "2022-03-23T00:00:00Z"
+            }
+          },
+          {
+            "navn": "TVEDT BOLIG AS",
+            "orgNr": 926862200,
+            "datoer": {
+              "etablert": "2021-03-09T00:00:00Z"
+            }
+          },
+          {
+            "navn": "EFLHO AS",
+            "orgNr": 932753308,
+            "datoer": {
+              "etablert": "2023-11-11T00:00:00Z"
+            }
+          }
+        ],
+        "generated": [
+          {
+            "_id": "69de6b3591ba31caa9bcd018",
+            "uuid": "00cd3a09-fe88-4e3d-8021-73a0ebd09e84",
+            "navn": "SMAKERIET BERGEN AS",
+            "orgNr": 929068475,
+            "organisasjonstype": "AS",
+            "naceKode": 56.101,
+            "datoer": {
+              "etablert": "2022-03-23T00:00:00Z",
+              "oppløst": "2025-05-08T00:00:00Z"
+            },
+            "status": {
+              "konkurs": 1,
+              "likvidasjon": 0
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bcd01c",
+            "uuid": "0314f545-6078-42a3-ac94-3ef9216dae7a",
+            "navn": "TVEDT BOLIG AS",
+            "orgNr": 926862200,
+            "organisasjonstype": "AS",
+            "naceKode": 41.2,
+            "datoer": {
+              "etablert": "2021-03-09T00:00:00Z",
+              "oppløst": "2025-07-01T00:00:00Z"
+            },
+            "status": {
+              "konkurs": 1,
+              "likvidasjon": 0
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bcd01d",
+            "uuid": "0322daa7-add5-4168-8327-5e6466b10e69",
+            "navn": "EFLHO AS",
+            "orgNr": 932753308,
+            "organisasjonstype": "AS",
+            "naceKode": 41.2,
+            "datoer": {
+              "etablert": "2023-11-11T00:00:00Z",
+              "oppløst": "2025-07-15T00:00:00Z"
+            },
+            "status": {
+              "konkurs": 1,
+              "likvidasjon": 0
+            }
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 922,
+        "gold_n": 922,
+        "gen_n": 922,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 9,
+      "question": "Finn antall selskaper per organisasjonstype",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$organisasjonstype",
+              "antall": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$sort": {
+              "antall": -1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$organisasjonstype",
+              "antall": {
+                "$sum": 1
+              }
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "AS",
+            "antall": 1986
+          },
+          {
+            "_id": "ASA",
+            "antall": 6
+          },
+          {
+            "_id": "ENK",
+            "antall": 4
+          }
+        ],
+        "generated": [
+          {
+            "_id": "nan",
+            "antall": 2
+          },
+          {
+            "_id": "ENK",
+            "antall": 4
+          },
+          {
+            "_id": "AS",
+            "antall": 1986
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 7,
+        "gold_n": 7,
+        "gen_n": 7,
+        "projection_score": null
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 10,
+      "question": "Finn alle AS-selskaper (aksjeselskap)",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "selskap",
+        "filter": {
+          "organisasjonstype": "AS"
+        },
+        "projection": {
+          "navn": 1,
+          "orgNr": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "selskap",
+        "filter": {
+          "organisasjonstype": "AS"
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "navn": "REGNSKAPSKONTORET BIZ AS",
+            "orgNr": 886520972
+          },
+          {
+            "navn": "MB7A AS",
+            "orgNr": 918345914
+          },
+          {
+            "navn": "SMAKERIET BERGEN AS",
+            "orgNr": 929068475
+          }
+        ],
+        "generated": [
+          {
+            "_id": "69de6b3591ba31caa9bcd016",
+            "uuid": "001e888e-e022-4e57-b4ce-511e3f49f3f4",
+            "navn": "REGNSKAPSKONTORET BIZ AS",
+            "orgNr": 886520972,
+            "organisasjonstype": "AS",
+            "naceKode": 69.201,
+            "datoer": {
+              "etablert": "2004-01-01T00:00:00Z",
+              "oppløst": "2025-03-06T00:00:00Z"
+            },
+            "status": {
+              "konkurs": 1,
+              "likvidasjon": 0
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bcd017",
+            "uuid": "003a8809-b8dc-411c-b708-d86500813eab",
+            "navn": "MB7A AS",
+            "orgNr": 918345914,
+            "organisasjonstype": "AS",
+            "naceKode": 68.32,
+            "datoer": {
+              "etablert": "2016-12-01T00:00:00Z",
+              "oppløst": "2021-01-25T00:00:00Z"
+            },
+            "status": {
+              "konkurs": 1,
+              "likvidasjon": 0
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bcd018",
+            "uuid": "00cd3a09-fe88-4e3d-8021-73a0ebd09e84",
+            "navn": "SMAKERIET BERGEN AS",
+            "orgNr": 929068475,
+            "organisasjonstype": "AS",
+            "naceKode": 56.101,
+            "datoer": {
+              "etablert": "2022-03-23T00:00:00Z",
+              "oppløst": "2025-05-08T00:00:00Z"
+            },
+            "status": {
+              "konkurs": 1,
+              "likvidasjon": 0
+            }
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1985,
+        "gold_n": 1985,
+        "gen_n": 1985,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 11,
+      "question": "Finn alle selskaper etablert mellom 2015 og 2020",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "selskap",
+        "filter": {
+          "datoer.etablert": {
+            "$gte": "2015-01-01",
+            "$lte": "2020-12-31"
+          }
+        },
+        "projection": {
+          "navn": 1,
+          "orgNr": 1,
+          "datoer.etablert": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "selskap",
+        "filter": {
+          "datoer.etablert": {
+            "$gte": "2015-01-01",
+            "$lte": "2020-12-31"
+          }
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "navn": "MB7A AS",
+            "orgNr": 918345914,
+            "datoer": {
+              "etablert": "2016-12-01T00:00:00Z"
+            }
+          },
+          {
+            "navn": "VINA AS",
+            "orgNr": 920687989,
+            "datoer": {
+              "etablert": "2018-03-12T00:00:00Z"
+            }
+          },
+          {
+            "navn": "JOKER LYD, LYS & SCENE AS",
+            "orgNr": 921664788,
+            "datoer": {
+              "etablert": "2018-09-11T00:00:00Z"
+            }
+          }
+        ],
+        "generated": [
+          {
+            "_id": "69de6b3591ba31caa9bcd017",
+            "uuid": "003a8809-b8dc-411c-b708-d86500813eab",
+            "navn": "MB7A AS",
+            "orgNr": 918345914,
+            "organisasjonstype": "AS",
+            "naceKode": 68.32,
+            "datoer": {
+              "etablert": "2016-12-01T00:00:00Z",
+              "oppløst": "2021-01-25T00:00:00Z"
+            },
+            "status": {
+              "konkurs": 1,
+              "likvidasjon": 0
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bcd019",
+            "uuid": "00d59bbd-c6f0-4771-8c59-9934600d809d",
+            "navn": "VINA AS",
+            "orgNr": 920687989,
+            "organisasjonstype": "AS",
+            "naceKode": 47.71,
+            "datoer": {
+              "etablert": "2018-03-12T00:00:00Z",
+              "oppløst": "2021-09-18T00:00:00Z"
+            },
+            "status": {
+              "konkurs": 1,
+              "likvidasjon": 0
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bcd01a",
+            "uuid": "011a3bd8-b28a-4d76-8552-60ade62d494a",
+            "navn": "JOKER LYD, LYS & SCENE AS",
+            "orgNr": 921664788,
+            "organisasjonstype": "AS",
+            "naceKode": 90.02,
+            "datoer": {
+              "etablert": "2018-09-11T00:00:00Z",
+              "oppløst": "2025-08-25T00:00:00Z"
+            },
+            "status": {
+              "konkurs": 1,
+              "likvidasjon": 0
+            }
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 541,
+        "gold_n": 541,
+        "gen_n": 541,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 12,
+      "question": "Finn konkursbedrifter som ble oppløst i 2022",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "selskap",
+        "filter": {
+          "status.konkurs": 1,
+          "datoer.oppløst": {
+            "$gte": "2022-01-01",
+            "$lt": "2023-01-01"
+          }
+        },
+        "projection": {
+          "navn": 1,
+          "orgNr": 1,
+          "datoer.oppløst": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "selskap",
+        "filter": {
+          "status.konkurs": 1,
+          "datoer.oppløst": {
+            "$gte": "2022-01-01",
+            "$lt": "2023-01-01"
+          }
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "navn": "PARAGON OFFSHORE AS",
+            "orgNr": 984007388,
+            "datoer": {
+              "oppløst": "2022-07-25T00:00:00Z"
+            }
+          },
+          {
+            "navn": "HEEG HOLDING AS",
+            "orgNr": 914755336,
+            "datoer": {
+              "oppløst": "2022-10-26T00:00:00Z"
+            }
+          },
+          {
+            "navn": "THE STARTUP AS",
+            "orgNr": 923969519,
+            "datoer": {
+              "oppløst": "2022-01-27T00:00:00Z"
+            }
+          }
+        ],
+        "generated": [
+          {
+            "_id": "69de6b3591ba31caa9bcd024",
+            "uuid": "07eac602-4fb4-452e-95af-238c21983336",
+            "navn": "PARAGON OFFSHORE AS",
+            "orgNr": 984007388,
+            "organisasjonstype": "AS",
+            "naceKode": 50.201,
+            "datoer": {
+              "etablert": "2001-11-30T00:00:00Z",
+              "oppløst": "2022-07-25T00:00:00Z"
+            },
+            "status": {
+              "konkurs": 1,
+              "likvidasjon": 0
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bcd036",
+            "uuid": "0fa7dbe2-d421-4e86-80b7-70eeede94c1c",
+            "navn": "HEEG HOLDING AS",
+            "orgNr": 914755336,
+            "organisasjonstype": "AS",
+            "naceKode": 0.0,
+            "datoer": {
+              "etablert": "2014-12-23T00:00:00Z",
+              "oppløst": "2022-10-26T00:00:00Z"
+            },
+            "status": {
+              "konkurs": 1,
+              "likvidasjon": 0
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bcd037",
+            "uuid": "10704f73-b83b-4458-9472-f9dd600e3115",
+            "navn": "THE STARTUP AS",
+            "orgNr": 923969519,
+            "organisasjonstype": "AS",
+            "naceKode": 47.71,
+            "datoer": {
+              "etablert": "2019-11-26T00:00:00Z",
+              "oppløst": "2022-01-27T00:00:00Z"
+            },
+            "status": {
+              "konkurs": 1,
+              "likvidasjon": 0
+            }
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 92,
+        "gold_n": 92,
+        "gen_n": 92,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 13,
+      "question": "Finn antall selskaper per NACE-kode",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$match": {
+              "naceKode": {
+                "$ne": null
+              }
+            }
+          },
+          {
+            "$group": {
+              "_id": "$naceKode",
+              "antall": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$sort": {
+              "antall": -1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$naceKode",
+              "antall": {
+                "$sum": 1
+              }
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "0.0",
+            "antall": 487
+          },
+          {
+            "_id": "68.2",
+            "antall": 166
+          },
+          {
+            "_id": "41.2",
+            "antall": 69
+          }
+        ],
+        "generated": [
+          {
+            "_id": "52.211",
+            "antall": 1
+          },
+          {
+            "_id": "55.3",
+            "antall": 4
+          },
+          {
+            "_id": "87.992",
+            "antall": 1
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 330,
+        "gold_n": 330,
+        "gen_n": 330,
+        "projection_score": null
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 14,
+      "question": "Finn ENK-bedrifter (enkeltpersonforetak)",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "selskap",
+        "filter": {
+          "organisasjonstype": "ENK"
+        },
+        "projection": {
+          "navn": 1,
+          "orgNr": 1,
+          "datoer.etablert": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "selskap",
+        "filter": {
+          "organisasjonstype": "ENK"
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "navn": "ATELIER PAULA PAULINA K HOTVEDT",
+            "orgNr": 915572871,
+            "datoer": {
+              "etablert": "2015-06-22T00:00:00Z"
+            }
+          },
+          {
+            "navn": "PLAWECKI MICHAL PRZEMYSLAW",
+            "orgNr": 921120273,
+            "datoer": {
+              "etablert": "2018-07-04T00:00:00Z"
+            }
+          },
+          {
+            "navn": "MANEEWAN PHATTRANIT",
+            "orgNr": 923678832,
+            "datoer": {
+              "etablert": "2019-10-24T00:00:00Z"
+            }
+          }
+        ],
+        "generated": [
+          {
+            "_id": "69de6b3591ba31caa9bcd041",
+            "uuid": "13414032-0450-47a3-a544-ec39e7dd07c6",
+            "navn": "ATELIER PAULA PAULINA K HOTVEDT",
+            "orgNr": 915572871,
+            "organisasjonstype": "ENK",
+            "naceKode": 90.039,
+            "datoer": {
+              "etablert": "2015-06-22T00:00:00Z",
+              "oppløst": "2024-12-02T00:00:00Z"
+            },
+            "status": {
+              "konkurs": 1,
+              "likvidasjon": 0
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bcd0c8",
+            "uuid": "5606521e-9d77-4a44-bdcd-95121ad90488",
+            "navn": "PLAWECKI MICHAL PRZEMYSLAW",
+            "orgNr": 921120273,
+            "organisasjonstype": "ENK",
+            "naceKode": 41.2,
+            "datoer": {
+              "etablert": "2018-07-04T00:00:00Z",
+              "oppløst": "2021-03-25T00:00:00Z"
+            },
+            "status": {
+              "konkurs": 1,
+              "likvidasjon": 0
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bcd196",
+            "uuid": "aae459c0-a5e0-47f1-ae0b-4442a36456a3",
+            "navn": "MANEEWAN PHATTRANIT",
+            "orgNr": 923678832,
+            "organisasjonstype": "ENK",
+            "naceKode": 96.04,
+            "datoer": {
+              "etablert": "2019-10-24T00:00:00Z",
+              "oppløst": "2022-04-01T00:00:00Z"
+            },
+            "status": {
+              "konkurs": 1,
+              "likvidasjon": 0
+            }
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 4,
+        "gold_n": 4,
+        "gen_n": 4,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 15,
+      "question": "Finn personer med rollen daglig leder",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "personer",
+        "filter": {
+          "rolle.tittel": "Daglig leder"
+        },
+        "projection": {
+          "personInfo.navn": 1,
+          "personInfo.fødselsdato": 1,
+          "selskap.navn": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "personer",
+        "filter": {
+          "rolle.tittel": "Daglig leder"
+        }
+      },
+      "sample": {
+        "gold": [],
+        "generated": []
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 0,
+        "gold_n": 0,
+        "gen_n": 0,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 16,
+      "question": "Finn personer som har hatt forhenværende roller (med sluttdato)",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "personer",
+        "filter": {
+          "rolle.sluttdato": {
+            "$ne": null
+          }
+        },
+        "projection": {
+          "personInfo.navn": 1,
+          "personInfo.fødselsdato": 1,
+          "rolle.tittel": 1,
+          "rolle.startdato": 1,
+          "rolle.sluttdato": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "personer",
+        "filter": {
+          "rolle.sluttdato": {
+            "$ne": ""
+          }
+        }
+      },
+      "sample": {
+        "gold": [],
+        "generated": [
+          {
+            "_id": "69de6b3491ba31caa9bbefa1",
+            "UUID": null,
+            "personInfo": {
+              "navn": "Anwar Chewe Sinkala Hilmarsen",
+              "fødselsdato": "1981-09-14T00:00:00Z",
+              "fødselsår": 1981.0,
+              "kjønnUUID": null
+            },
+            "adresse": {
+              "gateadresse": "Helgeroveien 92",
+              "postnummer": 3290.0,
+              "poststed": "STAVERN",
+              "kommuneNr": 3909.0,
+              "kommuneNavn": "LARVIK",
+              "land": "Norway",
+              "landkode": "NO"
+            },
+            "registrering": {
+              "registrertTid": "2021-12-04T00:00:00Z",
+              "oppdatertTid": "2025-04-24T20:39:05Z"
+            },
+            "selskap": {
+              "navn": "THE GRILL PIT HOLDING AS",
+              "uuid": "b42a7e82-3e8e-4457-83a6-ac9d6407f532",
+              "orgNr": 929337565,
+              "registrert": "2022-07-01T03:48:27Z",
+              "oppdatert": "2022-07-01T03:48:27Z"
+            },
+            "rolle": {
+              "tittel": "board_chairman",
+              "uuid": "70a605f3-fdb4-4ef6-a74a-4e419a86a189",
+              "rolleUUID": "0025c4eb-1acd-5538-8637-5210091ea3f8",
+              "rang": 900,
+              "startdato": "2022-06-30",
+              "sluttdato": null,
+              "registrert": "2018-08-28T14:06:03Z",
+              "oppdatert": "2018-08-28T14:06:03Z"
+            }
+          },
+          {
+            "_id": "69de6b3491ba31caa9bbefa2",
+            "UUID": null,
+            "personInfo": {
+              "navn": "Therese Sulland",
+              "fødselsdato": "1970-11-04T00:00:00Z",
+              "fødselsår": 1970.0,
+              "kjønnUUID": null
+            },
+            "adresse": {
+              "gateadresse": "Kauffeldts Veg 3",
+              "postnummer": 2819.0,
+              "poststed": "GJØVIK",
+              "kommuneNr": 3407.0,
+              "kommuneNavn": "GJØVIK",
+              "land": "Norway",
+              "landkode": "NO"
+            },
+            "registrering": {
+              "registrertTid": "2021-12-04T00:00:00Z",
+              "oppdatertTid": "2025-08-18T16:23:52Z"
+            },
+            "selskap": {
+              "navn": "TOYOTA SULLAND LILLEHAMMER AS",
+              "uuid": "9171ba27-0c49-4a85-9de0-ed4b0bb9fba7",
+              "orgNr": 979155204,
+              "registrert": "2017-10-08T19:13:04Z",
+              "oppdatert": "2023-03-08T09:00:38Z"
+            },
+            "rolle": {
+              "tittel": "board_member",
+              "uuid": "329781c3-d0e4-4a60-b1dd-28c18bc910e8",
+              "rolleUUID": "002f418b-710c-59b2-a2f8-485ec1a25951",
+              "rang": 1100,
+              "startdato": "2024-08-30",
+              "sluttdato": null,
+              "registrert": "2018-08-28T14:05:58Z",
+              "oppdatert": "2018-08-28T14:05:58Z"
+            }
+          },
+          {
+            "_id": "69de6b3491ba31caa9bbefa3",
+            "UUID": null,
+            "personInfo": {
+              "navn": "Per Morten Scott-Dahl Olset",
+              "fødselsdato": "1974-10-25T00:00:00Z",
+              "fødselsår": 1974.0,
+              "kjønnUUID": null
+            },
+            "adresse": {
+              "gateadresse": "Gåseidnesvegen 5",
+              "postnummer": 6015.0,
+              "poststed": "ÅLESUND",
+              "kommuneNr": 1508.0,
+              "kommuneNavn": "ÅLESUND",
+              "land": "Norway",
+              "landkode": "NO"
+            },
+            "registrering": {
+              "registrertTid": NaN,
+              "oppdatertTid": "2025-06-08T16:07:32Z"
+            },
+            "selskap": {
+              "navn": "PMO HOLDING AS",
+              "uuid": "fab436e1-c779-4297-8b49-93a10e1cd8b1",
+              "orgNr": 934570537,
+              "registrert": "2024-11-30T09:03:26Z",
+              "oppdatert": "2024-11-30T09:03:26Z"
+            },
+            "rolle": {
+              "tittel": "ceo",
+              "uuid": "121aa0b2-c850-4564-936f-fcfd0886b034",
+              "rolleUUID": "00365d95-7234-5800-ba04-a75e3d48c584",
+              "rang": 400,
+              "startdato": "2024-11-30",
+              "sluttdato": null,
+              "registrert": "2018-08-28T14:05:55Z",
+              "oppdatert": "2018-08-28T14:05:55Z"
+            }
+          }
+        ]
+      },
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "gold_n": 0,
+        "gen_n": 1,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": false,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 17,
+      "question": "Finn personer som har aktive roller i DELOITTE ADVOKATFIRMA AS",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "personer",
+        "filter": {
+          "selskap.navn": "DELOITTE ADVOKATFIRMA AS",
+          "rolle.sluttdato": null
+        },
+        "projection": {
+          "personInfo.navn": 1,
+          "personInfo.fødselsdato": 1,
+          "rolle.tittel": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "personer",
+        "filter": {
+          "selskap.navn": "DELOITTE ADVOKATFIRMA AS",
+          "rolle.sluttdato": {
+            "$exists": false
+          }
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "personInfo": {
+              "navn": "Camilla Pelerud Tunsvoll",
+              "fødselsdato": "1990-02-13T00:00:00Z"
+            },
+            "rolle": {
+              "tittel": "deputy_board_member"
+            }
+          },
+          {
+            "personInfo": {
+              "navn": "Maren Færaas Sandvik",
+              "fødselsdato": "1988-03-16T00:00:00Z"
+            },
+            "rolle": {
+              "tittel": "board_member"
+            }
+          },
+          {
+            "personInfo": {
+              "navn": "Kent Hodne",
+              "fødselsdato": "1986-09-28T00:00:00Z"
+            },
+            "rolle": {
+              "tittel": "board_member"
+            }
+          }
+        ],
+        "generated": []
+      },
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "gold_n": 1,
+        "gen_n": 0,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": false,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 18,
+      "question": "Finn antall personer per selskapsnavn",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "personer",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$selskap.navn",
+              "antall": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$sort": {
+              "antall": -1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "personer",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$selskap.navn",
+              "antallPersoner": {
+                "$sum": 1
+              }
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "SOPRA STERIA AS",
+            "antall": 36
+          },
+          {
+            "_id": "NORCE RESEARCH AS",
+            "antall": 31
+          },
+          {
+            "_id": "BERTEL O. STEEN LASTEBIL OG BUSS AS",
+            "antall": 22
+          }
+        ],
+        "generated": [
+          {
+            "_id": "NERGÅRD AS",
+            "antallPersoner": 6
+          },
+          {
+            "_id": "TROSVIKSTRANDA HOLDING AS",
+            "antallPersoner": 1
+          },
+          {
+            "_id": "TRØNÅ AS",
+            "antallPersoner": 5
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1429,
+        "gold_n": 1429,
+        "gen_n": 1429,
+        "projection_score": null
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 19,
+      "question": "Finn antall roller per person",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "personer",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": {
+                "navn": "$personInfo.navn",
+                "fødselsdato": "$personInfo.fødselsdato"
+              },
+              "antallRoller": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$sort": {
+              "antallRoller": -1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "personer",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$UUID",
+              "antallRoller": {
+                "$sum": 1
+              }
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "{'navn': 'Kristian Brekke Djuve', 'fødselsdato': '1988-08-18T00:00:00Z'}",
+            "antallRoller": 16
+          },
+          {
+            "_id": "{'navn': 'Marielle Løvås', 'fødselsdato': '1981-09-08T00:00:00Z'}",
+            "antallRoller": 8
+          },
+          {
+            "_id": "{'navn': 'Renate Slettli Nymo', 'fødselsdato': '1976-10-14T00:00:00Z'}",
+            "antallRoller": 4
+          }
+        ],
+        "generated": [
+          {
+            "_id": "None",
+            "antallRoller": 4095
+          }
+        ]
+      },
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "gold_n": 3256,
+        "gen_n": 1,
+        "projection_score": null
+      },
+      "match": false,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 20,
+      "question": "Finn alle distinkte kommunenavn hvor personer er registrert",
+      "category": "distinct",
+      "op": "distinct",
+      "gold_query": {
+        "op": "distinct",
+        "collection": "personer",
+        "field": "adresse.kommuneNavn",
+        "filter": {
+          "adresse.kommuneNavn": {
+            "$ne": null
+          }
+        }
+      },
+      "generated_query": {
+        "op": "distinct",
+        "collection": "personer",
+        "field": "adresse.kommuneNavn",
+        "filter": {}
+      },
+      "sample": {
+        "gold": [
+          {
+            "_value": NaN
+          },
+          {
+            "_value": "ALSTAHAUG"
+          },
+          {
+            "_value": "ALTA"
+          }
+        ],
+        "generated": [
+          {
+            "_value": NaN
+          },
+          {
+            "_value": "ALSTAHAUG"
+          },
+          {
+            "_value": "ALTA"
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 229,
+        "gold_n": 229,
+        "gen_n": 229,
+        "projection_score": null
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 21,
+      "question": "Finn personer født i 1980",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "personer",
+        "filter": {
+          "personInfo.fødselsår": 1980
+        },
+        "projection": {
+          "personInfo.navn": 1,
+          "personInfo.fødselsdato": 1,
+          "rolle.tittel": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "personer",
+        "filter": {
+          "personInfo.fødselsår": 1980
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "personInfo": {
+              "navn": "Benjamin David Brodie",
+              "fødselsdato": "1980-08-09T00:00:00Z"
+            },
+            "rolle": {
+              "tittel": "ceo"
+            }
+          },
+          {
+            "personInfo": {
+              "navn": "Jeanette Lagesen Brynildsen",
+              "fødselsdato": "1980-05-19T00:00:00Z"
+            },
+            "rolle": {
+              "tittel": "contact_person"
+            }
+          },
+          {
+            "personInfo": {
+              "navn": "Cathrine Ege-Stokmo",
+              "fødselsdato": "1980-07-06T00:00:00Z"
+            },
+            "rolle": {
+              "tittel": "board_chairman"
+            }
+          }
+        ],
+        "generated": [
+          {
+            "_id": "69de6b3491ba31caa9bbefcc",
+            "UUID": null,
+            "personInfo": {
+              "navn": "Benjamin David Brodie",
+              "fødselsdato": "1980-08-09T00:00:00Z",
+              "fødselsår": 1980.0,
+              "kjønnUUID": null
+            },
+            "adresse": {
+              "gateadresse": "Jongsbruveien 5 B",
+              "postnummer": 1338.0,
+              "poststed": "SANDVIKA",
+              "kommuneNr": 3201.0,
+              "kommuneNavn": "BÆRUM",
+              "land": "Norway",
+              "landkode": "NO"
+            },
+            "registrering": {
+              "registrertTid": "2021-12-04T00:00:00Z",
+              "oppdatertTid": "2025-04-24T20:39:05Z"
+            },
+            "selskap": {
+              "navn": "BRAVO DELTA AS",
+              "uuid": "807c2c36-11d2-4b8f-8ea0-2df39307d645",
+              "orgNr": 932128772,
+              "registrert": "2023-09-27T05:03:40Z",
+              "oppdatert": "2023-09-27T05:03:40Z"
+            },
+            "rolle": {
+              "tittel": "ceo",
+              "uuid": "121aa0b2-c850-4564-936f-fcfd0886b034",
+              "rolleUUID": "03442982-f0be-5e21-a64f-4a0a01eb01eb",
+              "rang": 400,
+              "startdato": "2023-09-26",
+              "sluttdato": null,
+              "registrert": "2018-08-28T14:05:55Z",
+              "oppdatert": "2018-08-28T14:05:55Z"
+            }
+          },
+          {
+            "_id": "69de6b3491ba31caa9bbf002",
+            "UUID": null,
+            "personInfo": {
+              "navn": "Jeanette Lagesen Brynildsen",
+              "fødselsdato": "1980-05-19T00:00:00Z",
+              "fødselsår": 1980.0,
+              "kjønnUUID": null
+            },
+            "adresse": {
+              "gateadresse": "Fyrgangen 19",
+              "postnummer": 1560.0,
+              "poststed": "LARKOLLEN",
+              "kommuneNr": 3103.0,
+              "kommuneNavn": "MOSS",
+              "land": "Norway",
+              "landkode": "NO"
+            },
+            "registrering": {
+              "registrertTid": "2021-12-04T00:00:00Z",
+              "oppdatertTid": "2025-06-08T16:07:32Z"
+            },
+            "selskap": {
+              "navn": "JLB HOLDING AS",
+              "uuid": "0302a788-f35d-496d-8c8e-0843dfe5b76e",
+              "orgNr": 934306252,
+              "registrert": "2024-10-19T15:02:35Z",
+              "oppdatert": "2024-10-19T15:02:35Z"
+            },
+            "rolle": {
+              "tittel": "contact_person",
+              "uuid": "123b5b57-b3c8-4c31-9c08-2a8dc9a4677a",
+              "rolleUUID": "06a46260-febd-5c50-aca3-6ad11feab194",
+              "rang": 4700,
+              "startdato": "2024-10-19",
+              "sluttdato": null,
+              "registrert": "2021-08-29T11:08:22Z",
+              "oppdatert": "2021-08-29T11:08:22Z"
+            }
+          },
+          {
+            "_id": "69de6b3491ba31caa9bbf018",
+            "UUID": null,
+            "personInfo": {
+              "navn": "Cathrine Ege-Stokmo",
+              "fødselsdato": "1980-07-06T00:00:00Z",
+              "fødselsår": 1980.0,
+              "kjønnUUID": null
+            },
+            "adresse": {
+              "gateadresse": "Jonas Lies Vei 29",
+              "postnummer": 3022.0,
+              "poststed": "DRAMMEN",
+              "kommuneNr": 3301.0,
+              "kommuneNavn": "DRAMMEN",
+              "land": "Norway",
+              "landkode": "NO"
+            },
+            "registrering": {
+              "registrertTid": "2021-12-04T00:00:00Z",
+              "oppdatertTid": "2025-06-17T17:50:18Z"
+            },
+            "selskap": {
+              "navn": "CATUR HOLDING AS",
+              "uuid": "bf929a6d-d1fc-4200-a0e8-0c7b6638a1d1",
+              "orgNr": 933363961,
+              "registrert": "2024-04-26T00:49:57Z",
+              "oppdatert": "2024-04-26T00:49:57Z"
+            },
+            "rolle": {
+              "tittel": "board_chairman",
+              "uuid": "70a605f3-fdb4-4ef6-a74a-4e419a86a189",
+              "rolleUUID": "07b1ca9b-ec7e-547e-9e58-5d13b0426442",
+              "rang": 900,
+              "startdato": "2024-04-25",
+              "sluttdato": null,
+              "registrert": "2018-08-28T14:06:03Z",
+              "oppdatert": "2018-08-28T14:06:03Z"
+            }
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "gold_n": 1,
+        "gen_n": 1,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 22,
+      "question": "Finn antall personer per kommune",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "personer",
+        "pipeline": [
+          {
+            "$match": {
+              "adresse.kommuneNavn": {
+                "$ne": null
+              }
+            }
+          },
+          {
+            "$group": {
+              "_id": "$adresse.kommuneNavn",
+              "antall": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$sort": {
+              "antall": -1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "personer",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$adresse.kommuneNavn",
+              "antall": {
+                "$sum": 1
+              }
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "OSLO",
+            "antall": 811
+          },
+          {
+            "_id": "BERGEN",
+            "antall": 244
+          },
+          {
+            "_id": "nan",
+            "antall": 210
+          }
+        ],
+        "generated": [
+          {
+            "_id": "SIGDAL",
+            "antall": 7
+          },
+          {
+            "_id": "VANYLVEN",
+            "antall": 1
+          },
+          {
+            "_id": "OSTERØY",
+            "antall": 5
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 229,
+        "gold_n": 229,
+        "gen_n": 229,
+        "projection_score": null
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 23,
+      "question": "Finn personer med roller i Oslo kommune",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "personer",
+        "filter": {
+          "adresse.kommuneNavn": "Oslo"
+        },
+        "projection": {
+          "personInfo.navn": 1,
+          "personInfo.fødselsdato": 1,
+          "rolle.tittel": 1,
+          "selskap.navn": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "personer",
+        "filter": {
+          "adresse.kommuneNavn": "Oslo"
+        }
+      },
+      "sample": {
+        "gold": [],
+        "generated": []
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 0,
+        "gold_n": 0,
+        "gen_n": 0,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 24,
+      "question": "Finn antall distinkte selskaper som personer har roller i",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "personer",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": null,
+              "antallSelskaper": {
+                "$addToSet": "$selskap.orgNr"
+              }
+            }
+          },
+          {
+            "$project": {
+              "antall": {
+                "$size": "$antallSelskaper"
+              }
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "distinct",
+        "collection": "personer",
+        "field": "selskap.uuid",
+        "filter": {}
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "None",
+            "antall": 1429
+          }
+        ],
+        "generated": [
+          {
+            "_value": "00c7299d-4565-4ace-8ff5-f499ef6e3ab4"
+          },
+          {
+            "_value": "00cdb35c-a265-40b3-b600-ad0158a95068"
+          },
+          {
+            "_value": "00e1141b-661c-487e-8d97-4e4f1fca71b2"
+          }
+        ]
+      },
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "gold_n": 1,
+        "gen_n": 1429,
+        "projection_score": null
+      },
+      "match": false,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 25,
+      "question": "Finn alle politikere fra partiet Høyre",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "politikere",
+        "filter": {
+          "parti.navn": "Høyre"
+        },
+        "projection": {
+          "personInfo.navn": 1,
+          "personInfo.fødselsdato": 1,
+          "kommune.navn": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "politikere",
+        "filter": {
+          "parti.navn": "Høyre"
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "personInfo": {
+              "navn": "Eirik Lae Solberg",
+              "fødselsdato": "03/04/1971"
+            },
+            "kommune": {
+              "navn": "Oslo"
+            }
+          },
+          {
+            "personInfo": {
+              "navn": "Anne Lindboe",
+              "fødselsdato": "01/08/1971"
+            },
+            "kommune": {
+              "navn": "Oslo"
+            }
+          },
+          {
+            "personInfo": {
+              "navn": "James Stove Lorentzen",
+              "fødselsdato": "09/02/1957"
+            },
+            "kommune": {
+              "navn": "Oslo"
+            }
+          }
+        ],
+        "generated": [
+          {
+            "_id": "69de6b3591ba31caa9bc0064",
+            "personInfo": {
+              "navn": "Eirik Lae Solberg",
+              "fødselsdato": "03/04/1971"
+            },
+            "parti": {
+              "navn": "Høyre"
+            },
+            "kommune": {
+              "navn": "Oslo",
+              "nr": null
+            },
+            "valg": {
+              "listeplass": 1,
+              "personstemmer": 22299,
+              "stemmetillegg": "Ja",
+              "slengere": 361,
+              "endeligRangering": null,
+              "innvalgt": "Ja"
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bc0065",
+            "personInfo": {
+              "navn": "Anne Lindboe",
+              "fødselsdato": "01/08/1971"
+            },
+            "parti": {
+              "navn": "Høyre"
+            },
+            "kommune": {
+              "navn": "Oslo",
+              "nr": null
+            },
+            "valg": {
+              "listeplass": 2,
+              "personstemmer": 9779,
+              "stemmetillegg": "Ja",
+              "slengere": 234,
+              "endeligRangering": null,
+              "innvalgt": "Ja"
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bc0066",
+            "personInfo": {
+              "navn": "James Stove Lorentzen",
+              "fødselsdato": "09/02/1957"
+            },
+            "parti": {
+              "navn": "Høyre"
+            },
+            "kommune": {
+              "navn": "Oslo",
+              "nr": null
+            },
+            "valg": {
+              "listeplass": 3,
+              "personstemmer": 3800,
+              "stemmetillegg": "Ja",
+              "slengere": 98,
+              "endeligRangering": null,
+              "innvalgt": "Ja"
+            }
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "gold_n": 1,
+        "gen_n": 1,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 26,
+      "question": "Finn alle innvalgte politikere",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "politikere",
+        "filter": {
+          "valg.innvalgt": true
+        },
+        "projection": {
+          "personInfo.navn": 1,
+          "personInfo.fødselsdato": 1,
+          "parti.navn": 1,
+          "kommune.navn": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "politikere",
+        "filter": {
+          "valg.innvalgt": true
+        }
+      },
+      "sample": {
+        "gold": [],
+        "generated": []
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 0,
+        "gold_n": 0,
+        "gen_n": 0,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 27,
+      "question": "Finn antall politikere per parti",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$parti.navn",
+              "antall": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$sort": {
+              "antall": -1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$parti.navn",
+              "antall": {
+                "$sum": 1
+              }
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "Senterpartiet",
+            "antall": 7439
+          },
+          {
+            "_id": "Arbeiderpartiet",
+            "antall": 6669
+          },
+          {
+            "_id": "Høyre",
+            "antall": 5490
+          }
+        ],
+        "generated": [
+          {
+            "_id": "Hå-lista",
+            "antall": 28
+          },
+          {
+            "_id": "Fellesliste for Kristelig Folkeparti og Venstre",
+            "antall": 10
+          },
+          {
+            "_id": "Fellesliste Raudt og Sosialistisk Venstreparti",
+            "antall": 8
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 185,
+        "gold_n": 185,
+        "gen_n": 185,
+        "projection_score": null
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 28,
+      "question": "Finn antall innvalgte politikere per parti",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$match": {
+              "valg.innvalgt": true
+            }
+          },
+          {
+            "$group": {
+              "_id": "$parti.navn",
+              "antall": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$sort": {
+              "antall": -1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$parti.navn",
+              "antallInnvalgte": {
+                "$sum": {
+                  "$cond": [
+                    "$valg.innvalgt",
+                    1,
+                    0
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [],
+        "generated": [
+          {
+            "_id": "Industri- og Næringspartiet",
+            "antallInnvalgte": 1473
+          },
+          {
+            "_id": "Pensjonistpartiet",
+            "antallInnvalgte": 840
+          },
+          {
+            "_id": "Bygdalista",
+            "antallInnvalgte": 33
+          }
+        ]
+      },
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "gold_n": 0,
+        "gen_n": 185,
+        "projection_score": null
+      },
+      "match": false,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 29,
+      "question": "Finn alle innvalgte politikere fra Fremskrittspartiet",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "politikere",
+        "filter": {
+          "parti.navn": "Fremskrittspartiet",
+          "valg.innvalgt": true
+        },
+        "projection": {
+          "personInfo.navn": 1,
+          "personInfo.fødselsdato": 1,
+          "kommune.navn": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "politikere",
+        "filter": {
+          "parti.navn": "Fremskrittspartiet",
+          "valg.innvalgt": true
+        }
+      },
+      "sample": {
+        "gold": [],
+        "generated": []
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 0,
+        "gold_n": 0,
+        "gen_n": 0,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 30,
+      "question": "Finn antall politikere per kommune",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$kommune.navn",
+              "antall": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$sort": {
+              "antall": -1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$kommune.navn",
+              "antallPolitikere": {
+                "$sum": 1
+              }
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "Oslo",
+            "antall": 871
+          },
+          {
+            "_id": "Bergen",
+            "antall": 799
+          },
+          {
+            "_id": "Stavanger",
+            "antall": 691
+          }
+        ],
+        "generated": [
+          {
+            "_id": "Fredrikstad",
+            "antallPolitikere": 471
+          },
+          {
+            "_id": "Kragerø",
+            "antallPolitikere": 242
+          },
+          {
+            "_id": "Beiarn",
+            "antallPolitikere": 60
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 355,
+        "gold_n": 355,
+        "gen_n": 355,
+        "projection_score": null
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 31,
+      "question": "Finn politikere med mer enn 100 personstemmer",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "politikere",
+        "filter": {
+          "valg.personstemmer": {
+            "$gt": 100
+          }
+        },
+        "projection": {
+          "personInfo.navn": 1,
+          "parti.navn": 1,
+          "valg.personstemmer": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "politikere",
+        "filter": {
+          "valg.personstemmer": {
+            "$gt": 100
+          }
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "personInfo": {
+              "navn": "Raymond Johansen"
+            },
+            "parti": {
+              "navn": "Arbeiderpartiet"
+            },
+            "valg": {
+              "personstemmer": 22222
+            }
+          },
+          {
+            "personInfo": {
+              "navn": "Rina Mariann Hansen"
+            },
+            "parti": {
+              "navn": "Arbeiderpartiet"
+            },
+            "valg": {
+              "personstemmer": 2863
+            }
+          },
+          {
+            "personInfo": {
+              "navn": "Abdullah Alsabeehg"
+            },
+            "parti": {
+              "navn": "Arbeiderpartiet"
+            },
+            "valg": {
+              "personstemmer": 2563
+            }
+          }
+        ],
+        "generated": [
+          {
+            "_id": "69de6b3591ba31caa9bbffa0",
+            "personInfo": {
+              "navn": "Raymond Johansen",
+              "fødselsdato": "14/02/1961"
+            },
+            "parti": {
+              "navn": "Arbeiderpartiet"
+            },
+            "kommune": {
+              "navn": "Oslo",
+              "nr": null
+            },
+            "valg": {
+              "listeplass": 1,
+              "personstemmer": 22222,
+              "stemmetillegg": "Ja",
+              "slengere": 3496,
+              "endeligRangering": null,
+              "innvalgt": "Ja"
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bbffa1",
+            "personInfo": {
+              "navn": "Rina Mariann Hansen",
+              "fødselsdato": "27/10/1977"
+            },
+            "parti": {
+              "navn": "Arbeiderpartiet"
+            },
+            "kommune": {
+              "navn": "Oslo",
+              "nr": null
+            },
+            "valg": {
+              "listeplass": 2,
+              "personstemmer": 2863,
+              "stemmetillegg": "Ja",
+              "slengere": 283,
+              "endeligRangering": null,
+              "innvalgt": "Ja"
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bbffa2",
+            "personInfo": {
+              "navn": "Abdullah Alsabeehg",
+              "fødselsdato": "06/09/1986"
+            },
+            "parti": {
+              "navn": "Arbeiderpartiet"
+            },
+            "kommune": {
+              "navn": "Oslo",
+              "nr": null
+            },
+            "valg": {
+              "listeplass": 3,
+              "personstemmer": 2563,
+              "stemmetillegg": "Ja",
+              "slengere": 213,
+              "endeligRangering": null,
+              "innvalgt": "Ja"
+            }
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "gold_n": 1,
+        "gen_n": 1,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 33,
+      "question": "Finn politikere med listeplass 1",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "politikere",
+        "filter": {
+          "valg.listeplass": 1
+        },
+        "projection": {
+          "personInfo.navn": 1,
+          "parti.navn": 1,
+          "kommune.navn": 1,
+          "valg.innvalgt": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "politikere",
+        "filter": {
+          "valg.listeplass": 1
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "personInfo": {
+              "navn": "Raymond Johansen"
+            },
+            "parti": {
+              "navn": "Arbeiderpartiet"
+            },
+            "kommune": {
+              "navn": "Oslo"
+            },
+            "valg": {
+              "innvalgt": "Ja"
+            }
+          },
+          {
+            "personInfo": {
+              "navn": "Geir Harald Ugland Jacobsen"
+            },
+            "parti": {
+              "navn": "Norgesdemokratene"
+            },
+            "kommune": {
+              "navn": "Oslo"
+            },
+            "valg": {
+              "innvalgt": "Nei"
+            }
+          },
+          {
+            "personInfo": {
+              "navn": "Cecilie Lyngby"
+            },
+            "parti": {
+              "navn": "Folkets Parti"
+            },
+            "kommune": {
+              "navn": "Oslo"
+            },
+            "valg": {
+              "innvalgt": "Nei"
+            }
+          }
+        ],
+        "generated": [
+          {
+            "_id": "69de6b3591ba31caa9bbffa0",
+            "personInfo": {
+              "navn": "Raymond Johansen",
+              "fødselsdato": "14/02/1961"
+            },
+            "parti": {
+              "navn": "Arbeiderpartiet"
+            },
+            "kommune": {
+              "navn": "Oslo",
+              "nr": null
+            },
+            "valg": {
+              "listeplass": 1,
+              "personstemmer": 22222,
+              "stemmetillegg": "Ja",
+              "slengere": 3496,
+              "endeligRangering": null,
+              "innvalgt": "Ja"
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bbffe1",
+            "personInfo": {
+              "navn": "Geir Harald Ugland Jacobsen",
+              "fødselsdato": "21/12/1957"
+            },
+            "parti": {
+              "navn": "Norgesdemokratene"
+            },
+            "kommune": {
+              "navn": "Oslo",
+              "nr": null
+            },
+            "valg": {
+              "listeplass": 1,
+              "personstemmer": 260,
+              "stemmetillegg": "Nei",
+              "slengere": 42,
+              "endeligRangering": null,
+              "innvalgt": "Nei"
+            }
+          },
+          {
+            "_id": "69de6b3591ba31caa9bc0020",
+            "personInfo": {
+              "navn": "Cecilie Lyngby",
+              "fødselsdato": "11/11/1970"
+            },
+            "parti": {
+              "navn": "Folkets Parti"
+            },
+            "kommune": {
+              "navn": "Oslo",
+              "nr": null
+            },
+            "valg": {
+              "listeplass": 1,
+              "personstemmer": 805,
+              "stemmetillegg": "Ja",
+              "slengere": 202,
+              "endeligRangering": null,
+              "innvalgt": "Nei"
+            }
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "gold_n": 1,
+        "gen_n": 1,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 34,
+      "question": "Finn politikere som ble innvalgt fra listeplass høyere enn 5",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "politikere",
+        "filter": {
+          "valg.innvalgt": true,
+          "valg.listeplass": {
+            "$gt": 5
+          }
+        },
+        "projection": {
+          "personInfo.navn": 1,
+          "parti.navn": 1,
+          "valg.listeplass": 1,
+          "valg.personstemmer": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "politikere",
+        "filter": {
+          "valg.innvalgt": true,
+          "valg.listeplass": {
+            "$gt": 5
+          }
+        }
+      },
+      "sample": {
+        "gold": [],
+        "generated": []
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 0,
+        "gold_n": 0,
+        "gen_n": 0,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 35,
+      "question": "Finn eierskap hvor eierpersonen eier mer enn 50 prosent",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "eierskap",
+        "filter": {
+          "aksjer.andel": {
+            "$gt": 50
+          }
+        },
+        "projection": {
+          "eier.person.navn": 1,
+          "utsteder.navn": 1,
+          "aksjer.andel": 1,
+          "år": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "eierskap",
+        "filter": {
+          "aksjer.andel": {
+            "$gt": 50
+          }
+        }
+      },
+      "sample": {
+        "gold": [],
+        "generated": []
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 0,
+        "gold_n": 0,
+        "gen_n": 0,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 36,
+      "question": "Finn alle eierskapsforhold fra år 2023",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "eierskap",
+        "filter": {
+          "år": 2023
+        },
+        "projection": {
+          "eier.person.navn": 1,
+          "utsteder.navn": 1,
+          "aksjer.andel": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "eierskap",
+        "filter": {
+          "år": 2023
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "eier": {
+              "person": {
+                "navn": NaN
+              }
+            },
+            "utsteder": {
+              "navn": "SPAREBANKEN NORGE"
+            },
+            "aksjer": {
+              "andel": 2.735084401832802e-06
+            }
+          },
+          {
+            "eier": {
+              "person": {
+                "navn": NaN
+              }
+            },
+            "utsteder": {
+              "navn": "ELMERA GROUP ASA"
+            },
+            "aksjer": {
+              "andel": 0.0096527233777734
+            }
+          },
+          {
+            "eier": {
+              "person": {
+                "navn": "Simen Eberle"
+              }
+            },
+            "utsteder": {
+              "navn": "LUADO AS"
+            },
+            "aksjer": {
+              "andel": 0.0001821536162163
+            }
+          }
+        ],
+        "generated": [
+          {
+            "_id": "69de6b3491ba31caa9bbee8f",
+            "eierskapUUID": "0247bf11-dad4-46c0-9c7a-b2e30bf27ee7",
+            "år": 2023,
+            "aksjonærNavn": "OCULAR AS",
+            "eier": {
+              "person": {
+                "uuid": NaN,
+                "navn": NaN,
+                "fødselsdato": NaN,
+                "fødselsår": NaN,
+                "kjønnUUID": null,
+                "adresse": NaN,
+                "postkode": NaN,
+                "poststed": NaN,
+                "kommuneNr": NaN,
+                "kommune": NaN
+              },
+              "selskap": {
+                "navn": "OCULAR AS",
+                "uuid": "cf5b72c7-fe95-4da7-a29c-6a5155ef8c10",
+                "orgNr": 991650407.0
+              }
+            },
+            "utsteder": {
+              "navn": "SPAREBANKEN NORGE",
+              "uuid": "675d7916-b798-4242-b0ee-be8518e3cd80",
+              "orgNr": 832554332
+            },
+            "aksjer": {
+              "andel": 2.735084401832802e-06,
+              "antall": 300,
+              "stemmeandel": 2.736058434766088e-06,
+              "stemmeantall": 300,
+              "totalAntall": 109721186,
+              "totalStemmeantall": 109646781
+            }
+          },
+          {
+            "_id": "69de6b3491ba31caa9bbee91",
+            "eierskapUUID": "040911cb-00b0-45da-852f-011d37eaade0",
+            "år": 2023,
+            "aksjonærNavn": "MELESIO INVEST AS",
+            "eier": {
+              "person": {
+                "uuid": NaN,
+                "navn": NaN,
+                "fødselsdato": NaN,
+                "fødselsår": NaN,
+                "kjønnUUID": null,
+                "adresse": NaN,
+                "postkode": NaN,
+                "poststed": NaN,
+                "kommuneNr": NaN,
+                "kommune": NaN
+              },
+              "selskap": {
+                "navn": "MELESIO INVEST AS",
+                "uuid": "7ec8ac39-baa0-46de-b2f4-d160172eeea5",
+                "orgNr": 924439947.0
+              }
+            },
+            "utsteder": {
+              "navn": "ELMERA GROUP ASA",
+              "uuid": "9a9cdfd7-fea6-4b48-bd5a-ab59f5be943a",
+              "orgNr": 920153577
+            },
+            "aksjer": {
+              "andel": 0.0096527233777734,
+              "antall": 1048977,
+              "stemmeandel": 0.0096548995405004,
+              "stemmeantall": 1048977,
+              "totalAntall": 114351800,
+              "totalStemmeantall": 108647117
+            }
+          },
+          {
+            "_id": "69de6b3491ba31caa9bbee93",
+            "eierskapUUID": "08c63df2-f938-41da-86c6-1e38347729bf",
+            "år": 2023,
+            "aksjonærNavn": "SIMEN EBERLE",
+            "eier": {
+              "person": {
+                "uuid": "7528417b-6abe-5c50-81ba-35850d8612aa",
+                "navn": "Simen Eberle",
+                "fødselsdato": "1986-06-16T00:00:00Z",
+                "fødselsår": 1986.0,
+                "kjønnUUID": null,
+                "adresse": NaN,
+                "postkode": NaN,
+                "poststed": NaN,
+                "kommuneNr": NaN,
+                "kommune": NaN
+              },
+              "selskap": {
+                "navn": NaN,
+                "uuid": NaN,
+                "orgNr": NaN
+              }
+            },
+            "utsteder": {
+              "navn": "LUADO AS",
+              "uuid": "9a8d843a-1856-482e-b2c4-fca982e7eef2",
+              "orgNr": 917012342
+            },
+            "aksjer": {
+              "andel": 0.0001821536162163,
+              "antall": 39,
+              "stemmeandel": NaN,
+              "stemmeantall": 0,
+              "totalAntall": 214105,
+              "totalStemmeantall": 171802
+            }
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "gold_n": 1,
+        "gen_n": 1,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 37,
+      "question": "Finn antall eierskapsforhold per år",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "eierskap",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$år",
+              "antall": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$sort": {
+              "_id": -1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "eierskap",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$år",
+              "antallEierskapsforhold": {
+                "$sum": 1
+              }
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "2024",
+            "antall": 144
+          },
+          {
+            "_id": "2023",
+            "antall": 131
+          }
+        ],
+        "generated": [
+          {
+            "_id": "2023",
+            "antallEierskapsforhold": 131
+          },
+          {
+            "_id": "2024",
+            "antallEierskapsforhold": 144
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 2,
+        "gold_n": 2,
+        "gen_n": 2,
+        "projection_score": null
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 38,
+      "question": "Finn gjennomsnittlig eierandel per selskap",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "eierskap",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$utsteder.navn",
+              "gjennomsnittligAndel": {
+                "$avg": "$aksjer.andel"
+              }
+            }
+          },
+          {
+            "$sort": {
+              "gjennomsnittligAndel": -1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "eierskap",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$utsteder.navn",
+              "gjennomsnittligEierandel": {
+                "$avg": "$aksjer.andel"
+              }
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "MEDIEHUSET NYSS AS",
+            "gjennomsnittligAndel": 1.0
+          },
+          {
+            "_id": "NORBREEZ HOLDING AS",
+            "gjennomsnittligAndel": 1.0
+          },
+          {
+            "_id": "HADELAND ELEKTRONIKK-SERVICE AS",
+            "gjennomsnittligAndel": 1.0
+          }
+        ],
+        "generated": [
+          {
+            "_id": "TRENDEN NORGE AS",
+            "gjennomsnittligEierandel": 1.0
+          },
+          {
+            "_id": "ØKS EIENDOM AS",
+            "gjennomsnittligEierandel": 0.3333333333333333
+          },
+          {
+            "_id": "BRAGERNES EIENDOMSINVEST AS",
+            "gjennomsnittligEierandel": 0.0288600246731495
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 126,
+        "gold_n": 126,
+        "gen_n": 126,
+        "projection_score": null
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 39,
+      "question": "Finn personer som eier aksjer i flere enn ett selskap",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "eierskap",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": {
+                "navn": "$eier.person.navn",
+                "fødselsdato": "$eier.person.fødselsdato"
+              },
+              "antallSelskaper": {
+                "$addToSet": "$utsteder.orgNr"
+              }
+            }
+          },
+          {
+            "$project": {
+              "antallSelskaper": {
+                "$size": "$antallSelskaper"
+              }
+            }
+          },
+          {
+            "$match": {
+              "antallSelskaper": {
+                "$gt": 1
+              }
+            }
+          },
+          {
+            "$sort": {
+              "antallSelskaper": -1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "eierskap",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$eier.person.uuid",
+              "count": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$match": {
+              "count": {
+                "$gt": 1
+              }
+            }
+          },
+          {
+            "$lookup": {
+              "from": "personer",
+              "localField": "_id",
+              "foreignField": "UUID",
+              "as": "personInfo"
+            }
+          },
+          {
+            "$unwind": "$personInfo"
+          },
+          {
+            "$project": {
+              "personInfo": 1,
+              "_id": 0
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "{'navn': nan, 'fødselsdato': nan}",
+            "antallSelskaper": 22
+          },
+          {
+            "_id": "{'navn': 'Kirsti Merethe Olsen Sandbæk', 'fødselsdato': '1967-09-01T00:00:00Z'}",
+            "antallSelskaper": 6
+          },
+          {
+            "_id": "{'navn': 'Amel Baltic', 'fødselsdato': '1995-02-15T00:00:00Z'}",
+            "antallSelskaper": 5
+          }
+        ],
+        "generated": []
+      },
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "gold_n": 16,
+        "gen_n": 0,
+        "projection_score": null
+      },
+      "match": false,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 40,
+      "question": "Finn totalt antall aksjer eid per person",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "eierskap",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": {
+                "navn": "$eier.person.navn",
+                "fødselsdato": "$eier.person.fødselsdato"
+              },
+              "totaltAntall": {
+                "$sum": "$aksjer.antall"
+              }
+            }
+          },
+          {
+            "$sort": {
+              "totaltAntall": -1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "eierskap",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$eier.person.uuid",
+              "totalShares": {
+                "$sum": "$aksjer.antall"
+              }
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "{'navn': nan, 'fødselsdato': nan}",
+            "totaltAntall": 77002621
+          },
+          {
+            "_id": "{'navn': 'Nelya Slettevoll', 'fødselsdato': '1965-09-01T00:00:00Z'}",
+            "totaltAntall": 3000000
+          },
+          {
+            "_id": "{'navn': 'Kirsti Merethe Olsen Sandbæk', 'fødselsdato': '1967-09-01T00:00:00Z'}",
+            "totaltAntall": 520141
+          }
+        ],
+        "generated": [
+          {
+            "_id": "322c61d4-ffd3-5408-829a-396d7591299c",
+            "totalShares": 30
+          },
+          {
+            "_id": "e4c8b320-66ec-5537-b823-795e1a269945",
+            "totalShares": 2000
+          },
+          {
+            "_id": "e00c761b-903d-5494-b93f-d0da41d94aaa",
+            "totalShares": 133483
+          }
+        ]
+      },
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "gold_n": 76,
+        "gen_n": 76,
+        "projection_score": null
+      },
+      "match": false,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 41,
+      "question": "Finn eierskap hvor eier er et selskap (ikke person)",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "eierskap",
+        "filter": {
+          "eier.selskap.navn": {
+            "$ne": null
+          }
+        },
+        "projection": {
+          "eier.selskap.navn": 1,
+          "utsteder.navn": 1,
+          "aksjer.andel": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "eierskap",
+        "filter": {
+          "eier.person.uuid": {
+            "$eq": ""
+          }
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "eier": {
+              "selskap": {
+                "navn": NaN
+              }
+            },
+            "utsteder": {
+              "navn": "BELLMAN PUB AS"
+            },
+            "aksjer": {
+              "andel": 0.0434782608695652
+            }
+          },
+          {
+            "eier": {
+              "selskap": {
+                "navn": "OCULAR AS"
+              }
+            },
+            "utsteder": {
+              "navn": "SPAREBANKEN NORGE"
+            },
+            "aksjer": {
+              "andel": 2.735084401832802e-06
+            }
+          },
+          {
+            "eier": {
+              "selskap": {
+                "navn": NaN
+              }
+            },
+            "utsteder": {
+              "navn": "HADELAND ELEKTRONIKK-SERVICE AS"
+            },
+            "aksjer": {
+              "andel": 1.0
+            }
+          }
+        ],
+        "generated": []
+      },
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "gold_n": 1,
+        "gen_n": 0,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": false,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 42,
+      "question": "Finn eierskap i Oslo (basert på eierperson poststed)",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "eierskap",
+        "filter": {
+          "eier.person.poststed": "Oslo"
+        },
+        "projection": {
+          "eier.person.navn": 1,
+          "utsteder.navn": 1,
+          "aksjer.andel": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "eierskap",
+        "filter": {
+          "eier.person.poststed": "Oslo"
+        }
+      },
+      "sample": {
+        "gold": [],
+        "generated": []
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 0,
+        "gold_n": 0,
+        "gen_n": 0,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 43,
+      "question": "Finn totalt antall stemmeaksjer eid per person",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "eierskap",
+        "pipeline": [
+          {
+            "$match": {
+              "eier.person.navn": {
+                "$ne": null
+              }
+            }
+          },
+          {
+            "$group": {
+              "_id": {
+                "navn": "$eier.person.navn",
+                "fødselsdato": "$eier.person.fødselsdato"
+              },
+              "totaltStemmeaksjer": {
+                "$sum": "$aksjer.stemmeantall"
+              }
+            }
+          },
+          {
+            "$sort": {
+              "totaltStemmeaksjer": -1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "eierskap",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$eier.person.uuid",
+              "totalStemmeaksjer": {
+                "$sum": "$aksjer.stemmeantall"
+              }
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "{'navn': nan, 'fødselsdato': nan}",
+            "totaltStemmeaksjer": 63803623
+          },
+          {
+            "_id": "{'navn': 'Nelya Slettevoll', 'fødselsdato': '1965-09-01T00:00:00Z'}",
+            "totaltStemmeaksjer": 3000000
+          },
+          {
+            "_id": "{'navn': 'Kirsti Merethe Olsen Sandbæk', 'fødselsdato': '1967-09-01T00:00:00Z'}",
+            "totaltStemmeaksjer": 520141
+          }
+        ],
+        "generated": [
+          {
+            "_id": "1e20cc86-f2bb-5fdb-9a6c-3ff715d17aeb",
+            "totalStemmeaksjer": 45000
+          },
+          {
+            "_id": "21d9440e-69da-51f7-99bd-5711aa93e1e6",
+            "totalStemmeaksjer": 2
+          },
+          {
+            "_id": "443eceb2-dec3-5f02-8ccb-6a6d62e748b0",
+            "totalStemmeaksjer": 2
+          }
+        ]
+      },
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "gold_n": 76,
+        "gen_n": 76,
+        "projection_score": null
+      },
+      "match": false,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 44,
+      "question": "Finn alle distinkte aksjeklasser",
+      "category": "distinct",
+      "op": "distinct",
+      "gold_query": {
+        "op": "distinct",
+        "collection": "aksjeeiebok",
+        "field": "aksjeklasse",
+        "filter": {
+          "aksjeklasse": {
+            "$ne": null
+          }
+        }
+      },
+      "generated_query": {
+        "op": "distinct",
+        "collection": "aksjeeiebok",
+        "field": "aksjeklasse",
+        "filter": {}
+      },
+      "sample": {
+        "gold": [
+          {
+            "_value": "A-aksjer"
+          },
+          {
+            "_value": "B-aksjer"
+          },
+          {
+            "_value": "C-aksjer"
+          }
+        ],
+        "generated": [
+          {
+            "_value": "A-aksjer"
+          },
+          {
+            "_value": "B-aksjer"
+          },
+          {
+            "_value": "C-aksjer"
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 30,
+        "gold_n": 30,
+        "gen_n": 30,
+        "projection_score": null
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 45,
+      "question": "Finn aksjonærer med mer enn 1000 aksjer",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "aksjeeiebok",
+        "filter": {
+          "aksjer.antall": {
+            "$gt": 1000
+          }
+        },
+        "projection": {
+          "aksjonær.navn": 1,
+          "selskap": 1,
+          "aksjer.antall": 1,
+          "år": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "aksjeeiebok",
+        "filter": {
+          "aksjer.antall": {
+            "$gt": 1000
+          }
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "selskap": "TOUCH TECHNOLOGY AS",
+            "år": 2003,
+            "aksjonær": {
+              "navn": "HOVDE EVEN"
+            },
+            "aksjer": {
+              "antall": 1938
+            }
+          },
+          {
+            "selskap": "TOUCH TECHNOLOGY AS",
+            "år": 2003,
+            "aksjonær": {
+              "navn": "MYGLAND TORGEIR"
+            },
+            "aksjer": {
+              "antall": 1966
+            }
+          },
+          {
+            "selskap": "TOUCH TECHNOLOGY AS",
+            "år": 2003,
+            "aksjonær": {
+              "navn": "RØNNING BJØRN"
+            },
+            "aksjer": {
+              "antall": 1966
+            }
+          }
+        ],
+        "generated": [
+          {
+            "_id": "69de6b2d91ba31caa9b04dda",
+            "orgNr": 860154412,
+            "selskap": "TOUCH TECHNOLOGY AS",
+            "år": 2003,
+            "aksjeklasse": "Ordinære aksjer",
+            "aksjonær": {
+              "navn": "HOVDE EVEN",
+              "fødselsår": 1968,
+              "postnr_sted": null,
+              "landkode": "NOR"
+            },
+            "aksjer": {
+              "antall": 1938,
+              "antallSelskap": 10000
+            }
+          },
+          {
+            "_id": "69de6b2d91ba31caa9b04de0",
+            "orgNr": 860154412,
+            "selskap": "TOUCH TECHNOLOGY AS",
+            "år": 2003,
+            "aksjeklasse": "Ordinære aksjer",
+            "aksjonær": {
+              "navn": "MYGLAND TORGEIR",
+              "fødselsår": 1962,
+              "postnr_sted": null,
+              "landkode": "NOR"
+            },
+            "aksjer": {
+              "antall": 1966,
+              "antallSelskap": 10000
+            }
+          },
+          {
+            "_id": "69de6b2d91ba31caa9b04de2",
+            "orgNr": 860154412,
+            "selskap": "TOUCH TECHNOLOGY AS",
+            "år": 2003,
+            "aksjeklasse": "Ordinære aksjer",
+            "aksjonær": {
+              "navn": "RØNNING BJØRN",
+              "fødselsår": 1959,
+              "postnr_sted": null,
+              "landkode": "NOR"
+            },
+            "aksjer": {
+              "antall": 1966,
+              "antallSelskap": 10000
+            }
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 2871,
+        "gold_n": 2871,
+        "gen_n": 2871,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 46,
+      "question": "Finn antall aksjonærer per selskap",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "aksjeeiebok",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$selskap",
+              "antallAksjonærer": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$sort": {
+              "antallAksjonærer": -1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "aksjeeiebok",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$orgNr",
+              "antallAksjonærer": {
+                "$sum": 1
+              }
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "KONGSBERG GRUPPEN ASA",
+            "antallAksjonærer": 210423
+          },
+          {
+            "_id": "VEIDEKKE ASA",
+            "antallAksjonærer": 139884
+          },
+          {
+            "_id": "HAFSLUND PRODUKSJON HOLDING AS",
+            "antallAksjonærer": 127059
+          }
+        ],
+        "generated": [
+          {
+            "_id": "979446071",
+            "antallAksjonærer": 14
+          },
+          {
+            "_id": "923455787",
+            "antallAksjonærer": 16
+          },
+          {
+            "_id": "979173822",
+            "antallAksjonærer": 35
+          }
+        ]
+      },
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "gold_n": 1681,
+        "gen_n": 1562,
+        "projection_score": null
+      },
+      "match": false,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 47,
+      "question": "Finn gjennomsnittlig antall aksjer per aksjonær",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "aksjeeiebok",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": null,
+              "gjennomsnitt": {
+                "$avg": "$aksjer.antall"
+              }
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "aksjeeiebok",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": null,
+              "gjennomsnittAntallAksjer": {
+                "$avg": "$aksjer.antall"
+              }
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "None",
+            "gjennomsnitt": 6770.608869607893
+          }
+        ],
+        "generated": [
+          {
+            "_id": "None",
+            "gjennomsnittAntallAksjer": 6770.608869607893
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "gold_n": 1,
+        "gen_n": 1,
+        "projection_score": null
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 48,
+      "question": "Finn alle aksjonærer fra Norge (landkode NO)",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "aksjeeiebok",
+        "filter": {
+          "aksjonær.landkode": "NO"
+        },
+        "projection": {
+          "aksjonær.navn": 1,
+          "selskap": 1,
+          "aksjer.antall": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "eierskap",
+        "filter": {
+          "eier.person.adresse.landkode": "NO"
+        }
+      },
+      "sample": {
+        "gold": [],
+        "generated": []
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 0,
+        "gold_n": 0,
+        "gen_n": 0,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 49,
+      "question": "Finn aksjonærer født før 1970",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "aksjeeiebok",
+        "filter": {
+          "aksjonær.fødselsår": {
+            "$lt": 1970
+          }
+        },
+        "projection": {
+          "aksjonær.navn": 1,
+          "aksjonær.fødselsår": 1,
+          "selskap": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "eierskap",
+        "filter": {
+          "eier.person.fødselsår": {
+            "$lt": 1970
+          }
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "selskap": "SOLHYTTEN EIENDOM AS",
+            "aksjonær": {
+              "navn": "NEDREBØ BJØRG ODA",
+              "fødselsår": 1948
+            }
+          },
+          {
+            "selskap": "SOLHYTTEN EIENDOM AS",
+            "aksjonær": {
+              "navn": "STEINSKOG ØYVIND",
+              "fødselsår": 1947
+            }
+          },
+          {
+            "selskap": "MERKUR GRAFISK AS",
+            "aksjonær": {
+              "navn": "BIRKELUND KJELL",
+              "fødselsår": 1946
+            }
+          }
+        ],
+        "generated": [
+          {
+            "_id": "69de6b3491ba31caa9bbee90",
+            "eierskapUUID": "026aa448-25f0-4382-8f84-1be5dfc8f486",
+            "år": 2024,
+            "aksjonærNavn": "MARTIN GRIMSTAD",
+            "eier": {
+              "person": {
+                "uuid": "dcbf5c51-cb7d-53ad-8df8-213aba22c0c7",
+                "navn": "Martin Grimstad",
+                "fødselsdato": "1959-05-15T00:00:00Z",
+                "fødselsår": 1959.0,
+                "kjønnUUID": null,
+                "adresse": "Gagnumsvegen 10",
+                "postkode": 2750.0,
+                "poststed": "GRAN",
+                "kommuneNr": 3446.0,
+                "kommune": "GRAN"
+              },
+              "selskap": {
+                "navn": NaN,
+                "uuid": NaN,
+                "orgNr": NaN
+              }
+            },
+            "utsteder": {
+              "navn": "HADELAND ELEKTRONIKK-SERVICE AS",
+              "uuid": "cfe1b3ff-1be7-41fe-aca4-212072986736",
+              "orgNr": 980369501
+            },
+            "aksjer": {
+              "andel": 1.0,
+              "antall": 100,
+              "stemmeandel": 1.0,
+              "stemmeantall": 100,
+              "totalAntall": 100,
+              "totalStemmeantall": 100
+            }
+          },
+          {
+            "_id": "69de6b3491ba31caa9bbee94",
+            "eierskapUUID": "08eae237-55c0-445b-80f1-da0ed2484c53",
+            "år": 2023,
+            "aksjonærNavn": "AUDNY MØYFRID STRØM BERGSET",
+            "eier": {
+              "person": {
+                "uuid": "9cb0c3bc-b33b-5d23-afec-fc822a77c72d",
+                "navn": "Audny Møyfrid Strøm Bergset",
+                "fødselsdato": "1965-03-31T00:00:00Z",
+                "fødselsår": 1965.0,
+                "kjønnUUID": null,
+                "adresse": "Eidsgata 3 B",
+                "postkode": 6770.0,
+                "poststed": "NORDFJORDEID",
+                "kommuneNr": 4649.0,
+                "kommune": "STAD"
+              },
+              "selskap": {
+                "navn": NaN,
+                "uuid": NaN,
+                "orgNr": NaN
+              }
+            },
+            "utsteder": {
+              "navn": "BERGSET HOLDING AS",
+              "uuid": "f868cab1-8819-4347-b354-a52884b67b38",
+              "orgNr": 922676518
+            },
+            "aksjer": {
+              "andel": 0.04,
+              "antall": 100000,
+              "stemmeandel": 0.04,
+              "stemmeantall": 100000,
+              "totalAntall": 2500000,
+              "totalStemmeantall": 2500000
+            }
+          },
+          {
+            "_id": "69de6b3491ba31caa9bbee9d",
+            "eierskapUUID": "11d3dc3b-0757-48e7-98b6-4918e0af164c",
+            "år": 2024,
+            "aksjonærNavn": "MERETE LYSHAUG",
+            "eier": {
+              "person": {
+                "uuid": "5bc65e5b-26be-576f-80ed-f4e2e1fade01",
+                "navn": "Merete Lyshaug",
+                "fødselsdato": "1967-06-30T00:00:00Z",
+                "fødselsår": 1967.0,
+                "kjønnUUID": null,
+                "adresse": NaN,
+                "postkode": NaN,
+                "poststed": NaN,
+                "kommuneNr": NaN,
+                "kommune": NaN
+              },
+              "selskap": {
+                "navn": NaN,
+                "uuid": NaN,
+                "orgNr": NaN
+              }
+            },
+            "utsteder": {
+              "navn": "AS AASEN GARASJELAG",
+              "uuid": "40bd5d20-fdb5-4183-96c9-5c57586af4f0",
+              "orgNr": 934471326
+            },
+            "aksjer": {
+              "andel": 0.008,
+              "antall": 1,
+              "stemmeandel": 0.008,
+              "stemmeantall": 1,
+              "totalAntall": 125,
+              "totalStemmeantall": 125
+            }
+          }
+        ]
+      },
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "gold_n": 679,
+        "gen_n": 1,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": false,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 50,
+      "question": "Finn selskaper med mer enn 10000 totale aksjer",
+      "category": "find_projection",
+      "op": "find",
+      "gold_query": {
+        "op": "find",
+        "collection": "aksjeeiebok",
+        "filter": {
+          "aksjer.antallSelskap": {
+            "$gt": 10000
+          }
+        },
+        "projection": {
+          "selskap": 1,
+          "orgNr": 1,
+          "aksjer.antallSelskap": 1,
+          "_id": 0
+        }
+      },
+      "generated_query": {
+        "op": "find",
+        "collection": "eierskap",
+        "filter": {
+          "aksjer.totalAntall": {
+            "$gt": 10000
+          }
+        }
+      },
+      "sample": {
+        "gold": [
+          {
+            "orgNr": 876785722,
+            "selskap": "HERO NORGE AS",
+            "aksjer": {
+              "antallSelskap": 50000
+            }
+          },
+          {
+            "orgNr": 885342272,
+            "selskap": "EIK SAVOY AS",
+            "aksjer": {
+              "antallSelskap": 100000
+            }
+          },
+          {
+            "orgNr": 912007782,
+            "selskap": "GLAMOX AS",
+            "aksjer": {
+              "antallSelskap": 15050391
+            }
+          }
+        ],
+        "generated": [
+          {
+            "_id": "69de6b3491ba31caa9bbee8f",
+            "eierskapUUID": "0247bf11-dad4-46c0-9c7a-b2e30bf27ee7",
+            "år": 2023,
+            "aksjonærNavn": "OCULAR AS",
+            "eier": {
+              "person": {
+                "uuid": NaN,
+                "navn": NaN,
+                "fødselsdato": NaN,
+                "fødselsår": NaN,
+                "kjønnUUID": null,
+                "adresse": NaN,
+                "postkode": NaN,
+                "poststed": NaN,
+                "kommuneNr": NaN,
+                "kommune": NaN
+              },
+              "selskap": {
+                "navn": "OCULAR AS",
+                "uuid": "cf5b72c7-fe95-4da7-a29c-6a5155ef8c10",
+                "orgNr": 991650407.0
+              }
+            },
+            "utsteder": {
+              "navn": "SPAREBANKEN NORGE",
+              "uuid": "675d7916-b798-4242-b0ee-be8518e3cd80",
+              "orgNr": 832554332
+            },
+            "aksjer": {
+              "andel": 2.735084401832802e-06,
+              "antall": 300,
+              "stemmeandel": 2.736058434766088e-06,
+              "stemmeantall": 300,
+              "totalAntall": 109721186,
+              "totalStemmeantall": 109646781
+            }
+          },
+          {
+            "_id": "69de6b3491ba31caa9bbee91",
+            "eierskapUUID": "040911cb-00b0-45da-852f-011d37eaade0",
+            "år": 2023,
+            "aksjonærNavn": "MELESIO INVEST AS",
+            "eier": {
+              "person": {
+                "uuid": NaN,
+                "navn": NaN,
+                "fødselsdato": NaN,
+                "fødselsår": NaN,
+                "kjønnUUID": null,
+                "adresse": NaN,
+                "postkode": NaN,
+                "poststed": NaN,
+                "kommuneNr": NaN,
+                "kommune": NaN
+              },
+              "selskap": {
+                "navn": "MELESIO INVEST AS",
+                "uuid": "7ec8ac39-baa0-46de-b2f4-d160172eeea5",
+                "orgNr": 924439947.0
+              }
+            },
+            "utsteder": {
+              "navn": "ELMERA GROUP ASA",
+              "uuid": "9a9cdfd7-fea6-4b48-bd5a-ab59f5be943a",
+              "orgNr": 920153577
+            },
+            "aksjer": {
+              "andel": 0.0096527233777734,
+              "antall": 1048977,
+              "stemmeandel": 0.0096548995405004,
+              "stemmeantall": 1048977,
+              "totalAntall": 114351800,
+              "totalStemmeantall": 108647117
+            }
+          },
+          {
+            "_id": "69de6b3491ba31caa9bbee92",
+            "eierskapUUID": "051d1ad9-5e2b-45ff-b31f-79fdeb4d9718",
+            "år": 2024,
+            "aksjonærNavn": "KRZYSZTOF LEMANSKI",
+            "eier": {
+              "person": {
+                "uuid": "2471b77a-8e43-579d-a568-eecbcaa252ee",
+                "navn": "Krzysztof Lemanski",
+                "fødselsdato": "1980-04-06T00:00:00Z",
+                "fødselsår": 1980.0,
+                "kjønnUUID": null,
+                "adresse": "Løeveien 26",
+                "postkode": 3058.0,
+                "poststed": "SOLBERGMOEN",
+                "kommuneNr": 3301.0,
+                "kommune": "DRAMMEN"
+              },
+              "selskap": {
+                "navn": NaN,
+                "uuid": NaN,
+                "orgNr": NaN
+              }
+            },
+            "utsteder": {
+              "navn": "KRZYSZTOF LEMANSKI AS",
+              "uuid": "8bb48e90-f03f-49e1-a6c9-295e43bd3417",
+              "orgNr": 919063149
+            },
+            "aksjer": {
+              "andel": 1.0,
+              "antall": 40000,
+              "stemmeandel": 1.0,
+              "stemmeantall": 40000,
+              "totalAntall": 40000,
+              "totalStemmeantall": 40000
+            }
+          }
+        ]
+      },
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "gold_n": 525,
+        "gen_n": 1,
+        "projection_score": {
+          "recall": 1.0,
+          "precision": null
+        }
+      },
+      "match": false,
+      "status": "ok",
+      "error": null
+    },
+    {
+      "id": 51,
+      "question": "Finn antall aksjeeierbokoppføringer per år",
+      "category": "aggregate",
+      "op": "aggregate",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "aksjeeiebok",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$år",
+              "antall": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$sort": {
+              "_id": -1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "aksjeeiebok",
+        "pipeline": [
+          {
+            "$group": {
+              "_id": "$år",
+              "antall": {
+                "$sum": 1
+              }
+            }
+          }
+        ]
+      },
+      "sample": {
+        "gold": [
+          {
+            "_id": "2024",
+            "antall": 84421
+          },
+          {
+            "_id": "2023",
+            "antall": 67119
+          },
+          {
+            "_id": "2022",
+            "antall": 58740
+          }
+        ],
+        "generated": [
+          {
+            "_id": "2019",
+            "antall": 20315
+          },
+          {
+            "_id": "2006",
+            "antall": 24961
+          },
+          {
+            "_id": "2004",
+            "antall": 23580
+          }
+        ]
+      },
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 22,
+        "gold_n": 22,
+        "gen_n": 22,
+        "projection_score": null
+      },
+      "match": true,
+      "status": "ok",
+      "error": null
+    }
+  ],
+  "failures": [
+    {
+      "id": 32,
+      "question": "Finn gjennomsnittsalder for politikere som ble innvalgt",
+      "status": "llm_error",
+      "error": "JSON parse error: Expecting value: line 1 column 192 (char 191)"
+    }
+  ]
+}
