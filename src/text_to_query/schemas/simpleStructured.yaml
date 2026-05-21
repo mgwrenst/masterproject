@@ -1,0 +1,121 @@
+beskrivelse: >
+  Dette er en strukturert MongoDB-database over norske selskaper, personer,
+  eierskap, aksjonærer, selskapsroller og politikere. Databasen heter
+  groundtruthTest. Den er laget som en mer dokumentorientert versjon av den
+  flate databasen, der relaterte opplysninger er samlet i samme dokument der
+  det gir mening.
+
+  Databasen har hovedsakelig to samlinger: selskap og personer. Samlingen
+  selskap tar utgangspunkt i hvert selskap og inneholder informasjon om
+  selskapets status, bransje, aksjonærer, eierskap og personer med roller i
+  selskapet. Samlingen personer tar utgangspunkt i hver person og inneholder
+  personopplysninger, roller i selskaper, eierskap og eventuell informasjon om
+  personen er politiker.
+
+  Politikere er koblet til personer, eierskap og aksjonærer ved hjelp av navn.
+  Dette betyr at slike koblinger bør tolkes som sannsynlige treff, ikke som
+  garanterte identitetskoblinger.
+
+samlinger:
+
+  - navn: "selskap"
+    beskrivelse: >
+      Inneholder ett dokument per selskap. Hvert selskapsdokument inneholder
+      grunnleggende selskapsinformasjon, status, bransje, aksjonærer fra
+      aksjeeierboken, eierskapsopplysninger og personer som har roller i
+      selskapet.
+    felt:
+      uuid: "Unik identifikator for selskapet i databasen"
+      orgNr: "Organisasjonsnummer for selskapet"
+      navn: "Navnet på selskapet"
+      organisasjonstype: "Selskapsform, for eksempel AS, ASA eller ENK"
+
+      bransje.naceKode: "Bransjekode som beskriver hva selskapet driver med"
+
+      datoer.etablertDato: "Datoen selskapet ble etablert"
+      datoer.oppløstDato: "Datoen selskapet ble oppløst, hvis aktuelt"
+
+      status.konkursFlagg: "1 hvis selskapet er konkurs, 0 hvis ikke"
+      status.likvidasjonFlagg: "1 hvis selskapet er under likvidasjon, 0 hvis ikke"
+
+      roller: >
+        Liste over personer som har eller har hatt roller i selskapet, for
+        eksempel styreleder, daglig leder eller styremedlem.
+      roller.rolle: "Navnet på rollen personen har i selskapet"
+      roller.startdato: "Datoen personen startet i rollen"
+      roller.person.navn: "Navnet på personen som har rollen"
+      roller.person.fødselsdato: "Fødselsdato til personen"
+      roller.person.fødselsår: "Fødselsår til personen"
+      roller.person.politiker.erPolitiker: "True hvis personen er matchet mot politikerdata"
+      roller.person.politiker.partinavn: "Partiet personen tilhører, hvis personen er politiker"
+      roller.person.politiker.matchType: "Hvordan personen er koblet til politikerdata, for eksempel navn"
+
+      eierskap: >
+        Liste over eierskapsforhold knyttet til selskapet. Dette viser hvem som
+        eier aksjer i selskapet, eierandel, antall aksjer og stemmeandel.
+      eierskap.år: "Året eierskapet gjelder for"
+      eierskap.eier.type: "Om eieren er en person eller et selskap"
+      eierskap.eier.navn: "Navnet på eieren"
+      eierskap.eier.politiker.erPolitiker: "True hvis eieren er matchet mot politikerdata"
+      eierskap.aksjer.andel: "Eierandel i prosent"
+      eierskap.aksjer.antall: "Antall aksjer eieren har"
+      eierskap.stemmer.andel: "Stemmeandel i prosent"
+
+      aksjeeiebok: >
+        Liste over aksjonærposter fra aksjeeierboken. Hver oppføring viser en
+        aksjonær, aksjeklasse, år og hvor mange aksjer aksjonæren eier.
+      aksjeeiebok.år: "Året aksjeeierbokoppføringen gjelder"
+      aksjeeiebok.aksjeklasse: "Aksjeklassen"
+      aksjeeiebok.aksjonær.navn: "Navnet på aksjonæren"
+      aksjeeiebok.aksjonær.fødselsår: "Fødselsår til aksjonæren, hvis kjent"
+      aksjeeiebok.aksjonær.landkode: "Landkode for aksjonæren"
+      aksjeeiebok.aksjonær.politiker.erPolitiker: "True hvis aksjonæren er matchet mot politikerdata"
+      aksjeeiebok.aksjer.antall: "Antall aksjer aksjonæren eier"
+      aksjeeiebok.aksjer.antallTotaltISelskap: "Totalt antall aksjer i selskapet"
+
+  - navn: "personer"
+    beskrivelse: >
+      Inneholder ett dokument per person. Hvert persondokument samler
+      personopplysninger, adresse, politikerinformasjon, selskapsroller og
+      eierskap. En person som har flere roller eller eierskap får disse som
+      lister inne i samme dokument.
+    felt:
+      uuid: "Unik identifikator for personen, hvis tilgjengelig"
+      navn: "Fullt navn"
+      fødselsdato: "Fødselsdato"
+      fødselsår: "Fødselsår"
+      kjønn: "Kjønn"
+      adresse.gateadresse: "Gateadresse"
+      adresse.postnummer: "Postnummer"
+      adresse.poststed: "Poststed"
+      adresse.kommuneNavn: "Kommunenavn"
+      adresse.kommuneNr: "Kommunenummer"
+      adresse.land: "Land"
+      adresse.landkode: "Landkode"
+
+      politiker.erPolitiker: "True hvis personen er politiker eller er matchet mot politikerdata"
+      politiker.partinavn: "Partiet personen tilhører"
+      politiker.kommune: "Kommunen politikeren hører til"
+      politiker.innvalgt: "Om politikeren er innvalgt"
+      politiker.valg.listeplass: "Listeplass i valget"
+      politiker.valg.personstemmer: "Antall personstemmer"
+
+      roller: "Liste over selskapsroller personen har eller har hatt"
+      roller.rolle: "Rollen personen har i selskapet"
+      roller.startdato: "Datoen personen startet i rollen"
+      roller.selskap.navn: "Navnet på selskapet personen har rolle i"
+      roller.selskap.orgNr: "Organisasjonsnummeret til selskapet personen har rolle i"
+
+      eierskap: "Liste over selskaper personen eier aksjer i"
+      eierskap.år: "Året eierskapet gjelder for"
+      eierskap.selskap.navn: "Navnet på selskapet personen eier aksjer i"
+      eierskap.selskap.orgNr: "Organisasjonsnummeret til selskapet"
+      eierskap.aksjer.andel: "Eierandel i prosent"
+      eierskap.aksjer.antall: "Antall aksjer personen eier"
+      eierskap.stemmer.andel: "Stemmeandel i prosent"
+
+notater:
+  - "Bruk selskap når spørsmålet starter med et selskap eller handler om selskaper."
+  - "Bruk personer når spørsmålet starter med en person, politiker, rolle eller eierskap."
+  - "Felt i lister kan søkes med punktnotasjon, for eksempel roller.rolle eller eierskap.aksjer.andel."
+  - "Politikerkoblinger basert på navn er sannsynlige koblinger og bør ikke tolkes som helt sikre identitetskoblinger."

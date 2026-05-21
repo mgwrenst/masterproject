@@ -1,0 +1,337 @@
+{
+  "run": {
+    "label": "simpleNested_nested",
+    "timestamp": "20260416_002400",
+    "model": "gpt-4o-mini",
+    "schema": "simpleNested.yaml",
+    "benchmark": "nested.json",
+    "database": "groundtruthStructured",
+    "threshold": 1.0
+  },
+  "summary": {
+    "total": 51,
+    "scored": 0,
+    "matches": 0,
+    "match_rate": 0,
+    "avg_precision": 0,
+    "avg_recall": 0,
+    "avg_f1": 0,
+    "avg_projection_score": null,
+    "errors": {
+      "total": 51,
+      "llm_error": 51,
+      "db_error": 0
+    },
+    "by_op": {},
+    "by_category": {}
+  },
+  "questions": [],
+  "failures": [
+    {
+      "id": 1,
+      "question": "Finn alle typer roller som en person kan ha",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 2,
+      "question": "Finn alle distinkte organisasjonstyper blant konkursbedriftene",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 3,
+      "question": "Finn alle organisasjonstypene som finnes i databasen, dropp null-verdier",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 4,
+      "question": "Finn navn og organisasjonsnummer på konkursbedrifter samt dato for oppløsningen",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 5,
+      "question": "Finn alle selskaper som både er i konkurs og under likvidasjon",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 6,
+      "question": "Finn antall konkurser per organisasjonstype, sortert etter antall",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 7,
+      "question": "Finn organisasjonstypen med færrest konkurser",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 8,
+      "question": "Finn alle selskaper etablert etter år 2020",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 9,
+      "question": "Finn antall selskaper per organisasjonstype",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 10,
+      "question": "Finn alle AS-selskaper (aksjeselskap)",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 11,
+      "question": "Finn alle selskaper etablert mellom 2015 og 2020",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 12,
+      "question": "Finn konkursbedrifter som ble oppløst i 2022",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 13,
+      "question": "Finn antall selskaper per NACE-kode",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 14,
+      "question": "Finn ENK-bedrifter (enkeltpersonforetak)",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 15,
+      "question": "Finn personer med rollen daglig leder",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 16,
+      "question": "Finn personer som har hatt forhenværende roller (med sluttdato)",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 17,
+      "question": "Finn personer som har aktive roller i DELOITTE ADVOKATFIRMA AS",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 18,
+      "question": "Finn antall personer per selskapsnavn",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 19,
+      "question": "Finn antall roller per person",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 20,
+      "question": "Finn alle distinkte kommunenavn hvor personer er registrert",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 21,
+      "question": "Finn personer født i 1980",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 22,
+      "question": "Finn antall personer per kommune",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 23,
+      "question": "Finn personer med roller i Oslo kommune",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 24,
+      "question": "Finn antall distinkte selskaper som personer har roller i",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 25,
+      "question": "Finn alle politikere fra partiet Høyre",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 26,
+      "question": "Finn alle innvalgte politikere",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 27,
+      "question": "Finn antall politikere per parti",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 28,
+      "question": "Finn antall innvalgte politikere per parti",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 29,
+      "question": "Finn alle innvalgte politikere fra Fremskrittspartiet",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 30,
+      "question": "Finn antall politikere per kommune",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 31,
+      "question": "Finn politikere med mer enn 100 personstemmer",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 32,
+      "question": "Finn gjennomsnittsalder for politikere som ble innvalgt",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 33,
+      "question": "Finn politikere med listeplass 1",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 34,
+      "question": "Finn politikere som ble innvalgt fra listeplass høyere enn 5",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 35,
+      "question": "Finn eierskap hvor eierpersonen eier mer enn 50 prosent",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 36,
+      "question": "Finn alle eierskapsforhold fra år 2023",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 37,
+      "question": "Finn antall eierskapsforhold per år",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 38,
+      "question": "Finn gjennomsnittlig eierandel per selskap",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 39,
+      "question": "Finn personer som eier aksjer i flere enn ett selskap",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 40,
+      "question": "Finn totalt antall aksjer eid per person",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 41,
+      "question": "Finn eierskap hvor eier er et selskap (ikke person)",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 42,
+      "question": "Finn eierskap i Oslo (basert på eierperson poststed)",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 43,
+      "question": "Finn totalt antall stemmeaksjer eid per person",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 44,
+      "question": "Finn alle distinkte aksjeklasser",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 45,
+      "question": "Finn aksjonærer med mer enn 1000 aksjer",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 46,
+      "question": "Finn antall aksjonærer per selskap",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 47,
+      "question": "Finn gjennomsnittlig antall aksjer per aksjonær",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 48,
+      "question": "Finn alle aksjonærer fra Norge (landkode NO)",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 49,
+      "question": "Finn aksjonærer født før 1970",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 50,
+      "question": "Finn selskaper med mer enn 10000 totale aksjer",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "id": 51,
+      "question": "Finn antall aksjeeierbokoppføringer per år",
+      "status": "llm_error",
+      "error": "LLM error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************TigA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    }
+  ]
+}

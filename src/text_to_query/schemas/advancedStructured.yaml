@@ -1,0 +1,471 @@
+beskrivelse: >
+  Teknisk databasebeskrivelse for den strukturerte MongoDB-databasen
+  groundtruthTest. Databasen er en dokumentorientert versjon av den flate
+  groundtruth-databasen. Den strukturerte versjonen bruker to hovedsamlinger:
+  selskap og personer. Tidligere separate datakilder som aksjeeiebok, eierskap
+  og politikere er denormalisert og embeddet i disse hovedsamlingene der det
+  gir analytisk mening.
+
+  Formålet med strukturen er å teste om hierarkiske dokumenter påvirker
+  ytelsen til et text-to-query-system. Mange spørringer kan derfor løses uten
+  eksplisitte joins, ved å bruke punktnotasjon mot nestede objekter og arrays.
+
+  Politisk informasjon er koblet inn ved hjelp av normalisert navn. Dette
+  gjelder særlig koblinger mellom politikere.navn og personer.navn,
+  eierskap.eierPersonNavn og aksjeeiebok.aksjonærNavn. Disse koblingene er
+  derfor probabilistiske/navnebaserte, ikke sikre koblinger via UUID.
+
+samlinger:
+
+  - navn: "selskap"
+    beskrivelse: >
+      Company-centered collection. Én dokument per selskap. Dokumentet inneholder
+      selskapsstamdata og embedded arrays for roller, eierskap og aksjeeierbok.
+      Bruk denne samlingen for spørringer der selskapet er hovedobjektet, eller
+      der man vil finne selskaper basert på roller, eierskap eller aksjonærer.
+    indekser:
+      - felt: "orgNr"
+        type: "standard"
+      - felt: "uuid"
+        type: "standard"
+      - felt: "navn"
+        type: "standard"
+      - felt: "roller.person.navn"
+        type: "multikey"
+      - felt: "roller.person.politiker.erPolitiker"
+        type: "multikey"
+      - felt: "eierskap.eier.navn"
+        type: "multikey"
+      - felt: "aksjeeiebok.aksjonær.navn"
+        type: "multikey"
+    felt:
+      uuid:
+        type: "string"
+        beskrivelse: "Intern unik identifikator for selskapet"
+      orgNr:
+        type: "integer"
+        beskrivelse: "Organisasjonsnummer. Koblingsnøkkel mot orgNr-baserte data."
+      navn:
+        type: "string"
+        beskrivelse: "Registrert selskapsnavn"
+      organisasjonstype:
+        type: "string"
+        eksempelverdier: ["AS", "ASA", "ENK", "ANS", "DA"]
+        beskrivelse: "Selskapsform"
+
+      bransje:
+        type: "object"
+        felt:
+          naceKode:
+            type: "number|string|null"
+            beskrivelse: "NACE-bransjekode"
+
+      datoer:
+        type: "object"
+        felt:
+          etablertDato:
+            type: "string|null"
+            beskrivelse: "Etableringsdato, vanligvis som ISO-lignende streng"
+          oppløstDato:
+            type: "string|null"
+            beskrivelse: "Oppløsningsdato hvis selskapet er oppløst"
+
+      status:
+        type: "object"
+        felt:
+          konkursFlagg:
+            type: "integer"
+            verdier: [0, 1]
+            beskrivelse: "1 = konkurs, 0 = ikke konkurs"
+          likvidasjonFlagg:
+            type: "integer"
+            verdier: [0, 1]
+            beskrivelse: "1 = under likvidasjon, 0 = ikke under likvidasjon"
+
+      roller:
+        type: "array<object>"
+        kilde: "personer"
+        kobling: "personer.selskapOrgNr = selskap.orgNr"
+        beskrivelse: >
+          Embedded rolletilknytninger for personer som har roller i selskapet.
+          Hvert array-element representerer én rolle/person-relasjon.
+        element_felt:
+          rolleUUID:
+            type: "string|null"
+            beskrivelse: "Unik ID for rolletilknytningen"
+          selskapRolleUUID:
+            type: "string|null"
+            beskrivelse: "ID for rolletype"
+          rolle:
+            type: "string|null"
+            beskrivelse: "Rollen, for eksempel Daglig leder, Styreleder eller Styremedlem"
+          rolleRang:
+            type: "integer|null"
+            beskrivelse: "Rangering av rollen"
+          startdato:
+            type: "string|null"
+            beskrivelse: "Startdato for rollen"
+          registrertTid:
+            type: "string|null"
+            beskrivelse: "Registreringstidspunkt for rollen"
+          oppdatertTid:
+            type: "string|null"
+            beskrivelse: "Oppdateringstidspunkt for rollen"
+          person:
+            type: "object"
+            felt:
+              uuid:
+                type: "string|null"
+                beskrivelse: "Personens UUID dersom tilgjengelig"
+              navn:
+                type: "string"
+                beskrivelse: "Personens navn"
+              fødselsdato:
+                type: "string|null"
+                beskrivelse: "Personens fødselsdato"
+              fødselsår:
+                type: "integer|number|null"
+                beskrivelse: "Personens fødselsår"
+              kjønn:
+                type: "string|null"
+                beskrivelse: "Kjønn"
+              politiker:
+                type: "object"
+                beskrivelse: "Navnebasert politikerkobling"
+                felt:
+                  erPolitiker:
+                    type: "boolean"
+                    beskrivelse: "True hvis personen er matchet mot politikerdata"
+                  partinavn:
+                    type: "string|null"
+                    beskrivelse: "Partinavn hvis personen er politiker"
+                  kommune:
+                    type: "string|null"
+                    beskrivelse: "Politisk kommune"
+                  innvalgt:
+                    type: "boolean|string|null"
+                    beskrivelse: "Om personen er innvalgt"
+                  matchType:
+                    type: "string|null"
+                    beskrivelse: "Vanligvis navn eller navn_fødselsdato, avhengig av tilgjengelig match"
+
+      eierskap:
+        type: "array<object>"
+        kilde: "eierskap"
+        kobling: "eierskap.utstederOrgNr = selskap.orgNr"
+        beskrivelse: >
+          Embedded eierskapsforhold der selskapet er utsteder/eid selskap.
+          Eieren kan være person eller selskap. Personlige eiere kan være
+          navnematchet mot politikerdata.
+        element_felt:
+          uuid:
+            type: "string|null"
+            beskrivelse: "Unik ID for eierskapsforholdet"
+          år:
+            type: "integer|null"
+            beskrivelse: "Året eierskapet gjelder"
+          eier:
+            type: "object"
+            felt:
+              type:
+                type: "string"
+                verdier: ["person", "selskap"]
+                beskrivelse: "Angir om eieren er person eller selskap"
+              navn:
+                type: "string|null"
+                beskrivelse: "Navn på eier"
+              uuid:
+                type: "string|null"
+                beskrivelse: "UUID for eier hvis tilgjengelig"
+              orgNr:
+                type: "integer|number|null"
+                beskrivelse: "Organisasjonsnummer hvis eier er selskap"
+              fødselsdato:
+                type: "string|null"
+                beskrivelse: "Fødselsdato hvis eier er person"
+              fødselsår:
+                type: "integer|number|null"
+                beskrivelse: "Fødselsår hvis eier er person"
+              politiker:
+                type: "object"
+                beskrivelse: "Navnebasert politikerkobling for personlig eier"
+          aksjer:
+            type: "object"
+            felt:
+              andel:
+                type: "number|null"
+                beskrivelse: "Eierandel i prosent"
+              antall:
+                type: "integer|null"
+                beskrivelse: "Antall aksjer"
+              totalAntall:
+                type: "integer|null"
+                beskrivelse: "Totalt antall aksjer"
+          stemmer:
+            type: "object"
+            felt:
+              andel:
+                type: "number|null"
+                beskrivelse: "Stemmeandel i prosent"
+              antall:
+                type: "integer|null"
+                beskrivelse: "Antall stemmeaksjer"
+              totalAntall:
+                type: "integer|null"
+                beskrivelse: "Totalt antall stemmeaksjer"
+
+      aksjeeiebok:
+        type: "array<object>"
+        kilde: "aksjeeiebok"
+        kobling: "aksjeeiebok.orgNr = selskap.orgNr"
+        beskrivelse: >
+          Embedded aksjeeierbokoppføringer for selskapet. Aksjonærer kan være
+          navnematchet mot politikerdata ved hjelp av aksjonærNavn.
+        element_felt:
+          år:
+            type: "integer|null"
+            beskrivelse: "Året oppføringen gjelder"
+          aksjeklasse:
+            type: "string|null"
+            beskrivelse: "Aksjeklasse"
+          aksjonær:
+            type: "object"
+            felt:
+              navn:
+                type: "string|null"
+                beskrivelse: "Aksjonærens navn"
+              fødselsår:
+                type: "integer|null"
+                beskrivelse: "Aksjonærens fødselsår, hvis tilgjengelig"
+              landkode:
+                type: "string|null"
+                beskrivelse: "Landkode"
+              poststed:
+                type: "string|number|null"
+                beskrivelse: "Poststed eller postnr/sted fra kildedata"
+              politiker:
+                type: "object"
+                beskrivelse: "Navnebasert politikerkobling"
+          aksjer:
+            type: "object"
+            felt:
+              antall:
+                type: "integer|null"
+                beskrivelse: "Antall aksjer eid av aksjonæren"
+              antallTotaltISelskap:
+                type: "integer|null"
+                beskrivelse: "Totalt antall aksjer i selskapet"
+
+  - navn: "personer"
+    beskrivelse: >
+      Person-centered collection. Én dokument per identifiserbar person.
+      Dokumentet inneholder persondata, adresse, eventuell politikerinformasjon,
+      embedded roller og embedded eierskapssammendrag. Bruk denne samlingen for
+      spørringer der personen, politikeren, rollen eller eierens samlede
+      selskapskoblinger er hovedobjektet.
+    indekser:
+      - felt: "uuid"
+        type: "standard"
+      - felt: "navn"
+        type: "standard"
+      - felt: "fødselsdato"
+        type: "standard"
+      - felt: "politiker.erPolitiker"
+        type: "standard"
+      - felt: "roller.selskap.orgNr"
+        type: "multikey"
+      - felt: "eierskap.selskap.orgNr"
+        type: "multikey"
+    felt:
+      uuid:
+        type: "string|null"
+        beskrivelse: "Personens UUID hvis tilgjengelig"
+      navn:
+        type: "string"
+        beskrivelse: "Fullt navn"
+      fødselsdato:
+        type: "string|null"
+        beskrivelse: "Fødselsdato"
+      fødselsår:
+        type: "integer|number|null"
+        beskrivelse: "Fødselsår"
+      kjønn:
+        type: "string|null"
+        beskrivelse: "Kjønn"
+
+      adresse:
+        type: "object"
+        felt:
+          gateadresse:
+            type: "string|null"
+            beskrivelse: "Gateadresse"
+          postnummer:
+            type: "integer|number|string|null"
+            beskrivelse: "Postnummer"
+          poststed:
+            type: "string|null"
+            beskrivelse: "Poststed"
+          kommuneNavn:
+            type: "string|null"
+            beskrivelse: "Kommunenavn"
+          kommuneNr:
+            type: "integer|number|string|null"
+            beskrivelse: "Kommunenummer"
+          land:
+            type: "string|null"
+            beskrivelse: "Land"
+          landkode:
+            type: "string|null"
+            beskrivelse: "Landkode"
+
+      metadata:
+        type: "object"
+        felt:
+          registrertTid:
+            type: "string|null"
+            beskrivelse: "Tidspunkt personen ble registrert"
+          oppdatertTid:
+            type: "string|null"
+            beskrivelse: "Tidspunkt personen sist ble oppdatert"
+
+      politiker:
+        type: "object"
+        kilde: "politikere"
+        kobling: "normalisert politikere.navn = normalisert personer.navn"
+        beskrivelse: >
+          Embedded politikerinformasjon. Koblingen er navnebasert og bør tolkes
+          som sannsynlig match dersom ikke sterkere felt er tilgjengelig.
+        felt:
+          erPolitiker:
+            type: "boolean"
+            beskrivelse: "True hvis personen er koblet til en politikerpost"
+          partinavn:
+            type: "string|null"
+            beskrivelse: "Politisk parti"
+          kommune:
+            type: "string|null"
+            beskrivelse: "Politisk kommune"
+          kommunenummer:
+            type: "integer|null"
+            beskrivelse: "Kommunenummer"
+          innvalgt:
+            type: "boolean|string|null"
+            beskrivelse: "Om politikeren er innvalgt"
+          valg.listeplass:
+            type: "integer|null"
+            beskrivelse: "Listeplass"
+          valg.endeligRangering:
+            type: "integer|null"
+            beskrivelse: "Endelig rangering"
+          valg.personstemmer:
+            type: "integer|null"
+            beskrivelse: "Antall personstemmer"
+          valg.slengere:
+            type: "integer|null"
+            beskrivelse: "Antall slengere"
+          valg.stemmetillegg:
+            type: "string|null"
+            beskrivelse: "Stemmetillegg"
+
+      roller:
+        type: "array<object>"
+        kilde: "personer"
+        beskrivelse: "Selskapsroller samlet under personen"
+        element_felt:
+          rolleUUID:
+            type: "string|null"
+            beskrivelse: "Unik ID for rolletilknytningen"
+          selskapRolleUUID:
+            type: "string|null"
+            beskrivelse: "ID for rolletype"
+          rolle:
+            type: "string|null"
+            beskrivelse: "Rollen personen har i selskapet"
+          rolleRang:
+            type: "integer|null"
+            beskrivelse: "Rangering av rollen"
+          startdato:
+            type: "string|null"
+            beskrivelse: "Startdato"
+          registrertTid:
+            type: "string|null"
+            beskrivelse: "Registreringstidspunkt for rollen"
+          oppdatertTid:
+            type: "string|null"
+            beskrivelse: "Oppdateringstidspunkt for rollen"
+          selskap:
+            type: "object"
+            felt:
+              uuid:
+                type: "string|null"
+                beskrivelse: "Selskapets UUID"
+              orgNr:
+                type: "integer|null"
+                beskrivelse: "Selskapets organisasjonsnummer"
+              navn:
+                type: "string|null"
+                beskrivelse: "Selskapets navn"
+              registrertTid:
+                type: "string|null"
+                beskrivelse: "Selskapets registreringstidspunkt"
+              oppdatertTid:
+                type: "string|null"
+                beskrivelse: "Selskapets oppdateringstidspunkt"
+
+      eierskap:
+        type: "array<object>"
+        kilde: "eierskap"
+        kobling: "normalisert eierskap.eierPersonNavn = normalisert personer.navn"
+        beskrivelse: >
+          Eierskapssammendrag for selskaper personen eier aksjer i. Brukes for
+          personorienterte spørsmål om eierskap.
+        element_felt:
+          uuid:
+            type: "string|null"
+            beskrivelse: "Unik ID for eierskapsforholdet"
+          år:
+            type: "integer|null"
+            beskrivelse: "Året eierskapet gjelder"
+          selskap:
+            type: "object"
+            felt:
+              uuid:
+                type: "string|null"
+                beskrivelse: "UUID for eid/utstedende selskap"
+              orgNr:
+                type: "integer|null"
+                beskrivelse: "Organisasjonsnummer for eid/utstedende selskap"
+              navn:
+                type: "string|null"
+                beskrivelse: "Navnet på eid/utstedende selskap"
+          aksjer:
+            type: "object"
+            felt:
+              andel:
+                type: "number|null"
+                beskrivelse: "Eierandel i prosent"
+              antall:
+                type: "integer|null"
+                beskrivelse: "Antall aksjer"
+              totalAntall:
+                type: "integer|null"
+                beskrivelse: "Totalt antall aksjer"
+          stemmer:
+            type: "object"
+            felt:
+              andel:
+                type: "number|null"
+                beskrivelse: "Stemmeandel i prosent"
+              antall:
+                type: "integer|null"
+                beskrivelse: "Antall stemmeaksjer"
+              totalAntall:
+                type: "integer|null"
+                beskrivelse: "Totalt antall stemmeaksjer"
+
+spørringsnotater:
+  - "Ikke bruk de gamle flate samlingene aksjeeiebok, eierskap eller politikere i groundtruthTest; disse er embedded i selskap og personer."
+  - "Bruk dot notation for nestede felt, for eksempel status.konkursFlagg, roller.rolle og eierskap.aksjer.andel."
+  - "For arrays kan felt søkes direkte med dot notation, for eksempel roller.person.politiker.erPolitiker: true."
+  - "For å finne dokumenter med minst ett array-element kan man bruke roller.0: { $exists: true } eller eierskap.0: { $exists: true }."
+  - "Navnebaserte politikerkoblinger bør beskrives som sannsynlige treff, ikke sikre identitetskoblinger."

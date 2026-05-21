@@ -40,11 +40,11 @@ samlinger:
         beskrivelse: "Datoer knyttet til selskapets levetid"
         felt:
           etablert:
-            type: "date"   # TODO: bekreft format — ISO 8601 string eller Date-objekt?
+            type: "date"   
             punktnotasjon: "datoer.etablert"
             beskrivelse: "Stiftelsesdato"
           oppløst:
-            type: "date"   # TODO: bekreft format
+            type: "date"  
             nullable: true
             punktnotasjon: "datoer.oppløst"
             beskrivelse: "Dato for nedleggelse. Null hvis selskapet er aktivt."
@@ -90,7 +90,7 @@ samlinger:
             punktnotasjon: "personInfo.navn"
             beskrivelse: "Fullt navn"
           fødselsdato:
-            type: "date"   # TODO: bekreft format
+            type: "date"   
             nullable: true
             punktnotasjon: "personInfo.fødselsdato"
             beskrivelse: "Fødselsdato"
@@ -124,7 +124,7 @@ samlinger:
             punktnotasjon: "adresse.poststed"
             beskrivelse: "Poststed"
           kommuneNr:
-            type: "string"   # TODO: bekreft — string eller integer?
+            type: "integer"
             nullable: true
             punktnotasjon: "adresse.kommuneNr"
             beskrivelse: "Kommunenummer"
