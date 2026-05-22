@@ -1,23 +1,10 @@
-# =============================================================================
-# pipeline.py — Text-to-query evaluation pipeline.
-#
-# Sections:
-#   1. Imports & setup
-#   2. Loading         — schema and benchmark files
-#   3. LLM             — prompt construction and query generation
-#   4. Database        — query execution against MongoDB
-#   5. Scoring         — precision, recall, F1
-#   6. Evaluation      — per-question orchestration
-#   7. Results         — aggregation and saving
-# =============================================================================
-
-
-# ── 1. Imports & setup ────────────────────────────────────────────────────────
-
 import json
 import re
+import time
+from collections import Counter
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import yaml
 from dotenv import load_dotenv
@@ -28,471 +15,620 @@ import config
 
 load_dotenv()
 
-_openai_client = OpenAI()
-_mongo_client: MongoClient | None = None
-
-def _mongo(database: str | None):
-    global _mongo_client
-    if _mongo_client is None:
-        _mongo_client = MongoClient(config.MONGO_URI)
-    return _mongo_client[database or config.DATABASE_NAME]
+openai_client = OpenAI()
+mongo_client: MongoClient | None = None
 
 
-# ── 2. Loading ────────────────────────────────────────────────────────────────
+SYSTEM_PROMPT = """\
+You translate Norwegian natural-language questions into MongoDB queries.
 
-def load_schema(path: str) -> str:
-    """Read a YAML schema file and return it as a plain text string for the LLM prompt."""
-    with open(path, encoding="utf-8") as f:
-        data = yaml.safe_load(f)
-    return yaml.dump(data, default_flow_style=False, allow_unicode=True)
-
-
-def load_benchmark(path: str) -> list[dict]:
-    """Read a JSON benchmark file containing questions and gold queries."""
-    with open(path, encoding="utf-8") as f:
-        return json.load(f)
-
-
-# ── 3. LLM ────────────────────────────────────────────────────────────────────
-
-_SYSTEM_PROMPT = """\
-You are an expert at translating natural language questions into MongoDB queries.
-
-Given a database schema and a question, return ONLY a valid JSON object describing
-the MongoDB operation to perform. Choose the most appropriate operation type.
+Return only one valid JSON object. Do not use markdown.
 
 Supported operations:
-
-  find      — retrieve documents, optionally filtered and projected
-  { "op": "find", "collection": "<name>", "filter": {...}, "projection": {...} }
-  - omit projection unless specific fields are requested
-  - use {"_id": 0} to hide the internal id when not needed
-
-  distinct  — get unique values of a single field
-  { "op": "distinct", "collection": "<name>", "field": "<fieldName>", "filter": {} }
-  - use when the question asks for "all types", "unique values", or "distinct X"
-
-  aggregate — grouping, counting, sorting, or multi-stage logic
-  { "op": "aggregate", "collection": "<name>", "pipeline": [...] }
-  - use when the question asks for counts, averages, or "per group" results
+- find: {"op": "find", "collection": "...", "filter": {...}, "projection": {...}}
+- distinct: {"op": "distinct", "collection": "...", "field": "...", "filter": {...}}
+- aggregate: {"op": "aggregate", "collection": "...", "pipeline": [...]}
 
 Rules:
-- Return ONLY the JSON object — no explanation, no markdown, no code fences.
-- Use exact field names from the schema.
-- For nested fields, use dot notation (e.g. "address.city").
-- An empty filter is written as {}.
+- Use exact collection names and field names from the schema.
+- Use dot notation for nested fields.
+- Use aggregate when the question asks for counts, averages, grouping, sorting by calculated values, or rows from embedded arrays.
+- Use distinct when the question asks for unique/distinct values.
+- Use {"_id": 0} in projections unless the question asks for _id.
 """
 
-def generate_query(schema_text: str, question: str) -> dict:
-    """
-    Ask the LLM to generate a MongoDB query object for the given question.
 
-    Returns:
-        { "query": dict | None, "error": str | None }
-    """
-    prompt = f"Database schema:\n{schema_text}\n\nQuestion: {question}\n\nMongoDB query:"
+def get_database(database_name: str | None = None):
+    global mongo_client
+    if mongo_client is None:
+        mongo_client = MongoClient(config.MONGO_URI)
+    return mongo_client[database_name or config.DATABASE_NAME]
+
+
+def load_schema(path: str) -> str:
+    with open(path, encoding="utf-8") as file:
+        schema = yaml.safe_load(file)
+    return yaml.dump(schema, allow_unicode=True, sort_keys=False)
+
+
+def load_benchmark(path: str) -> list[dict[str, Any]]:
+    with open(path, encoding="utf-8") as file:
+        return json.load(file)
+
+
+def generate_query(schema_text: str, question: str) -> dict[str, Any]:
+    prompt = f"Database schema:\n{schema_text}\n\nQuestion:\n{question}\n\nMongoDB query JSON:"
+    started = time.perf_counter()
 
     try:
-        response = _openai_client.chat.completions.create(
+        response = openai_client.chat.completions.create(
             model=config.MODEL,
             temperature=config.TEMPERATURE,
             max_tokens=config.MAX_TOKENS,
             messages=[
-                {"role": "system", "content": _SYSTEM_PROMPT},
-                {"role": "user",   "content": prompt},
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
             ],
         )
-        raw = response.choices[0].message.content or ""
-        raw = raw.strip()
+        raw_text = (response.choices[0].message.content or "").strip()
+        cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_text).strip()
 
-        # Strip markdown code fences if the model adds them despite instructions
-        cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw).strip()
-        return {"query": json.loads(cleaned), "error": None}
+        return {
+            "query": json.loads(cleaned),
+            "raw_text": raw_text,
+            "error": None,
+            "duration_ms": elapsed_ms(started),
+        }
+    except json.JSONDecodeError as exc:
+        return {
+            "query": None,
+            "raw_text": locals().get("raw_text", ""),
+            "error": f"JSON parse error: {exc}",
+            "duration_ms": elapsed_ms(started),
+        }
+    except Exception as exc:
+        return {
+            "query": None,
+            "raw_text": "",
+            "error": f"LLM error: {exc}",
+            "duration_ms": elapsed_ms(started),
+        }
 
-    except json.JSONDecodeError as e:
-        return {"query": None, "error": f"JSON parse error: {e}"}
-    except Exception as e:
-        return {"query": None, "error": f"LLM error: {e}"}
 
+def run_query(query: dict[str, Any], database_name: str | None = None) -> dict[str, Any]:
+    started = time.perf_counter()
 
-# ── 4. Database ───────────────────────────────────────────────────────────────
-
-def run_query(query: dict, database: str | None = None) -> dict:
-    """
-    Execute a query dict against MongoDB.
-
-    Supported ops and required fields:
-        find      — filter, projection (optional)
-        distinct  — field, filter (optional)
-        aggregate — pipeline
-
-    Returns:
-        { "results": list, "error": str | None }
-    """
     try:
-        col = _mongo(database)[query["collection"]]
-        op  = query.get("op", "find")
+        collection = get_database(database_name)[query["collection"]]
+        op = query.get("op", "find")
 
         if op == "find":
-            proj    = query.get("projection")
-            cursor  = col.find(query.get("filter", {}), proj) if proj else col.find(query.get("filter", {}))
+            projection = query.get("projection")
+            cursor = collection.find(query.get("filter", {}), projection) if projection else collection.find(query.get("filter", {}))
             results = list(cursor)
-            _stringify_ids(results)
-
         elif op == "distinct":
-            values  = col.distinct(query["field"], query.get("filter", {}))
-            results = [{"_value": v} for v in values]   # wrap for uniform scoring
-
+            values = collection.distinct(query["field"], query.get("filter", {}))
+            results = [{"_value": value} for value in values]
         elif op == "aggregate":
-            results = list(col.aggregate(query["pipeline"]))
-            _stringify_ids(results)
-
+            results = list(collection.aggregate(query["pipeline"]))
         else:
-            return {"results": [], "error": f"Unknown op: '{op}'"}
+            return {
+                "results": [],
+                "error": f"Unknown op: {op}",
+                "duration_ms": elapsed_ms(started),
+                "result_count": 0,
+            }
 
-        return {"results": results, "error": None}
+        stringify_object_ids(results)
+        return {
+            "results": results,
+            "error": None,
+            "duration_ms": elapsed_ms(started),
+            "result_count": len(results),
+        }
+    except Exception as exc:
+        return {
+            "results": [],
+            "error": str(exc),
+            "duration_ms": elapsed_ms(started),
+            "result_count": 0,
+        }
 
-    except Exception as e:
-        return {"results": [], "error": str(e)}
+
+def stringify_object_ids(value: Any) -> Any:
+    if isinstance(value, list):
+        for item in value:
+            stringify_object_ids(item)
+    elif isinstance(value, dict):
+        for key, item in list(value.items()):
+            if key == "_id":
+                value[key] = str(item)
+            else:
+                stringify_object_ids(item)
+    return value
 
 
-def _stringify_ids(docs: list) -> None:
-    for doc in docs:
-        if "_id" in doc:
-            doc["_id"] = str(doc["_id"])
+def score_results(gold_results: list[dict[str, Any]], generated_results: list[dict[str, Any]], gold_query: dict[str, Any]) -> dict[str, Any]:
+    op = gold_query.get("op", "find")
+    projection_fields = projected_fields(gold_query)
 
+    gold_keys = result_counter(gold_results, op, projection_fields)
+    generated_keys = result_counter(generated_results, op, projection_fields)
 
-# ── 5. Scoring ────────────────────────────────────────────────────────────────
+    true_positive = sum((gold_keys & generated_keys).values())
+    gold_total = sum(gold_keys.values())
+    generated_total = sum(generated_keys.values())
 
-def score(gold: list, generated: list, op: str, projection_fields: set | None = None) -> dict:
-    """
-    Compute precision, recall, and F1 between two result sets.
+    precision = true_positive / generated_total if generated_total else (1.0 if gold_total == 0 else 0.0)
+    recall = true_positive / gold_total if gold_total else (1.0 if generated_total == 0 else 0.0)
+    f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
 
-    Comparison strategy by op:
-        find      — compare by content using only the gold projection fields.
-                    If the generated query returns extra fields, they are ignored.
-        distinct  — compare scalar values directly.
-        aggregate — compare by values only, ignoring output field name aliases.
-
-    projection_fields: set of field names from the gold projection (find only).
-    """
-    gold_keys = _to_keys(gold, op, projection_fields)
-    gen_keys  = _to_keys(generated, op, projection_fields)
-
-    if not gold_keys and not gen_keys:
-        return {"precision": 1.0, "recall": 1.0, "f1": 1.0, "tp": 0, "gold_n": 0, "gen_n": 0}
-
-    tp        = len(gold_keys & gen_keys)
-    precision = tp / len(gen_keys)  if gen_keys  else 0.0
-    recall    = tp / len(gold_keys) if gold_keys else 0.0
-    f1        = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0.0
+    missing = list((gold_keys - generated_keys).elements())
+    extra = list((generated_keys - gold_keys).elements())
 
     return {
         "precision": round(precision, 4),
-        "recall":    round(recall,    4),
-        "f1":        round(f1,        4),
-        "tp":        tp,
-        "gold_n":    len(gold_keys),
-        "gen_n":     len(gen_keys),
+        "recall": round(recall, 4),
+        "f1": round(f1, 4),
+        "true_positive": true_positive,
+        "gold_count": gold_total,
+        "generated_count": generated_total,
+        "missing_count": len(missing),
+        "extra_count": len(extra),
+        "missing_examples": decode_examples(missing[:5]),
+        "extra_examples": decode_examples(extra[:5]),
+        "comparison_mode": comparison_mode(op, projection_fields),
     }
 
 
-def is_match(scores: dict, threshold: float) -> bool:
-    """
-    A result is a match if:
-      - All gold documents were found (recall == 1.0)
-      - Document noise is within threshold (precision >= threshold)
-      - All gold fields were included (projection recall == 1.0)
-        Only applied when a projection score exists.
-    """
-    if scores["recall"] < 1.0:
+def projected_fields(query: dict[str, Any]) -> set[str] | None:
+    if query.get("op", "find") != "find":
+        return None
+
+    projection = query.get("projection") or {}
+    fields = {field for field, include in projection.items() if field != "_id" and include}
+    return fields or None
+
+
+def result_counter(results: list[dict[str, Any]], op: str, projection_fields: set[str] | None) -> Counter:
+    return Counter(result_key(row, op, projection_fields) for row in results)
+
+
+def result_key(row: dict[str, Any], op: str, projection_fields: set[str] | None) -> str:
+    if op == "distinct":
+        return stable_json(normalize_value(row.get("_value")))
+
+    if op == "aggregate":
+        return stable_json(normalize_aggregate_row(row))
+
+    if projection_fields:
+        comparable = {field: get_path(row, field) for field in sorted(projection_fields)}
+    else:
+        comparable = {key: value for key, value in row.items() if key != "_id"}
+    return stable_json(normalize_value(comparable))
+
+
+def comparison_mode(op: str, projection_fields: set[str] | None) -> str:
+    if op == "distinct":
+        return "distinct scalar values"
+    if op == "aggregate":
+        return "aggregate row values, ignoring output alias names"
+    if projection_fields:
+        return "find documents using gold projection fields"
+    return "find documents using all returned fields except _id"
+
+
+def normalize_aggregate_row(row: dict[str, Any]) -> Any:
+    values = [normalize_value(value) for key, value in row.items() if key != "_id"]
+    id_value = normalize_value(row["_id"]) if "_id" in row and row["_id"] is not None else None
+    if id_value is not None:
+        values.insert(0, id_value)
+    return sorted(values, key=stable_json)
+
+
+def normalize_value(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {key: normalize_value(value[key]) for key in sorted(value)}
+    if isinstance(value, list):
+        return [normalize_value(item) for item in value]
+    return value
+
+
+def get_path(document: dict[str, Any], path: str) -> Any:
+    return get_parts(document, path.split("."))
+
+
+def get_parts(value: Any, parts: list[str]) -> Any:
+    if not parts:
+        return value
+
+    part = parts[0]
+    rest = parts[1:]
+
+    if isinstance(value, dict):
+        return get_parts(value.get(part), rest)
+
+    if isinstance(value, list):
+        return [get_parts(item, parts) for item in value]
+
+    return None
+
+
+def stable_json(value: Any) -> str:
+    return json.dumps(value, sort_keys=True, ensure_ascii=False, default=str)
+
+
+def decode_examples(keys: list[str]) -> list[Any]:
+    examples = []
+    for key in keys:
+        try:
+            examples.append(json.loads(key))
+        except json.JSONDecodeError:
+            examples.append(key)
+    return examples
+
+
+def projection_score(gold_query: dict[str, Any], generated_query: dict[str, Any]) -> dict[str, Any] | None:
+    if gold_query.get("op", "find") != "find":
+        return None
+
+    gold_fields = projected_fields(gold_query)
+    if not gold_fields:
+        return None
+
+    generated_projection = generated_query.get("projection") or {}
+    generated_fields = {field for field, include in generated_projection.items() if field != "_id" and include}
+
+    if not generated_fields:
+        return {
+            "recall": 1.0,
+            "precision": None,
+            "note": "Generated query has no projection, so all gold fields are present but extra fields are unknown.",
+        }
+
+    overlap = gold_fields & generated_fields
+    return {
+        "recall": round(len(overlap) / len(gold_fields), 4),
+        "precision": round(len(overlap) / len(generated_fields), 4),
+        "missing_fields": sorted(gold_fields - generated_fields),
+        "extra_fields": sorted(generated_fields - gold_fields),
+    }
+
+
+def is_success(score: dict[str, Any], projection: dict[str, Any] | None) -> bool:
+    if score["recall"] < 1.0:
         return False
-    if scores["precision"] < threshold:
+    if score["precision"] < 1.0:
         return False
-    proj = scores.get("projection_score")
-    if proj and proj["recall"] < 1.0:
+    if projection and projection["recall"] < 1.0:
         return False
     return True
 
 
-def projection_score(gold_query: dict, generated_query: dict) -> dict | None:
-    """
-    Measure how well the generated projection matches the gold projection.
-    Only applies to find queries with an explicit gold projection.
-
-    Returns a dict with two scores, or None if not applicable:
-
-        recall    — fraction of gold fields included in generated (0.0–1.0)
-                    penalises missing fields
-        precision — fraction of generated fields that are in gold (0.0–1.0)
-                    penalises extra fields
-
-    Examples:
-        gold=[navn, orgNr]  generated=[navn, orgNr]
-            → recall=1.0, precision=1.0
-
-        gold=[navn, orgNr]  generated=[navn, orgNr, uuid, konkursFlagg]
-            → recall=1.0, precision=0.5  (2 of 4 generated fields are in gold)
-
-        gold=[navn, orgNr, etablertDato]  generated=[navn, orgNr]
-            → recall=0.67, precision=1.0  (missing etablertDato)
-
-        generated has no projection (returns all fields):
-            → recall=1.0, precision=None  (all gold fields present, but total unknown)
-    """
-    if gold_query.get("op") != "find":
-        return None
-
-    gold_proj = {k for k, v in gold_query.get("projection", {}).items() if k != "_id" and v}
-    if not gold_proj:
-        return None
-
-    gen_proj = {k for k, v in generated_query.get("projection", {}).items() if k != "_id" and v}
-
-    if not gen_proj:
-        # No projection — all fields returned, so all gold fields are present.
-        # Precision is None because we cannot count the total generated fields.
-        return {"recall": 1.0, "precision": None}
-
-    overlap   = len(gold_proj & gen_proj)
-    recall    = round(overlap / len(gold_proj), 4)
-    precision = round(overlap / len(gen_proj),  4)
-    return {"recall": recall, "precision": precision}
+def explain_failure(score: dict[str, Any], projection: dict[str, Any] | None, status: str, error: str | None) -> str | None:
+    if status != "ok":
+        return error
+    if score["recall"] < 1.0:
+        return "Generated query missed one or more expected result documents or values."
+    if score["precision"] < 1.0:
+        return "Generated query returned extra result documents or values."
+    if projection and projection["recall"] < 1.0:
+        return "Generated query did not include all required projected fields."
+    return None
 
 
-def _to_keys(results: list, op: str, projection_fields: set | None = None) -> set:
-    if op == "distinct":
-        # Scalar values — compare directly.
-        return {str(r.get("_value", r)) for r in results}
-
-    if op == "aggregate":
-        # Compare by values only, ignoring output field names.
-        # Aggregate output field names are aliases invented by the query writer
-        # (e.g. "antall" vs "antallKonkurser") and carry no semantic meaning.
-        # The data is correct as long as the values match.
-        return {json.dumps(sorted(r.values(), key=str), default=str) for r in results}
-
-    # find: compare only the fields that the gold projection requested.
-    # If the generated query returns extra fields (no projection or wider projection),
-    # those fields are ignored — only the requested fields need to be correct.
-    # _id is always excluded since gold projections often suppress it.
-    def _trim(doc: dict) -> dict:
-        clean = {k: v for k, v in doc.items() if k != "_id"}
-        if projection_fields:
-            clean = {k: v for k, v in clean.items() if k in projection_fields}
-        return clean
-
-    return {json.dumps(_trim(r), sort_keys=True, default=str) for r in results}
-
-
-# ── 6. Evaluation ─────────────────────────────────────────────────────────────
-
-def evaluate_question(entry: dict, schema_text: str, threshold: float, database: str | None = None) -> dict:
-    """
-    Run the full pipeline for one benchmark question.
-
-    Benchmark entry fields:
-        question   — natural language question (required)
-        gold       — gold MongoDB query object (required)
-        id         — identifier for cross-run tracking (optional)
-        category   — label for breakdown analysis, e.g. "filter", "aggregation" (optional)
-    """
-    gold  = entry["gold"]
-    op    = gold.get("op", "find")
+def evaluate_question(entry: dict[str, Any], schema_text: str, database_name: str | None = None) -> dict[str, Any]:
+    started = time.perf_counter()
+    gold_query = entry["gold"]
 
     result = {
-        "id":               entry.get("id"),
-        "question":         entry["question"],
-        "category":         entry.get("category"),
-        "op":               op,
-        "gold_query":       gold,
-        "generated_query":  None,
-        "sample":           None,
-        "scores":           None,
-        "match":            False,
-        "status":           "ok",    # ok | llm_error | db_error
-        "error":            None,
+        "id": entry.get("id"),
+        "question": entry["question"],
+        "category": entry.get("category"),
+        "operation": gold_query.get("op", "find"),
+        "status": "ok",
+        "success": False,
+        "failure_reason": None,
+        "gold_query": gold_query,
+        "generated_query": None,
+        "generated_raw_text": None,
+        "scores": None,
+        "projection_score": None,
+        "counts": None,
+        "timing_ms": {},
+        "examples": None,
     }
 
-    # Step 1 — generate query
     llm = generate_query(schema_text, entry["question"])
+    result["timing_ms"]["llm"] = llm["duration_ms"]
+    result["generated_raw_text"] = llm.get("raw_text")
+
     if llm["error"]:
-        result.update(status="llm_error", error=llm["error"])
+        result["status"] = "llm_error"
+        result["failure_reason"] = llm["error"]
+        result["timing_ms"]["total"] = elapsed_ms(started)
         return result
+
     result["generated_query"] = llm["query"]
 
-    # Step 2 — run both queries
-    gold_run = run_query(gold, database)
+    gold_run = run_query(gold_query, database_name)
+    result["timing_ms"]["gold_query"] = gold_run["duration_ms"]
     if gold_run["error"]:
-        result.update(status="db_error", error=gold_run["error"])
+        result["status"] = "gold_query_error"
+        result["failure_reason"] = gold_run["error"]
+        result["timing_ms"]["total"] = elapsed_ms(started)
         return result
 
-    gen_run = run_query(llm["query"], database)
-    if gen_run["error"]:
-        result.update(status="db_error", error=gen_run["error"])
+    generated_run = run_query(llm["query"], database_name)
+    result["timing_ms"]["generated_query"] = generated_run["duration_ms"]
+    if generated_run["error"]:
+        result["status"] = "generated_query_error"
+        result["failure_reason"] = generated_run["error"]
+        result["timing_ms"]["total"] = elapsed_ms(started)
         return result
 
-    # Step 3 — score
-    # Extract the projected field names from the gold query (find only).
-    # Used to trim generated results before comparison so extra fields are ignored.
-    gold_projection = gold.get("projection", {})
-    projection_fields = {k for k, v in gold_projection.items() if k != "_id" and v} or None
+    score_started = time.perf_counter()
+    scores = score_results(gold_run["results"], generated_run["results"], gold_query)
+    projection = projection_score(gold_query, llm["query"])
+    result["timing_ms"]["scoring"] = elapsed_ms(score_started)
+    result["timing_ms"]["total"] = elapsed_ms(started)
 
-    scores = score(gold_run["results"], gen_run["results"], op, projection_fields)
-    scores["projection_score"] = projection_score(gold, llm["query"])
-    result.update(
-        scores=scores,
-        match=is_match(scores, threshold),
-        sample={
-            "gold":      gold_run["results"][:3],
-            "generated": gen_run["results"][:3],
-        },
-    )
+    result["scores"] = scores
+    result["projection_score"] = projection
+    result["success"] = is_success(scores, projection)
+    result["failure_reason"] = explain_failure(scores, projection, result["status"], None)
+    result["counts"] = {
+        "gold": gold_run["result_count"],
+        "generated": generated_run["result_count"],
+    }
+    result["examples"] = {
+        "gold_first_3": gold_run["results"][:3],
+        "generated_first_3": generated_run["results"][:3],
+        "missing": scores["missing_examples"],
+        "extra": scores["extra_examples"],
+    }
     return result
 
 
-# ── 7. Results ────────────────────────────────────────────────────────────────
+def run_evaluation(
+    schema_path: str,
+    benchmark_path: str,
+    label: str,
+    database: str | None = None,
+    question_id: int | None = None,
+) -> None:
+    run_started = time.perf_counter()
+    database_name = database or config.DATABASE_NAME
 
-def run_evaluation(schema_path: str, benchmark_path: str, label: str, threshold: float, database: str | None = None):
-    """Run the full evaluation and save results to the results/ directory."""
-    print(f"\n{'='*60}")
-    print(f"  {label}")
-    db_name = database or config.DATABASE_NAME
-    print(f"  model={config.MODEL} db={db_name} schema={Path(schema_path).name}  threshold={threshold}")
-    print(f"{'='*60}\n")
+    print()
+    print("=" * 72)
+    print(f"Run: {label}")
+    print(f"Model: {config.MODEL}")
+    print(f"Database: {database_name}")
+    print(f"Schema: {Path(schema_path).name}")
+    print(f"Benchmark: {Path(benchmark_path).name}")
+    if question_id is not None:
+        print(f"Question id: {question_id}")
+    print("=" * 72)
 
     schema_text = load_schema(schema_path)
-    benchmark   = load_benchmark(benchmark_path)
+    benchmark = load_benchmark(benchmark_path)
+    if question_id is not None:
+        benchmark = [entry for entry in benchmark if entry.get("id") == question_id]
+        if not benchmark:
+            print(f"No benchmark question found with id {question_id}.")
+            return
     question_results = []
 
-    for i, entry in enumerate(benchmark, 1):
+    for index, entry in enumerate(benchmark, start=1):
         op = entry.get("gold", {}).get("op", "find")
-        print(f"  [{i}/{len(benchmark)}] [{op}] {entry['question'][:55]}...")
+        print(f"[{index:>2}/{len(benchmark)}] {op:<9} Q{entry.get('id')}: {entry['question'][:70]}")
+        result = evaluate_question(entry, schema_text, database_name)
+        question_results.append(result)
+        print_question_result(result)
 
-        r = evaluate_question(entry, schema_text, threshold, database)
-        question_results.append(r)
-
-        if r["status"] == "ok":
-            s = r["scores"]
-            tag = "✓ MATCH" if r["match"] else "✗ no match"
-            print(f"           {tag}  P={s['precision']:.2f}  R={s['recall']:.2f}  F1={s['f1']:.2f}")
-        else:
-            print(f"           ✗ ERROR ({r['status']}): {r['error']}")
-
-    summary = _summarise(question_results)
-    _print_summary(summary)
-    _save(label, schema_path, benchmark_path, threshold, question_results, summary, database)
+    summary = summarize_results(question_results, elapsed_ms(run_started))
+    print_summary(summary)
+    save_results(label, schema_path, benchmark_path, database_name, question_results, summary, question_id)
 
 
-def _avg_projection(scored: list[dict]) -> dict | None:
-    """Average projection recall and precision across find questions that have a projection score."""
-    proj = [r["scores"]["projection_score"] for r in scored if r["scores"].get("projection_score") is not None]
-    if not proj:
-        return None
-    recalls    = [p["recall"]    for p in proj]
-    precisions = [p["precision"] for p in proj if p["precision"] is not None]
-    return {
-        "avg_recall":    round(sum(recalls)    / len(recalls),    4),
-        "avg_precision": round(sum(precisions) / len(precisions), 4) if precisions else None,
-    }
+def print_question_result(result: dict[str, Any]) -> None:
+    if result["status"] != "ok":
+        print(f"          ERROR {result['status']}: {result['failure_reason']}")
+        return
+
+    score = result["scores"]
+    tag = "PASS" if result["success"] else "FAIL"
+    timing = result["timing_ms"]
+    print(
+        f"          {tag} "
+        f"P={score['precision']:.2f} R={score['recall']:.2f} F1={score['f1']:.2f} "
+        f"gold={result['counts']['gold']} gen={result['counts']['generated']} "
+        f"time={timing['total']}ms"
+    )
+    if result["failure_reason"]:
+        print(f"          {result['failure_reason']}")
 
 
-def _summarise(results: list[dict]) -> dict:
-    """Compute aggregate metrics with breakdowns by op and category."""
-    scored  = [r for r in results if r["scores"]]
-    failed  = [r for r in results if r["status"] != "ok"]
-    matches = sum(1 for r in scored if r["match"])
+def summarize_results(results: list[dict[str, Any]], total_duration_ms: int) -> dict[str, Any]:
+    scored = [result for result in results if result["scores"]]
+    errors = [result for result in results if result["status"] != "ok"]
+    failures = [result for result in results if result["status"] != "ok" or not result["success"]]
 
-    def breakdown(group_key: str) -> dict:
-        groups: dict[str, list] = {}
-        for r in scored:
-            groups.setdefault(r.get(group_key) or "uncategorized", []).append(r)
-        return {
-            name: {
-                "n":          len(items),
-                "matches":    sum(1 for r in items if r["match"]),
-                "match_rate": round(sum(1 for r in items if r["match"]) / len(items), 4),
-                "avg_f1":     round(sum(r["scores"]["f1"] for r in items) / len(items), 4),
-                "avg_precision": round(sum(r["scores"]["precision"] for r in items) / len(items), 4),
-                "avg_recall":    round(sum(r["scores"]["recall"]    for r in items) / len(items), 4),
-            }
-            for name, items in groups.items()
-        }
+    def average(field: str) -> float:
+        if not scored:
+            return 0.0
+        return round(sum(result["scores"][field] for result in scored) / len(scored), 4)
 
     return {
-        "total":      len(results),
-        "scored":     len(scored),
-        "matches":    matches,
-        "match_rate": round(matches / len(scored), 4) if scored else 0,
-        "avg_precision": round(sum(r["scores"]["precision"] for r in scored) / len(scored), 4) if scored else 0,
-        "avg_recall":    round(sum(r["scores"]["recall"]    for r in scored) / len(scored), 4) if scored else 0,
-        "avg_f1":        round(sum(r["scores"]["f1"]        for r in scored) / len(scored), 4) if scored else 0,
-        "avg_projection_score": _avg_projection(scored),
+        "total_questions": len(results),
+        "scored_questions": len(scored),
+        "successful_questions": sum(1 for result in scored if result["success"]),
+        "failed_questions": len(failures),
+        "success_rate": round(sum(1 for result in scored if result["success"]) / len(scored), 4) if scored else 0.0,
+        "avg_precision": average("precision"),
+        "avg_recall": average("recall"),
+        "avg_f1": average("f1"),
+        "timing_ms": timing_summary(results, total_duration_ms),
         "errors": {
-            "total":     len(failed),
-            "llm_error": sum(1 for r in failed if r["status"] == "llm_error"),
-            "db_error":  sum(1 for r in failed if r["status"] == "db_error"),
+            "total": len(errors),
+            "llm_error": sum(1 for result in errors if result["status"] == "llm_error"),
+            "gold_query_error": sum(1 for result in errors if result["status"] == "gold_query_error"),
+            "generated_query_error": sum(1 for result in errors if result["status"] == "generated_query_error"),
         },
-        "by_op":       breakdown("op"),
-        "by_category": breakdown("category"),
+        "by_operation": breakdown(results, "operation"),
+        "by_category": breakdown(results, "category"),
+        "worst_questions": worst_questions(results),
     }
 
 
-def _print_summary(s: dict):
-    print(f"\n{'='*60}  Summary")
-    print(f"  Match rate:  {s['match_rate']:.1%}  ({s['matches']}/{s['scored']})")
-    print(f"  Precision:   {s['avg_precision']:.4f}")
-    print(f"  Recall:      {s['avg_recall']:.4f}")
-    print(f"  F1:          {s['avg_f1']:.4f}")
+def timing_summary(results: list[dict[str, Any]], total_duration_ms: int) -> dict[str, Any]:
+    completed = [result for result in results if result["timing_ms"].get("total") is not None]
 
-    proj = s.get("avg_projection_score")
-    if proj is not None:
-        p_str = f"{proj['avg_precision']:.4f}" if proj["avg_precision"] is not None else "N/A"
-        print(f"  Projection:  recall={proj['avg_recall']:.4f}  precision={p_str}")
+    def avg_time(name: str) -> int:
+        values = [result["timing_ms"].get(name, 0) for result in completed]
+        return round(sum(values) / len(values)) if values else 0
 
-    print(f"\n  By operation:")
-    for op, v in s["by_op"].items():
-        print(f"    {op:<12}  match={v['match_rate']:.1%}  f1={v['avg_f1']:.4f}  (n={v['n']})")
+    return {
+        "total_run": total_duration_ms,
+        "avg_per_question": avg_time("total"),
+        "avg_llm": avg_time("llm"),
+        "avg_gold_query": avg_time("gold_query"),
+        "avg_generated_query": avg_time("generated_query"),
+        "avg_scoring": avg_time("scoring"),
+    }
 
-    if any(k != "uncategorized" for k in s["by_category"]):
-        print(f"\n  By category:")
-        for cat, v in s["by_category"].items():
-            print(f"    {cat:<20}  match={v['match_rate']:.1%}  f1={v['avg_f1']:.4f}  (n={v['n']})")
 
-    if s["errors"]["total"]:
-        print(f"\n  Errors: {s['errors']['total']}  "
-              f"(llm={s['errors']['llm_error']}, db={s['errors']['db_error']})")
+def breakdown(results: list[dict[str, Any]], field: str) -> dict[str, Any]:
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for result in results:
+        if result["scores"]:
+            groups.setdefault(str(result.get(field) or "uncategorized"), []).append(result)
+
+    output = {}
+    for name, items in groups.items():
+        success_count = sum(1 for item in items if item["success"])
+        output[name] = {
+            "questions": len(items),
+            "successful": success_count,
+            "success_rate": round(success_count / len(items), 4),
+            "avg_precision": round(sum(item["scores"]["precision"] for item in items) / len(items), 4),
+            "avg_recall": round(sum(item["scores"]["recall"] for item in items) / len(items), 4),
+            "avg_f1": round(sum(item["scores"]["f1"] for item in items) / len(items), 4),
+        }
+    return output
+
+
+def worst_questions(results: list[dict[str, Any]], limit: int = 10) -> list[dict[str, Any]]:
+    scored = [result for result in results if result["scores"]]
+    scored.sort(key=lambda result: (result["scores"]["f1"], result["scores"]["recall"], result["scores"]["precision"]))
+    return [
+        {
+            "id": result["id"],
+            "question": result["question"],
+            "operation": result["operation"],
+            "category": result["category"],
+            "precision": result["scores"]["precision"],
+            "recall": result["scores"]["recall"],
+            "f1": result["scores"]["f1"],
+            "failure_reason": result["failure_reason"],
+        }
+        for result in scored[:limit]
+    ]
+
+
+def print_summary(summary: dict[str, Any]) -> None:
+    print()
+    print("=" * 72)
+    print("Summary")
+    print(f"Success:   {summary['success_rate']:.1%} ({summary['successful_questions']}/{summary['scored_questions']})")
+    print(f"Precision: {summary['avg_precision']:.4f}")
+    print(f"Recall:    {summary['avg_recall']:.4f}")
+    print(f"F1:        {summary['avg_f1']:.4f}")
+    print(f"Time:      {summary['timing_ms']['total_run']}ms total, {summary['timing_ms']['avg_per_question']}ms/question")
+
+    if summary["errors"]["total"]:
+        print(f"Errors:    {summary['errors']}")
+
+    print()
+    print("Worst questions:")
+    for item in summary["worst_questions"][:5]:
+        print(f"  Q{item['id']}: F1={item['f1']:.2f} P={item['precision']:.2f} R={item['recall']:.2f} - {item['question'][:70]}")
     print()
 
 
-def _save(label, schema_path, benchmark_path, threshold, question_results, summary, database):
-    Path(config.RESULTS_DIR).mkdir(parents=True, exist_ok=True)
+def save_results(
+    label: str,
+    schema_path: str,
+    benchmark_path: str,
+    database_name: str,
+    question_results: list[dict[str, Any]],
+    summary: dict[str, Any],
+    question_id: int | None = None,
+) -> None:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    path      = f"{config.RESULTS_DIR}/{timestamp}_{label}.json"
+    schema_name = Path(schema_path).stem
+    benchmark_name = Path(benchmark_path).stem
+    output_dir = Path(config.RESULTS_DIR) / benchmark_name / schema_name
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / f"{timestamp}_{label}.json"
 
-    # Split questions into scored and failed for cleaner result files
-    scored = [r for r in question_results if r["status"] == "ok"]
-    failed = [
-        {"id": r["id"], "question": r["question"], "status": r["status"], "error": r["error"]}
-        for r in question_results if r["status"] != "ok"
+    failures = [
+        compact_failure(result)
+        for result in question_results
+        if result["status"] != "ok" or not result["success"]
     ]
 
-    report = {
-        "run": {
-            "label":     label,
-            "timestamp": timestamp,
-            "model":     config.MODEL,
-            "schema":    Path(schema_path).name,
-            "benchmark": Path(benchmark_path).name,
-            "database": database or config.DATABASE_NAME,
-            "threshold": threshold,
-        },
-        "summary": summary,
-        "questions": scored,
-        "failures":  failed,
+    run_info = {
+        "label": label,
+        "timestamp": timestamp,
+        "model": config.MODEL,
+        "database": database_name,
+        "schema": Path(schema_path).name,
+        "benchmark": Path(benchmark_path).name,
+        "question_id": question_id,
+        "metric": "Precision, recall and F1 are computed over returned values. Precision and recall are equally weighted.",
+        "success_definition": "A question is marked successful only when precision and recall are both 1.0.",
     }
 
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(report, f, indent=2, default=str, ensure_ascii=False)
+    if question_id is not None and len(question_results) == 1:
+        report = {
+            "run": run_info,
+            "question": question_results[0],
+            "failure": failures[0] if failures else None,
+        }
+    else:
+        report = {
+            "run": run_info,
+            "summary": summary,
+            "failures": failures,
+            "questions": question_results,
+        }
 
-    print(f"  Saved → {path}\n")
+    with open(output_path, "w", encoding="utf-8") as file:
+        json.dump(report, file, indent=2, ensure_ascii=False, default=str)
+
+    print(f"Saved results to {output_path}")
+
+
+def compact_failure(result: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": result["id"],
+        "question": result["question"],
+        "operation": result["operation"],
+        "category": result["category"],
+        "status": result["status"],
+        "success": result["success"],
+        "failure_reason": result["failure_reason"],
+        "scores": result["scores"],
+        "counts": result["counts"],
+        "timing_ms": result["timing_ms"],
+        "gold_query": result["gold_query"],
+        "generated_query": result["generated_query"],
+        "missing_examples": (result.get("examples") or {}).get("missing"),
+        "extra_examples": (result.get("examples") or {}).get("extra"),
+    }
+
+
+def elapsed_ms(started: float) -> int:
+    return round((time.perf_counter() - started) * 1000)

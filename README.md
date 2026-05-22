@@ -1,47 +1,131 @@
 # Coder In The Loop
-> Part of a Master’s project in Information Science at the University of Bergen (UiB).
 
-Evaluating whether an LLM can reliably translate **Norwegian natural-language questions** into **MongoDB queries**, enabling journalists to explore databases without technical knowledge
+Part of a Master's project in Information Science at the University of Bergen (UiB).
 
----
+This project evaluates whether an LLM can translate Norwegian natural-language questions into MongoDB queries.
 
-## Background
+## Run Evaluations
 
-Journalists often need data from databases but lack the technical skills to write queries. This projects tests whether LLMs can bridge that gap - turning editorial questions into correct, executable MongoDB queries (MQL).
+Flat database, naive schema:
 
-## Scope
+```powershell
+python src/text_to_query/main.py --schema src/text_to_query/schemas/flat_naive.yaml --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth --label flat_naive
+```
 
-- Norwegian natural language → MongoDB Query Langauge (MQL)
-- Evaluation against a local MongoDB instance
-- Metrics: precsision, recall, F1
+Flat database, advanced schema:
 
-## Tech stack
+```powershell
+python src/text_to_query/main.py --schema src/text_to_query/schemas/flat_advanced.yaml --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth --label flat_advanced
+```
 
-- Python — pipeline and evaluation scripts
-- MongoDB — local database instance
-- MongoDB Compass — local DB setup and inspection
-- OpenAI API — LLM query generation
+Structured database, naive schema:
 
-## Project structure
+```powershell
+python src/text_to_query/main.py --schema src/text_to_query/schemas/structured_naive.yaml --benchmark src/text_to_query/benchmarks/structured.json --database groundtruthStructured --label structured_naive
+```
 
-├── config.py          # Model, database, and scoring settings
-├── pipeline.py        # Full evaluation pipeline
-├── main.py            # Entry point
-├── compare.py         # Compare results across runs
-├── benchmarks/        # Questions and gold queries
-│   ├── flat.json
-│   └── nested.json
-├── schemas/           # Database descriptions for the LLM
-│   ├── simple.yaml
-│   └── advanced.yaml
-└── results/           # Saved evaluation results (auto-created)
+Structured database, advanced schema:
 
-## How it works
+```powershell
+python src/text_to_query/main.py --schema src/text_to_query/schemas/structured_advanced.yaml --benchmark src/text_to_query/benchmarks/structured.json --database groundtruthStructured --label structured_advanced
+```
 
-## Evalauation approach
+## Multiple Runs
 
-### What you measure
+Add `--runs` to repeat a configuration.
 
-## Examples
+Example:
 
-### Example question -> MQL
+```powershell
+python src/text_to_query/main.py --schema src/text_to_query/schemas/flat_naive.yaml --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth --label flat_naive --runs 3
+```
+
+## Run One Question
+
+Add `--id` to run one benchmark question for a configuration.
+
+Flat naive, question 15:
+
+```powershell
+python src/text_to_query/main.py --schema src/text_to_query/schemas/flat_naive.yaml --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth --label flat_naive --id 15
+```
+
+Structured naive, question 15:
+
+```powershell
+python src/text_to_query/main.py --schema src/text_to_query/schemas/structured_naive.yaml --benchmark src/text_to_query/benchmarks/structured.json --database groundtruthStructured --label structured_naive --id 15
+```
+
+Run one question three times:
+
+```powershell
+python src/text_to_query/main.py --schema src/text_to_query/schemas/flat_naive.yaml --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth --label flat_naive --id 15 --runs 3
+```
+
+## Test Gold Queries
+
+Run only the gold queries from the flat benchmark:
+
+```powershell
+python src/text_to_query/test_gold_queries.py --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth
+```
+
+Run only the gold queries from the structured benchmark:
+
+```powershell
+python src/text_to_query/test_gold_queries.py --benchmark src/text_to_query/benchmarks/structured.json --database groundtruthStructured
+```
+
+Run one gold query by id:
+
+```powershell
+python src/text_to_query/test_gold_queries.py --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth --id 15
+```
+
+Print example results in the terminal:
+
+```powershell
+python src/text_to_query/test_gold_queries.py --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth --id 15 --show-results
+```
+
+Save the full result set:
+
+```powershell
+python src/text_to_query/test_gold_queries.py --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth --id 15 --save-full
+```
+
+## Compare Results
+
+Compare all saved evaluation result files:
+
+```powershell
+python src/text_to_query/compare.py
+```
+
+Compare selected result files:
+
+```powershell
+python src/text_to_query/compare.py "results/flat/flat_naive/20260522_120000_flat_naive.json" "results/flat/flat_advanced/20260522_120500_flat_advanced.json"
+```
+
+## Result Folders
+
+LLM evaluation results:
+
+```text
+results/<benchmark_name>/<schema_name>/<timestamp>_<label>.json
+```
+
+Full benchmark runs include a summary, failures, and all questions. Single-question runs with `--id` save a compact file with only the run metadata and that question.
+
+Gold-query test results:
+
+```text
+src/text_to_query/gold_results/<benchmark_name>/<timestamp>_<database>_gold_queries.json
+```
+
+## Metrics
+
+The main metrics are precision, recall, and F1.
+
+A question is marked successful only when both precision and recall are `1.0`.

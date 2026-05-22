@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 from pathlib import Path
 
 # All relative paths resolve from this file's location, not the working
@@ -6,6 +7,7 @@ from pathlib import Path
 BASE_DIR      = Path(__file__).parent
 FILES_DIR     = BASE_DIR / 'files'
 PROCESSED_DIR = BASE_DIR / 'processed'
+NACE_FILE     = FILES_DIR / 'nace.csv'
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -27,12 +29,21 @@ DATE_COLUMNS: dict[str, list[str]] = {
     'personer.csv': [
         'fødselsdato', 'registrertTid', 'oppdatertTid',
         'selskapRegistrert', 'selskapOppdatert',
-        'rolleRegistrert', 'rolleOppdatert',
+        'rolleRegistrert', 'rolleOppdatert', 'rolleStartdato', 'rolleSluttdato',
     ],
+    'politikere.csv':  ['fødselsdato'],
     'eierskap.csv':    ['eierPersonFødselsdato'],
     'selskap.csv':     ['oppløstDato', 'etablertDato'],
     'tmp_konkurs.csv': ['oppløstDato', 'etablertDato'],
     'tmp_selskap.csv': ['oppløstDato', 'etablertDato'],
+}
+
+DAYFIRST_DATE_COLUMNS: dict[str, list[str]] = {
+    'politikere.csv': ['fødselsdato'],
+}
+
+TITLE_CASE_COLUMNS: dict[str, list[str]] = {
+    'aksjeeiebok.csv': ['aksjonærNavn'],
 }
 
 COLUMN_RENAME_SELSKAP: dict[str, str] = {
@@ -74,12 +85,14 @@ FILE_CONFIGS: list[dict] = [
         'output_file': 'tmp_konkurs.csv',
         'columns_to_drop': ['nr'],
         'columns_to_rename': COLUMN_RENAME_SELSKAP,
+        'add_nace_description': True,
     },
     {
         'input_file':  'companies_active_companies_pop_100925_v3.csv',
         'output_file': 'tmp_selskap.csv',
         'columns_to_drop': ['nr'],
         'columns_to_rename': COLUMN_RENAME_SELSKAP,
+        'add_nace_description': True,
     },
     {
         'input_file':  'ownerships_2023_2025.csv',
@@ -153,7 +166,6 @@ FILE_CONFIGS: list[dict] = [
             'person.person_master_uuid',
             'person.composite_business_key',
             'company.org_nr_schema',
-            'person_company_role.to_date',
             'person_company_role.business_key',
             'person_company_role.person_uuid',
             'person_company_role.company_uuid',
@@ -202,12 +214,75 @@ FILE_CONFIGS: list[dict] = [
 # Processing helpers
 # ---------------------------------------------------------------------------
 
+def _normalize_nace_code(value: object) -> str | None:
+    if value is None:
+        return None
+
+    code = str(value).strip()
+    if not code or code.lower() in {'nan', 'none'}:
+        return None
+
+    if code.endswith('.0'):
+        code = code[:-2]
+    return code or None
+
+
+def _load_nace_descriptions() -> dict[str, str]:
+    if not NACE_FILE.exists():
+        print(f"    nace   : {NACE_FILE.name} not found")
+        return {}
+
+    try:
+        nace = pd.read_csv(NACE_FILE, delimiter=';', dtype=str, encoding='utf-8')
+    except UnicodeDecodeError:
+        nace = pd.read_csv(NACE_FILE, delimiter=';', dtype=str, encoding='cp1252')
+
+    if 'code' not in nace.columns or 'name' not in nace.columns:
+        print(f"    nace   : {NACE_FILE.name} is missing code/name columns")
+        return {}
+
+    nace['code'] = nace['code'].map(_normalize_nace_code)
+    return dict(zip(nace['code'], nace['name']))
+
+
+def _add_nace_descriptions(df: pd.DataFrame) -> pd.DataFrame:
+    if 'naceKode' not in df.columns:
+        return df
+
+    descriptions = _load_nace_descriptions()
+    if not descriptions:
+        return df
+
+    def find_description(code: object) -> str | None:
+        normalized_code = _normalize_nace_code(code)
+        if normalized_code is None:
+            return None
+        return descriptions.get(normalized_code)
+
+    df['naceBeskrivelse'] = df['naceKode'].map(find_description)
+
+    columns = [col for col in df.columns if col != 'naceBeskrivelse']
+    nace_index = columns.index('naceKode') + 1
+    columns.insert(nace_index, 'naceBeskrivelse')
+
+    matched = df['naceBeskrivelse'].notna().sum()
+    print(f"    nace   : {matched:,}/{len(df):,} code(s) matched")
+    return df[columns]
+
+
 def _convert_date_columns(df: pd.DataFrame, output_filename: str) -> pd.DataFrame:
     """Convert known date columns to clean UTC ISO 8601 strings for MongoDB."""
+    dayfirst_columns = DAYFIRST_DATE_COLUMNS.get(output_filename, [])
+
     for col in DATE_COLUMNS.get(output_filename, []):
         if col in df.columns:
             df[col] = (
-                pd.to_datetime(df[col], utc=True, errors='coerce')
+                pd.to_datetime(
+                    df[col],
+                    utc=True,
+                    errors='coerce',
+                    dayfirst=col in dayfirst_columns,
+                )
                 .dt.strftime('%Y-%m-%dT%H:%M:%SZ')
             )
             print(f"    date   : {col}")
@@ -221,6 +296,29 @@ def _map_gender_columns(df: pd.DataFrame) -> pd.DataFrame:
             df[uuid_col] = df[uuid_col].map(GENDER_UUID_MAP)
             df = df.rename(columns={uuid_col: label_col})
             print(f"    gender : {uuid_col!r} -> {label_col!r}")
+    return df
+
+
+def _title_case_name(value: object) -> object:
+    if value is None:
+        return value
+
+    text = str(value).strip()
+    if not text or text.lower() in {'nan', 'none'}:
+        return value
+
+    return re.sub(
+        r"[^\W\d_]+",
+        lambda match: match.group(0).capitalize(),
+        text.lower(),
+    )
+
+
+def _title_case_columns(df: pd.DataFrame, output_filename: str) -> pd.DataFrame:
+    for col in TITLE_CASE_COLUMNS.get(output_filename, []):
+        if col in df.columns:
+            df[col] = df[col].map(_title_case_name)
+            print(f"    names  : {col}")
     return df
 
 
@@ -239,6 +337,7 @@ def process_csv_files(file_configs: list[dict]) -> None:
         columns_to_drop   : list – columns to remove (optional)
         columns_to_rename : dict – {old: new} renames (optional)
         delimiter         : str  – input delimiter, default ','
+        add_nace_description : bool – add NACE description after naceKode
     """
     print(f"Processing {len(file_configs)} file(s)\n{'─' * 50}")
 
@@ -271,7 +370,11 @@ def process_csv_files(file_configs: list[dict]) -> None:
                 df = df.rename(columns=valid_renames)
                 print(f"  renamed: {len(valid_renames)} column(s)")
 
+            if config.get('add_nace_description'):
+                df = _add_nace_descriptions(df)
+
             df = _map_gender_columns(df)
+            df = _title_case_columns(df, output_path.name)
             df = _convert_date_columns(df, output_path.name)
 
             output_path.parent.mkdir(parents=True, exist_ok=True)

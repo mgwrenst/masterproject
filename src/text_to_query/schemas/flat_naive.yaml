@@ -1,0 +1,29 @@
+beskrivelse: >
+  Dette er en database med informasjon om norske selskaper, personer med selskapsroller, eierskap, aksjeeierbok og politikere. Databasen kan brukes til å undersøke forbindelser mellom personer, selskaper og politiske tilknytninger. Noen spørsmål krever at informasjon sammenlignes mellom ulike deler av databasen, ofte ved hjelp av organisasjonsnummer, navn eller andre identifikatorer.
+
+samlinger:
+
+  - navn: "selskap"
+    beskrivelse: >
+      Selskap inneholder informasjon om norske selskaper. Her finnes blant annet informasjon om navn, uuid, orgNr (organisasjonsnummer), organisasjonstype, konkursFlagg (1 for konkurs, 0 for ikke konkurs), likvidasjonFlagg (1 for likvidasjon, 0 for ikke likvidasjon), naceKode (bransjekode), naceBeskrivelse (bransjebeskrivelse), etablertDato og oppløstDato. Samlingen kan brukes når spørsmål handler om selskaper, konkurser, organisasjonstyper eller bransjer.
+
+  - navn: "personer"
+    beskrivelse: >
+      Personer inneholder informasjon om personer og hvilke roller de har hatt i selskaper. Hver oppføring beskriver en person sin rolle i ett selskap, og samme person kan derfor forekomme flere ganger dersom personen har hatt flere roller. Her finnes blant annet feltene uuid, navn, fødselsdato, fødselsår, kjønn, adresse, kommuneNavn, kommuneNr, postnummer, poststed, land og landkode. Rollen og selskapet personen er knyttet til beskrives med feltene selskapNavn, selskapOrgNr, selskapUUID, selskapRolle, selskapRolleRang, selskapRolleUUID, rolleUUID, rolleStartdato, rolleRegistrert, rolleOppdatert, selskapRegistrert, selskapOppdatert, registrertTid og oppdatertTid. Samlingen kan brukes når spørsmål handler om personer, roller i selskaper, hvor personer er registrert, eller hvilke selskaper personer har roller i.
+
+  - navn: "eierskap"
+    beskrivelse: >
+      Eierskap inneholder informasjon om hvem som eier aksjer i selskaper. Eieren kan være enten en person eller et selskap. Dersom eieren er en person, finnes informasjon i feltene eierPersonNavn, eierPersonFødselsdato, eierPersonFødselsår, eierPersonKjønn, eierPersonAdresse, eierPersonKommune, eierPersonKommuneNr, eierPersonPostkode, eierPersonPoststed og eierPersonUUID. Dersom eieren er et selskap, finnes informasjon i feltene eierSelskapNavn, eierSelskapOrgNr og eierSelskapUUID. Selskapet det eies aksjer i beskrives med feltene utstederNavn, utstederOrgNr og utstederUUID. Selve eierskapet beskrives med feltene eierskapAksjonær, eierskapAndel, eierskapAntall, eierskapStemmeandel, eierskapStemmeantall, eierskapTotalAntall, eierskapTotalStemmeantall, eierskapUUID og eierskapår. Samlingen kan brukes når spørsmål handler om eiere, eierandeler, antall aksjer, stemmerettigheter eller eierskap per år.
+
+  - navn: "aksjeeiebok"
+    beskrivelse: >
+      Aksjeeiebok viser aksjonærer i selskaper per år og aksjeklasse. Her finnes blant annet feltene orgNr, selskap, år, aksjeklasse, aksjonærNavn, fødselsår, landkode, postnr/sted, antallAksjer og antallAksjerSelskap. Aksjonærnavn er skrevet som vanlige navn, for eksempel Ola Nordmann. Samlingen kan brukes når spørsmål handler om aksjonærer, aksjeklasser, aksjer per selskap, aksjonærer fra bestemte land eller aksjonærer født i bestemte år.
+
+  - navn: "politikere"
+    beskrivelse: >
+      Politikere inneholder informasjon om politikere, politisk parti, kommune og valgresultater. Her finnes blant annet feltene navn, fødselsdato, partinavn, kommune, kommunenummer, listeplass, personstemmer, slengere, stemmetillegg, endelig_rangering og innvalgt ("Ja" eller "Nei"). Samlingen kan brukes når spørsmål handler om politikere, partier, kommuner, valgresultater, listeplasseringer eller hvem som ble innvalgt.
+
+notater:
+  - "Personer kan ofte kobles til selskaper gjennom organisasjonsnummer, for eksempel selskap.orgNr og personer.selskapOrgNr."
+  - "Eierskap og aksjeeiebok kan ofte kobles til selskaper gjennom organisasjonsnummer, for eksempel eierskap.utstederOrgNr og aksjeeiebok.orgNr."
+  - "Politikere kan noen ganger sammenlignes med personer eller aksjonærer basert på navn og fødselsdato, men navn alene er ikke alltid en sikker identitetskobling."

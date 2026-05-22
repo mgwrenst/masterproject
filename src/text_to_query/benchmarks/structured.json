@@ -1,13 +1,17 @@
 [
   {
     "id": 1,
-    "question": "Finn alle typer roller som en person kan ha",
+    "question": "Finn alle typer selskapsroller personer kan ha",
     "category": "distinct",
     "gold": {
       "op": "distinct",
       "collection": "personer",
       "field": "roller.rolle",
-      "filter": {}
+      "filter": {
+        "roller.rolle": {
+          "$ne": null
+        }
+      }
     }
   },
   {
@@ -19,19 +23,7 @@
       "collection": "selskap",
       "field": "organisasjonstype",
       "filter": {
-        "status.konkursFlagg": 1
-      }
-    }
-  },
-  {
-    "id": 3,
-    "question": "Finn alle organisasjonstypene som finnes i databasen, dropp null-verdier",
-    "category": "distinct",
-    "gold": {
-      "op": "distinct",
-      "collection": "selskap",
-      "field": "organisasjonstype",
-      "filter": {
+        "status.konkursFlagg": 1,
         "organisasjonstype": {
           "$ne": null
         }
@@ -39,8 +31,8 @@
     }
   },
   {
-    "id": 4,
-    "question": "Finn navn og organisasjonsnummer på konkursbedrifter samt dato for oppløsningen",
+    "id": 3,
+    "question": "Finn navn, organisasjonsnummer og oppløsningsdato for konkursbedrifter",
     "category": "find_projection",
     "gold": {
       "op": "find",
@@ -57,9 +49,9 @@
     }
   },
   {
-    "id": 5,
-    "question": "Finn alle selskaper som både er i konkurs og under likvidasjon",
-    "category": "find_projection",
+    "id": 4,
+    "question": "Finn selskaper som både er i konkurs og under likvidasjon",
+    "category": "find_multiple_conditions",
     "gold": {
       "op": "find",
       "collection": "selskap",
@@ -75,9 +67,30 @@
     }
   },
   {
+    "id": 5,
+    "question": "Finn selskaper etablert mellom 2015 og 2020",
+    "category": "range_query",
+    "gold": {
+      "op": "find",
+      "collection": "selskap",
+      "filter": {
+        "datoer.etablertDato": {
+          "$gte": "2015-01-01",
+          "$lte": "2020-12-31"
+        }
+      },
+      "projection": {
+        "navn": 1,
+        "orgNr": 1,
+        "datoer.etablertDato": 1,
+        "_id": 0
+      }
+    }
+  },
+  {
     "id": 6,
-    "question": "Finn antall konkurser per organisasjonstype, sortert etter antall",
-    "category": "aggregate",
+    "question": "Finn antall konkurser per organisasjonstype, sortert synkende",
+    "category": "aggregate_group_sort",
     "gold": {
       "op": "aggregate",
       "collection": "selskap",
@@ -105,78 +118,86 @@
   },
   {
     "id": 7,
-    "question": "Finn organisasjonstypen med færrest konkurser",
-    "category": "aggregate",
+    "question": "Finn gjennomsnittlig eierandel per selskap",
+    "category": "aggregate_avg",
     "gold": {
       "op": "aggregate",
       "collection": "selskap",
       "pipeline": [
         {
-          "$match": {
-            "status.konkursFlagg": 1,
-            "organisasjonstype": {
-              "$ne": null
-            }
-          }
+          "$unwind": "$eierskap"
         },
         {
           "$group": {
-            "_id": "$organisasjonstype",
-            "antall": {
-              "$sum": 1
+            "_id": "$navn",
+            "gjennomsnittligAndel": {
+              "$avg": "$eierskap.aksjer.andel"
             }
           }
         },
         {
           "$sort": {
-            "antall": 1
+            "gjennomsnittligAndel": -1
           }
-        },
-        {
-          "$limit": 1
         }
       ]
     }
   },
   {
     "id": 8,
-    "question": "Finn alle selskaper etablert etter år 2020. Returner navn, organisasjonsnummer og etableringsdato",
-    "category": "find_projection",
+    "question": "Finn personer med rollen daglig leder og hvilket selskap rollen gjelder",
+    "category": "array_unwind_or_flat_find",
     "gold": {
-      "op": "find",
-      "collection": "selskap",
-      "filter": {
-        "datoer.etablertDato": {
-          "$gte": "2020-01-01"
+      "op": "aggregate",
+      "collection": "personer",
+      "pipeline": [
+        {
+          "$unwind": "$roller"
+        },
+        {
+          "$match": {
+            "roller.rolle": "Daglig leder"
+          }
+        },
+        {
+          "$project": {
+            "navn": 1,
+            "fødselsdato": 1,
+            "selskapNavn": "$roller.selskap.navn",
+            "selskapOrgNr": "$roller.selskap.orgNr",
+            "_id": 0
+          }
         }
-      },
-      "projection": {
-        "navn": 1,
-        "orgNr": 1,
-        "datoer.etablertDato": 1,
-        "_id": 0
-      }
+      ]
     }
   },
   {
     "id": 9,
-    "question": "Finn antall selskaper per organisasjonstype",
-    "category": "aggregate",
+    "question": "Finn antall selskapsroller per person, sortert synkende",
+    "category": "aggregate_count_per_entity",
     "gold": {
       "op": "aggregate",
-      "collection": "selskap",
+      "collection": "personer",
       "pipeline": [
         {
-          "$group": {
-            "_id": "$organisasjonstype",
-            "antall": {
-              "$sum": 1
+          "$project": {
+            "_id": {
+              "navn": "$navn",
+              "fødselsdato": "$fødselsdato"
+            },
+            "antallRoller": {
+              "$size": {
+                "$ifNull": [
+                  "$roller",
+                  []
+                ]
+              }
             }
           }
         },
         {
           "$sort": {
-            "antall": -1
+            "antallRoller": -1
           }
         }
       ]
@@ -184,82 +205,93 @@
   },
   {
     "id": 10,
-    "question": "Finn alle AS-selskaper (aksjeselskap)",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "selskap",
-      "filter": {
-        "organisasjonstype": "AS"
-      },
-      "projection": {
-        "navn": 1,
-        "orgNr": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 11,
-    "question": "Finn alle selskaper etablert mellom 2015 og 2020",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "selskap",
-      "filter": {
-        "datoer.etablertDato": {
-          "$gte": "2015-01-01",
-          "$lte": "2020-12-31"
-        }
-      },
-      "projection": {
-        "navn": 1,
-        "orgNr": 1,
-        "datoer.etablertDato": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 12,
-    "question": "Finn konkursbedrifter som ble oppløst i 2022",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "selskap",
-      "filter": {
-        "status.konkursFlagg": 1,
-        "datoer.oppløstDato": {
-          "$gte": "2022-01-01",
-          "$lt": "2023-01-01"
-        }
-      },
-      "projection": {
-        "navn": 1,
-        "orgNr": 1,
-        "datoer.oppløstDato": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 13,
-    "question": "Finn antall selskaper per NACE-kode",
-    "category": "aggregate",
+    "question": "Finn antall distinkte selskaper som har registrerte personer med roller",
+    "category": "aggregate_distinct_count",
     "gold": {
       "op": "aggregate",
       "collection": "selskap",
       "pipeline": [
         {
           "$match": {
-            "bransje.naceKode": {
-              "$ne": null
+            "roller.0": {
+              "$exists": true
             }
           }
         },
         {
           "$group": {
-            "_id": "$naceKode",
+            "_id": null,
+            "selskaper": {
+              "$addToSet": "$orgNr"
+            }
+          }
+        },
+        {
+          "$project": {
+            "_id": 0,
+            "antall": {
+              "$size": "$selskaper"
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 11,
+    "question": "Finn alle politikere fra partiet Høyre",
+    "category": "find_nested_or_collection",
+    "gold": {
+      "op": "find",
+      "collection": "personer",
+      "filter": {
+        "politiker.erPolitiker": true,
+        "politiker.partinavn": "Høyre"
+      },
+      "projection": {
+        "navn": 1,
+        "fødselsdato": 1,
+        "politiker.kommune": 1,
+        "_id": 0
+      }
+    }
+  },
+  {
+    "id": 12,
+    "question": "Finn alle innvalgte politikere",
+    "category": "find_projection",
+    "gold": {
+      "op": "find",
+      "collection": "personer",
+      "filter": {
+        "politiker.erPolitiker": true,
+        "politiker.innvalgt": "Ja"
+      },
+      "projection": {
+        "navn": 1,
+        "fødselsdato": 1,
+        "politiker.partinavn": 1,
+        "politiker.kommune": 1,
+        "_id": 0
+      }
+    }
+  },
+  {
+    "id": 13,
+    "question": "Finn antall politikere per parti",
+    "category": "aggregate_group_sort",
+    "gold": {
+      "op": "aggregate",
+      "collection": "personer",
+      "pipeline": [
+        {
+          "$match": {
+            "politiker.erPolitiker": true
+          }
+        },
+        {
+          "$group": {
+            "_id": "$politiker.partinavn",
             "antall": {
               "$sum": 1
             }
@@ -275,378 +307,8 @@
   },
   {
     "id": 14,
-    "question": "Finn ENK-bedrifter (enkeltpersonforetak)",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "selskap",
-      "filter": {
-        "organisasjonstype": "ENK"
-      },
-      "projection": {
-        "navn": 1,
-        "orgNr": 1,
-        "datoer.etablertDato": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 15,
-    "question": "Finn personer med rollen daglig leder",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "personer",
-      "filter": {
-        "roller.rolle": "Daglig leder"
-      },
-      "projection": {
-        "navn": 1,
-        "fødselsdato": 1,
-        "roller.rolle": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 16,
-    "question": "Finn personer som har hatt forhenværende roller (med sluttdato)",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "personer",
-      "filter": {
-        "rolleSluttdato": {
-          "$ne": null
-        }
-      },
-      "projection": {
-        "navn": 1,
-        "fødselsdato": 1,
-        "roller.rolle": 1,
-        "rolleStartdato": 1,
-        "rolleSluttdato": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 17,
-    "question": "Finn personer som har aktive roller i DELOITTE ADVOKATFIRMA AS",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "personer",
-      "filter": {
-        "selskapNavn": "DELOITTE ADVOKATFIRMA AS",
-        "rolleSluttdato": null
-      },
-      "projection": {
-        "navn": 1,
-        "fødselsdato": 1,
-        "roller.rolle": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 18,
-    "question": "Finn antall personer per selskapsnavn",
-    "category": "aggregate",
-    "gold": {
-      "op": "aggregate",
-      "collection": "personer",
-      "pipeline": [
-        {
-          "$group": {
-            "_id": "$selskapNavn",
-            "antall": {
-              "$sum": 1
-            }
-          }
-        },
-        {
-          "$sort": {
-            "antall": -1
-          }
-        }
-      ]
-    }
-  },
-  {
-    "id": 19,
-    "question": "Finn antall roller per person",
-    "category": "aggregate",
-    "gold": {
-      "op": "aggregate",
-      "collection": "personer",
-      "pipeline": [
-        {
-          "$group": {
-            "_id": {
-              "navn": "$navn",
-              "fødselsdato": "$fødselsdato"
-            },
-            "antallRoller": {
-              "$sum": 1
-            }
-          }
-        },
-        {
-          "$sort": {
-            "antallRoller": -1
-          }
-        }
-      ]
-    }
-  },
-  {
-    "id": 20,
-    "question": "Finn alle distinkte kommunenavn hvor personer er registrert",
-    "category": "distinct",
-    "gold": {
-      "op": "distinct",
-      "collection": "personer",
-      "field": "adresse.kommuneNavn",
-      "filter": {
-        "adresse.kommuneNavn": {
-          "$ne": null
-        }
-      }
-    }
-  },
-  {
-    "id": 21,
-    "question": "Finn personer født i 1980",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "personer",
-      "filter": {
-        "fødselsår": 1980
-      },
-      "projection": {
-        "navn": 1,
-        "fødselsdato": 1,
-        "roller.rolle": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 22,
-    "question": "Finn antall personer per kommune",
-    "category": "aggregate",
-    "gold": {
-      "op": "aggregate",
-      "collection": "personer",
-      "pipeline": [
-        {
-          "$match": {
-            "adresse.kommuneNavn": {
-              "$ne": null
-            }
-          }
-        },
-        {
-          "$group": {
-            "_id": "$kommuneNavn",
-            "antall": {
-              "$sum": 1
-            }
-          }
-        },
-        {
-          "$sort": {
-            "antall": -1
-          }
-        }
-      ]
-    }
-  },
-  {
-    "id": 23,
-    "question": "Finn personer med roller i Oslo kommune",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "personer",
-      "filter": {
-        "adresse.kommuneNavn": "Oslo"
-      },
-      "projection": {
-        "navn": 1,
-        "fødselsdato": 1,
-        "roller.rolle": 1,
-        "selskapNavn": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 24,
-    "question": "Finn antall distinkte selskaper som personer har roller i",
-    "category": "aggregate",
-    "gold": {
-      "op": "aggregate",
-      "collection": "personer",
-      "pipeline": [
-        {
-          "$group": {
-            "_id": null,
-            "antallSelskaper": {
-              "$addToSet": "$selskapOrgNr"
-            }
-          }
-        },
-        {
-          "$project": {
-            "antall": {
-              "$size": "$antallSelskaper"
-            }
-          }
-        }
-      ]
-    }
-  },
-  {
-    "id": 25,
-    "question": "Finn alle politikere fra partiet Høyre",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "personer",
-      "filter": {
-        "politiker.partinavn": "Høyre"
-      },
-      "projection": {
-        "navn": 1,
-        "fødselsdato": 1,
-        "politiker.kommune": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 26,
-    "question": "Finn alle innvalgte politikere",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "personer",
-      "filter": {
-        "politiker.erPolitiker": true
-      },
-      "projection": {
-        "navn": 1,
-        "fødselsdato": 1,
-        "politiker.partinavn": 1,
-        "politiker.kommune": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 27,
-    "question": "Finn antall politikere per parti",
-    "category": "aggregate",
-    "gold": {
-      "op": "aggregate",
-      "collection": "personer",
-      "pipeline": [
-        {
-          "$group": {
-            "_id": "$partinavn",
-            "antall": {
-              "$sum": 1
-            }
-          }
-        },
-        {
-          "$sort": {
-            "antall": -1
-          }
-        }
-      ]
-    }
-  },
-  {
-    "id": 28,
-    "question": "Finn antall innvalgte politikere per parti",
-    "category": "aggregate",
-    "gold": {
-      "op": "aggregate",
-      "collection": "personer",
-      "pipeline": [
-        {
-          "$match": {
-            "politiker.innvalgt": true
-          }
-        },
-        {
-          "$group": {
-            "_id": "$partinavn",
-            "antall": {
-              "$sum": 1
-            }
-          }
-        },
-        {
-          "$sort": {
-            "antall": -1
-          }
-        }
-      ]
-    }
-  },
-  {
-    "id": 29,
-    "question": "Finn alle innvalgte politikere fra Fremskrittspartiet",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "personer",
-      "filter": {
-        "politiker.partinavn": "Fremskrittspartiet",
-        "politiker.innvalgt": true
-      },
-      "projection": {
-        "navn": 1,
-        "fødselsdato": 1,
-        "politiker.kommune": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 30,
-    "question": "Finn antall politikere per kommune",
-    "category": "aggregate",
-    "gold": {
-      "op": "aggregate",
-      "collection": "personer",
-      "pipeline": [
-        {
-          "$group": {
-            "_id": "$kommune",
-            "antall": {
-              "$sum": 1
-            }
-          }
-        },
-        {
-          "$sort": {
-            "antall": -1
-          }
-        }
-      ]
-    }
-  },
-  {
-    "id": 31,
     "question": "Finn politikere med mer enn 100 personstemmer",
-    "category": "find_projection",
+    "category": "comparison_query",
     "gold": {
       "op": "find",
       "collection": "personer",
@@ -664,16 +326,584 @@
     }
   },
   {
-    "id": 32,
-    "question": "Finn gjennomsnittsalder for politikere som ble innvalgt",
-    "category": "aggregate",
+    "id": 15,
+    "question": "Finn hvor mange politikere som har hatt minst én selskapsrolle",
+    "category": "join_count_or_embedded_count",
     "gold": {
       "op": "aggregate",
       "collection": "personer",
       "pipeline": [
         {
           "$match": {
-            "politiker.innvalgt": true,
+            "politiker.erPolitiker": true,
+            "roller.0": {
+              "$exists": true
+            }
+          }
+        },
+        {
+          "$count": "antallPolitikereMedRoller"
+        }
+      ]
+    }
+  },
+  {
+    "id": 16,
+    "question": "Finn politikere som eier aksjer",
+    "category": "join_or_embedded_array",
+    "gold": {
+      "op": "find",
+      "collection": "personer",
+      "filter": {
+        "politiker.erPolitiker": true,
+        "eierskap.0": {
+          "$exists": true
+        }
+      },
+      "projection": {
+        "navn": 1,
+        "fødselsdato": 1,
+        "politiker.partinavn": 1,
+        "politiker.kommune": 1,
+        "eierskap.selskap.navn": 1,
+        "eierskap.aksjer.andel": 1,
+        "_id": 0
+      }
+    }
+  },
+  {
+    "id": 17,
+    "question": "Finn hvor mange politikere som eier aksjer",
+    "category": "join_count_or_embedded_count",
+    "gold": {
+      "op": "aggregate",
+      "collection": "personer",
+      "pipeline": [
+        {
+          "$match": {
+            "politiker.erPolitiker": true,
+            "eierskap.0": {
+              "$exists": true
+            }
+          }
+        },
+        {
+          "$count": "antallPolitikereMedEierskap"
+        }
+      ]
+    }
+  },
+  {
+    "id": 18,
+    "question": "Finn politikere som står oppført som aksjonærer i aksjeeierboken",
+    "category": "lookup_or_nested_match",
+    "gold": {
+      "op": "aggregate",
+      "collection": "selskap",
+      "pipeline": [
+        {
+          "$unwind": "$aksjeeiebok"
+        },
+        {
+          "$match": {
+            "aksjeeiebok.aksjonær.politiker.erPolitiker": true
+          }
+        },
+        {
+          "$project": {
+            "aksjonærNavn": "$aksjeeiebok.aksjonær.navn",
+            "selskap": "$navn",
+            "partinavn": "$aksjeeiebok.aksjonær.politiker.partinavn",
+            "kommune": "$aksjeeiebok.aksjonær.politiker.kommune",
+            "_id": 0
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 19,
+    "question": "Finn selskaper som har minst én politiker med selskapsrolle",
+    "category": "lookup_or_nested_match",
+    "gold": {
+      "op": "aggregate",
+      "collection": "selskap",
+      "pipeline": [
+        {
+          "$unwind": "$roller"
+        },
+        {
+          "$match": {
+            "roller.person.politiker.erPolitiker": true
+          }
+        },
+        {
+          "$group": {
+            "_id": {
+              "navn": "$navn",
+              "orgNr": "$orgNr"
+            },
+            "antallPolitikerRoller": {
+              "$sum": 1
+            }
+          }
+        },
+        {
+          "$project": {
+            "_id": 0,
+            "navn": "$_id.navn",
+            "orgNr": "$_id.orgNr",
+            "antallPolitikerRoller": 1
+          }
+        },
+        {
+          "$sort": {
+            "antallPolitikerRoller": -1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 20,
+    "question": "Finn aksjonærer med mer enn 1000 aksjer",
+    "category": "array_unwind_or_flat_find",
+    "gold": {
+      "op": "aggregate",
+      "collection": "selskap",
+      "pipeline": [
+        {
+          "$unwind": "$aksjeeiebok"
+        },
+        {
+          "$match": {
+            "aksjeeiebok.aksjer.antall": {
+              "$gt": 1000
+            }
+          }
+        },
+        {
+          "$project": {
+            "aksjonærNavn": "$aksjeeiebok.aksjonær.navn",
+            "selskap": "$navn",
+            "antallAksjer": "$aksjeeiebok.aksjer.antall",
+            "år": "$aksjeeiebok.år",
+            "_id": 0
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 21,
+    "question": "Finn aksjonærer født før 1970",
+    "category": "comparison_query",
+    "gold": {
+      "op": "aggregate",
+      "collection": "selskap",
+      "pipeline": [
+        {
+          "$unwind": "$aksjeeiebok"
+        },
+        {
+          "$match": {
+            "aksjeeiebok.aksjonær.fødselsår": {
+              "$lt": 1970
+            }
+          }
+        },
+        {
+          "$project": {
+            "aksjonærNavn": "$aksjeeiebok.aksjonær.navn",
+            "fødselsår": "$aksjeeiebok.aksjonær.fødselsår",
+            "selskap": "$navn",
+            "_id": 0
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 22,
+    "question": "Finn antall aksjonæroppføringer per selskap",
+    "category": "aggregate_unwind_group",
+    "gold": {
+      "op": "aggregate",
+      "collection": "selskap",
+      "pipeline": [
+        {
+          "$project": {
+            "_id": "$navn",
+            "antallAksjonærer": {
+              "$size": {
+                "$ifNull": [
+                  "$aksjeeiebok",
+                  []
+                ]
+              }
+            }
+          }
+        },
+        {
+          "$sort": {
+            "antallAksjonærer": -1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 23,
+    "question": "Finn antall aksjeeierbokoppføringer per år",
+    "category": "aggregate_group_sort",
+    "gold": {
+      "op": "aggregate",
+      "collection": "selskap",
+      "pipeline": [
+        {
+          "$unwind": "$aksjeeiebok"
+        },
+        {
+          "$group": {
+            "_id": "$aksjeeiebok.år",
+            "antall": {
+              "$sum": 1
+            }
+          }
+        },
+        {
+          "$sort": {
+            "_id": -1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 24,
+    "question": "Finn eierskap hvor eieren har mer enn 50 prosent eierandel",
+    "category": "comparison_query",
+    "gold": {
+      "op": "aggregate",
+      "collection": "selskap",
+      "pipeline": [
+        {
+          "$unwind": "$eierskap"
+        },
+        {
+          "$match": {
+            "eierskap.aksjer.andel": {
+              "$gt": 50
+            }
+          }
+        },
+        {
+          "$project": {
+            "eierNavn": "$eierskap.eier.navn",
+            "eierType": "$eierskap.eier.type",
+            "utstederNavn": "$navn",
+            "eierskapAndel": "$eierskap.aksjer.andel",
+            "eierskapår": "$eierskap.år",
+            "_id": 0
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 25,
+    "question": "Finn alle eierskapsforhold fra år 2023",
+    "category": "equality_query",
+    "gold": {
+      "op": "aggregate",
+      "collection": "selskap",
+      "pipeline": [
+        {
+          "$unwind": "$eierskap"
+        },
+        {
+          "$match": {
+            "eierskap.år": 2023
+          }
+        },
+        {
+          "$project": {
+            "eierNavn": "$eierskap.eier.navn",
+            "eierType": "$eierskap.eier.type",
+            "utstederNavn": "$navn",
+            "eierskapAndel": "$eierskap.aksjer.andel",
+            "_id": 0
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 26,
+    "question": "Finn antall eierskapsforhold per år",
+    "category": "aggregate_unwind_group",
+    "gold": {
+      "op": "aggregate",
+      "collection": "selskap",
+      "pipeline": [
+        {
+          "$unwind": "$eierskap"
+        },
+        {
+          "$group": {
+            "_id": "$eierskap.år",
+            "antall": {
+              "$sum": 1
+            }
+          }
+        },
+        {
+          "$sort": {
+            "_id": -1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 27,
+    "question": "Finn eierskap hvor eieren er et selskap og ikke en person",
+    "category": "null_or_type_filter",
+    "gold": {
+      "op": "aggregate",
+      "collection": "selskap",
+      "pipeline": [
+        {
+          "$unwind": "$eierskap"
+        },
+        {
+          "$match": {
+            "eierskap.eier.type": "selskap"
+          }
+        },
+        {
+          "$project": {
+            "eierSelskapNavn": "$eierskap.eier.navn",
+            "utstederNavn": "$navn",
+            "eierskapAndel": "$eierskap.aksjer.andel",
+            "_id": 0
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 28,
+    "question": "Finn personer som eier aksjer i flere enn ett selskap",
+    "category": "aggregate_set_size",
+    "gold": {
+      "op": "aggregate",
+      "collection": "personer",
+      "pipeline": [
+        {
+          "$unwind": "$eierskap"
+        },
+        {
+          "$group": {
+            "_id": {
+              "navn": "$navn",
+              "fødselsdato": "$fødselsdato"
+            },
+            "selskaper": {
+              "$addToSet": "$eierskap.selskap.orgNr"
+            }
+          }
+        },
+        {
+          "$project": {
+            "antallSelskaper": {
+              "$size": "$selskaper"
+            }
+          }
+        },
+        {
+          "$match": {
+            "antallSelskaper": {
+              "$gt": 1
+            }
+          }
+        },
+        {
+          "$sort": {
+            "antallSelskaper": -1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 29,
+    "question": "Finn totalt antall aksjer eid per person",
+    "category": "aggregate_sum",
+    "gold": {
+      "op": "aggregate",
+      "collection": "personer",
+      "pipeline": [
+        {
+          "$unwind": "$eierskap"
+        },
+        {
+          "$group": {
+            "_id": {
+              "navn": "$navn",
+              "fødselsdato": "$fødselsdato"
+            },
+            "totaltAntall": {
+              "$sum": "$eierskap.aksjer.antall"
+            }
+          }
+        },
+        {
+          "$sort": {
+            "totaltAntall": -1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 30,
+    "question": "Finn selskaper med flere enn 10 registrerte rolleoppføringer",
+    "category": "having_group_or_array_size",
+    "gold": {
+      "op": "aggregate",
+      "collection": "selskap",
+      "pipeline": [
+        {
+          "$project": {
+            "navn": 1,
+            "orgNr": 1,
+            "antallRoller": {
+              "$size": {
+                "$ifNull": [
+                  "$roller",
+                  []
+                ]
+              }
+            }
+          }
+        },
+        {
+          "$match": {
+            "antallRoller": {
+              "$gt": 10
+            }
+          }
+        },
+        {
+          "$sort": {
+            "antallRoller": -1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 31,
+    "question": "Finn selskaper som har aksjonærer fra Norge",
+    "category": "array_elem_match",
+    "gold": {
+      "op": "find",
+      "collection": "selskap",
+      "filter": {
+        "aksjeeiebok": {
+          "$elemMatch": {
+            "aksjonær.landkode": "NO"
+          }
+        }
+      },
+      "projection": {
+        "navn": 1,
+        "orgNr": 1,
+        "_id": 0
+      }
+    }
+  },
+  {
+    "id": 32,
+    "question": "Finn antall rolleoppføringer per rolletype",
+    "category": "aggregate_group_sort",
+    "gold": {
+      "op": "aggregate",
+      "collection": "personer",
+      "pipeline": [
+        {
+          "$unwind": "$roller"
+        },
+        {
+          "$group": {
+            "_id": "$roller.rolle",
+            "antall": {
+              "$sum": 1
+            }
+          }
+        },
+        {
+          "$sort": {
+            "antall": -1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 33,
+    "question": "Finn største aksjepost per selskap basert på antall aksjer",
+    "category": "aggregate_sort_group",
+    "gold": {
+      "op": "aggregate",
+      "collection": "selskap",
+      "pipeline": [
+        {
+          "$unwind": "$aksjeeiebok"
+        },
+        {
+          "$sort": {
+            "orgNr": 1,
+            "aksjeeiebok.aksjer.antall": -1
+          }
+        },
+        {
+          "$group": {
+            "_id": {
+              "selskap": "$navn",
+              "orgNr": "$orgNr"
+            },
+            "aksjonærNavn": {
+              "$first": "$aksjeeiebok.aksjonær.navn"
+            },
+            "antallAksjer": {
+              "$first": "$aksjeeiebok.aksjer.antall"
+            },
+            "år": {
+              "$first": "$aksjeeiebok.år"
+            }
+          }
+        },
+        {
+          "$sort": {
+            "antallAksjer": -1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 34,
+    "question": "Finn gjennomsnittsalder for innvalgte politikere",
+    "category": "aggregate_date_calculation",
+    "gold": {
+      "op": "aggregate",
+      "collection": "personer",
+      "pipeline": [
+        {
+          "$match": {
+            "politiker.innvalgt": "Ja",
             "fødselsdato": {
               "$ne": null
             }
@@ -714,428 +944,46 @@
     }
   },
   {
-    "id": 33,
-    "question": "Finn politikere med listeplass 1",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "personer",
-      "filter": {
-        "politiker.valg.listeplass": 1
-      },
-      "projection": {
-        "navn": 1,
-        "politiker.partinavn": 1,
-        "politiker.kommune": 1,
-        "politiker.innvalgt": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 34,
-    "question": "Finn politikere som ble innvalgt fra listeplass høyere enn 5",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "personer",
-      "filter": {
-        "politiker.innvalgt": true,
-        "politiker.valg.listeplass": {
-          "$gt": 5
-        }
-      },
-      "projection": {
-        "navn": 1,
-        "politiker.partinavn": 1,
-        "politiker.valg.listeplass": 1,
-        "politiker.valg.personstemmer": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
     "id": 35,
-    "question": "Finn eierskap hvor eierpersonen eier mer enn 50 prosent",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "personer",
-      "filter": {
-        "eierskap.aksjer.andel": {
-          "$gt": 50
-        }
-      },
-      "projection": {
-        "navn": 1,
-        "eierskap.selskap.navn": 1,
-        "eierskap.aksjer.andel": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 36,
-    "question": "Finn alle eierskapsforhold fra år 2023",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "personer",
-      "filter": {
-        "eierskap.år": 2023
-      },
-      "projection": {
-        "eierskap.eier.navn": 1,
-        "eierskap.selskap.navn": 1,
-        "eierskap.aksjer.andel": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 37,
-    "question": "Finn antall eierskapsforhold per år",
-    "category": "aggregate",
+    "question": "Finn selskaper som har minst én politiker som eier",
+    "category": "lookup_or_nested_politician_owner",
     "gold": {
       "op": "aggregate",
       "collection": "personer",
       "pipeline": [
         {
-          "$group": {
-            "_id": "$eierskapår",
-            "antall": {
-              "$sum": 1
-            }
+          "$match": {
+            "politiker.erPolitiker": true
           }
         },
         {
-          "$sort": {
-            "_id": -1
-          }
-        }
-      ]
-    }
-  },
-  {
-    "id": 38,
-    "question": "Finn gjennomsnittlig eierandel per selskap",
-    "category": "aggregate",
-    "gold": {
-      "op": "aggregate",
-      "collection": "personer",
-      "pipeline": [
-        {
-          "$group": {
-            "_id": "$utstederNavn",
-            "gjennomsnittligAndel": {
-              "$avg": "$eierskapAndel"
-            }
-          }
+          "$unwind": "$eierskap"
         },
-        {
-          "$sort": {
-            "gjennomsnittligAndel": -1
-          }
-        }
-      ]
-    }
-  },
-  {
-    "id": 39,
-    "question": "Finn personer som eier aksjer i flere enn ett selskap",
-    "category": "aggregate",
-    "gold": {
-      "op": "aggregate",
-      "collection": "personer",
-      "pipeline": [
         {
           "$group": {
             "_id": {
-              "navn": "$eierPersonNavn",
-              "fødselsdato": "$eierPersonFødselsdato"
+              "selskap": "$eierskap.selskap.navn",
+              "orgNr": "$eierskap.selskap.orgNr"
             },
-            "antallSelskaper": {
-              "$addToSet": "$utstederOrgNr"
+            "politikere": {
+              "$addToSet": "$navn"
             }
           }
         },
         {
           "$project": {
-            "antallSelskaper": {
-              "$size": "$antallSelskaper"
-            }
-          }
-        },
-        {
-          "$match": {
-            "antallSelskaper": {
-              "$gt": 1
-            }
-          }
-        },
-        {
-          "$sort": {
-            "antallSelskaper": -1
-          }
-        }
-      ]
-    }
-  },
-  {
-    "id": 40,
-    "question": "Finn totalt antall aksjer eid per person",
-    "category": "aggregate",
-    "gold": {
-      "op": "aggregate",
-      "collection": "personer",
-      "pipeline": [
-        {
-          "$group": {
-            "_id": {
-              "navn": "$eierPersonNavn",
-              "fødselsdato": "$eierPersonFødselsdato"
+            "_id": 0,
+            "selskap": "$_id.selskap",
+            "orgNr": "$_id.orgNr",
+            "antallPolitikere": {
+              "$size": "$politikere"
             },
-            "totaltAntall": {
-              "$sum": "$eierskapAntall"
-            }
+            "politikere": 1
           }
         },
         {
           "$sort": {
-            "totaltAntall": -1
-          }
-        }
-      ]
-    }
-  },
-  {
-    "id": 41,
-    "question": "Finn eierskap hvor eier er et selskap (ikke person)",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "personer",
-      "filter": {
-        "eierSelskapNavn": {
-          "$ne": null
-        }
-      },
-      "projection": {
-        "eierSelskapNavn": 1,
-        "eierskap.selskap.navn": 1,
-        "eierskap.aksjer.andel": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 42,
-    "question": "Finn eierskap i Oslo (basert på eierperson poststed)",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "personer",
-      "filter": {
-        "eierPersonPoststed": "Oslo"
-      },
-      "projection": {
-        "eierskap.eier.navn": 1,
-        "eierskap.selskap.navn": 1,
-        "eierskap.aksjer.andel": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 43,
-    "question": "Finn totalt antall stemmeaksjer eid per person",
-    "category": "aggregate",
-    "gold": {
-      "op": "aggregate",
-      "collection": "personer",
-      "pipeline": [
-        {
-          "$match": {
-            "eierskap.eier.navn": {
-              "$ne": null
-            }
-          }
-        },
-        {
-          "$group": {
-            "_id": {
-              "navn": "$eierPersonNavn",
-              "fødselsdato": "$eierPersonFødselsdato"
-            },
-            "totaltStemmeaksjer": {
-              "$sum": "$eierskapStemmeantall"
-            }
-          }
-        },
-        {
-          "$sort": {
-            "totaltStemmeaksjer": -1
-          }
-        }
-      ]
-    }
-  },
-  {
-    "id": 44,
-    "question": "Finn alle distinkte aksjeklasser",
-    "category": "distinct",
-    "gold": {
-      "op": "distinct",
-      "collection": "selskap",
-      "field": "aksjeeiebok.aksjeklasse",
-      "filter": {
-        "aksjeeiebok.aksjeklasse": {
-          "$ne": null
-        }
-      }
-    }
-  },
-  {
-    "id": 45,
-    "question": "Finn aksjonærer med mer enn 1000 aksjer",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "selskap",
-      "filter": {
-        "aksjeeiebok.aksjer.antall": {
-          "$gt": 1000
-        }
-      },
-      "projection": {
-        "aksjeeiebok.aksjonær.navn": 1,
-        "aksjeeiebok.selskap": 1,
-        "aksjeeiebok.aksjer.antall": 1,
-        "aksjeeiebok.år": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 46,
-    "question": "Finn antall aksjonærer per selskap",
-    "category": "aggregate",
-    "gold": {
-      "op": "aggregate",
-      "collection": "selskap",
-      "pipeline": [
-        {
-          "$group": {
-            "_id": "$selskap",
-            "antallAksjonærer": {
-              "$sum": 1
-            }
-          }
-        },
-        {
-          "$sort": {
-            "antallAksjonærer": -1
-          }
-        }
-      ]
-    }
-  },
-  {
-    "id": 47,
-    "question": "Finn gjennomsnittlig antall aksjer per aksjonær",
-    "category": "aggregate",
-    "gold": {
-      "op": "aggregate",
-      "collection": "selskap",
-      "pipeline": [
-        {
-          "$group": {
-            "_id": null,
-            "gjennomsnitt": {
-              "$avg": "$antallAksjer"
-            }
-          }
-        }
-      ]
-    }
-  },
-  {
-    "id": 48,
-    "question": "Finn alle aksjonærer fra Norge (landkode NO)",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "selskap",
-      "filter": {
-        "aksjeeiebok.aksjonær.landkode": "NO"
-      },
-      "projection": {
-        "aksjeeiebok.aksjonær.navn": 1,
-        "aksjeeiebok.selskap": 1,
-        "aksjeeiebok.aksjer.antall": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 49,
-    "question": "Finn aksjonærer født før 1970",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "selskap",
-      "filter": {
-        "aksjeeiebok.aksjonær.fødselsår": {
-          "$lt": 1970
-        }
-      },
-      "projection": {
-        "navn": 1,
-        "aksjeeiebok.aksjonær.navn": 1,
-        "aksjeeiebok.aksjonær.fødselsår": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 50,
-    "question": "Finn selskaper med mer enn 10000 totale aksjer",
-    "category": "find_projection",
-    "gold": {
-      "op": "find",
-      "collection": "selskap",
-      "filter": {
-        "aksjeeiebok.aksjer.antallTotaltISelskap": {
-          "$gt": 10000
-        }
-      },
-      "projection": {
-        "aksjeeiebok.selskap": 1,
-        "orgNr": 1,
-        "aksjeeiebok.aksjer.antallTotaltISelskap": 1,
-        "_id": 0
-      }
-    }
-  },
-  {
-    "id": 51,
-    "question": "Finn antall aksjeeierbokoppføringer per år",
-    "category": "aggregate",
-    "gold": {
-      "op": "aggregate",
-      "collection": "selskap",
-      "pipeline": [
-        {
-          "$group": {
-            "_id": "$år",
-            "antall": {
-              "$sum": 1
-            }
-          }
-        },
-        {
-          "$sort": {
-            "_id": -1
+            "antallPolitikere": -1
           }
         }
       ]

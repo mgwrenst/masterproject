@@ -1,35 +1,15 @@
-"""
-migrate_to_groundtruthTest_name_matching.py
-
-Creates a document-oriented MongoDB database called `groundtruthTest`
-from the flat source database `groundtruth`.
-
-Main design:
-  - selskap: company-centered documents with embedded aksjeeiebok, eierskap and roller
-  - personer: person-centered documents with embedded roller and eierskap summaries
-  - politicians are matched by normalized name across:
-      politikere.navn <-> personer.navn
-      politikere.navn <-> eierskap.eierPersonNavn
-      politikere.navn <-> aksjeeiebok.aksjonærNavn
-
-Important:
-  - Name-only matching is not a verified identity match.
-  - The script stores match metadata so this limitation is visible in the data.
-
-Usage:
-  python migrate_to_groundtruthTest_name_matching.py --drop
-  python migrate_to_groundtruthTest_name_matching.py --drop --verbose
-"""
+"""Create the structured MongoDB database from the flat groundtruth database."""
 
 import argparse
 import math
 import re
 from typing import Any, Dict, Iterable, List, Optional
-from pymongo import MongoClient, ASCENDING
-from pymongo.errors import DocumentTooLarge, BulkWriteError
+
+from pymongo import ASCENDING, MongoClient
+from pymongo.errors import DocumentTooLarge
 
 SOURCE_DB = "groundtruth"
-TARGET_DB = "groundtruthTest"
+TARGET_DB = "groundtruthStructured"
 MONGO_URI = "mongodb://localhost:27017"
 MAX_COMPANY_ARRAY_ITEMS = 5000
 
@@ -84,23 +64,7 @@ def safe_int(value: Any) -> Optional[int]:
         return None
 
 
-def first_not_missing(*values: Any) -> Any:
-    for value in values:
-        if not is_missing(value):
-            return value
-    return None
-
-
-def verbose_print(verbose: bool, message: str) -> None:
-    if verbose:
-        print(message)
-
-
-# -----------------------------------------------------------------------------
-# Politician matching
-# -----------------------------------------------------------------------------
-
-def make_politiker(doc: Dict[str, Any], match_type: str) -> Dict[str, Any]:
+def create_politician_match(doc: Dict[str, Any], match_type: str) -> Dict[str, Any]:
     return clean_doc({
         "erPolitiker": True,
         "partinavn": doc.get("partinavn"),
@@ -150,11 +114,11 @@ def match_politiker_by_name(
         for candidate in candidates:
             candidate_year = birth_year_from_date(candidate.get("fødselsdato"))
             if candidate_year == input_year:
-                return make_politiker(candidate, "navn_fødselsår")
+                return create_politician_match(candidate, "navn_fødselsår")
 
     # Name-only fallback. This is useful for your experiment, but less certain.
     pol = candidates[0]
-    result = make_politiker(pol, "navn")
+    result = create_politician_match(pol, "navn")
     if len(candidates) > 1:
         result["match"]["ambiguousCandidates"] = len(candidates)
         result["match"]["note"] = "Multiple politicians had the same normalized name. First candidate was used."
@@ -165,14 +129,17 @@ def match_politiker_by_name(
 # Document builders
 # -----------------------------------------------------------------------------
 
-def make_company(doc: Dict[str, Any]) -> Dict[str, Any]:
+def create_company(doc: Dict[str, Any]) -> Dict[str, Any]:
     return clean_doc({
         "_id": doc.get("_id"),
         "uuid": doc.get("uuid"),
         "orgNr": doc.get("orgNr"),
         "navn": doc.get("navn"),
         "organisasjonstype": doc.get("organisasjonstype"),
-        "bransje": {"naceKode": doc.get("naceKode")},
+        "bransje": {
+            "naceKode": doc.get("naceKode"),
+            "naceBeskrivelse": doc.get("naceBeskrivelse"),
+        },
         "datoer": {
             "etablertDato": doc.get("etablertDato"),
             "oppløstDato": doc.get("oppløstDato"),
@@ -205,7 +172,7 @@ def person_key_from_eierskap(doc: Dict[str, Any]) -> Optional[str]:
     return None
 
 
-def make_base_person(doc: Dict[str, Any], politiker_lookup: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
+def create_person_from_role(doc: Dict[str, Any], politiker_lookup: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
     return clean_doc({
         "_id": doc.get("_id"),
         "uuid": doc.get("uuid"),
@@ -233,7 +200,7 @@ def make_base_person(doc: Dict[str, Any], politiker_lookup: Dict[str, List[Dict[
     })
 
 
-def make_person_from_eierskap(doc: Dict[str, Any], politiker_lookup: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
+def create_person_from_ownership(doc: Dict[str, Any], politiker_lookup: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
     return clean_doc({
         "uuid": doc.get("eierPersonUUID"),
         "navn": doc.get("eierPersonNavn"),
@@ -254,25 +221,26 @@ def make_person_from_eierskap(doc: Dict[str, Any], politiker_lookup: Dict[str, L
     })
 
 
-def make_person_from_politiker(pol: Dict[str, Any]) -> Dict[str, Any]:
+def create_person_from_politician(pol: Dict[str, Any]) -> Dict[str, Any]:
     return clean_doc({
         "navn": pol.get("navn"),
         "fødselsdato": pol.get("fødselsdato"),
         "fødselsår": birth_year_from_date(pol.get("fødselsdato")),
-        "politiker": make_politiker(pol, "source_politikere"),
+        "politiker": create_politician_match(pol, "source_politikere"),
         "roller": [],
         "eierskap": [],
         "aksjeeiebok": [],
     })
 
 
-def make_role(doc: Dict[str, Any]) -> Dict[str, Any]:
+def create_person_role(doc: Dict[str, Any]) -> Dict[str, Any]:
     return clean_doc({
         "rolleUUID": doc.get("rolleUUID"),
         "selskapRolleUUID": doc.get("selskapRolleUUID"),
         "rolle": doc.get("selskapRolle"),
         "rolleRang": doc.get("selskapRolleRang"),
         "startdato": doc.get("rolleStartdato"),
+        "sluttdato": doc.get("rolleSluttdato"),
         "registrertTid": doc.get("rolleRegistrert"),
         "oppdatertTid": doc.get("rolleOppdatert"),
         "selskap": {
@@ -285,13 +253,14 @@ def make_role(doc: Dict[str, Any]) -> Dict[str, Any]:
     })
 
 
-def make_company_role(doc: Dict[str, Any], politiker_lookup: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
+def create_company_role(doc: Dict[str, Any], politiker_lookup: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
     return clean_doc({
         "rolleUUID": doc.get("rolleUUID"),
         "selskapRolleUUID": doc.get("selskapRolleUUID"),
         "rolle": doc.get("selskapRolle"),
         "rolleRang": doc.get("selskapRolleRang"),
         "startdato": doc.get("rolleStartdato"),
+        "sluttdato": doc.get("rolleSluttdato"),
         "registrertTid": doc.get("rolleRegistrert"),
         "oppdatertTid": doc.get("rolleOppdatert"),
         "person": {
@@ -305,7 +274,7 @@ def make_company_role(doc: Dict[str, Any], politiker_lookup: Dict[str, List[Dict
     })
 
 
-def make_aksjeeiebok_record(doc: Dict[str, Any], politiker_lookup: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
+def create_shareholder_record(doc: Dict[str, Any], politiker_lookup: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
     return clean_doc({
         "år": doc.get("år"),
         "aksjeklasse": doc.get("aksjeklasse"),
@@ -323,7 +292,7 @@ def make_aksjeeiebok_record(doc: Dict[str, Any], politiker_lookup: Dict[str, Lis
     })
 
 
-def make_person_aksjeeiebok_summary(doc: Dict[str, Any]) -> Dict[str, Any]:
+def create_person_share_summary(doc: Dict[str, Any]) -> Dict[str, Any]:
     return clean_doc({
         "år": doc.get("år"),
         "aksjeklasse": doc.get("aksjeklasse"),
@@ -343,7 +312,7 @@ def make_person_aksjeeiebok_summary(doc: Dict[str, Any]) -> Dict[str, Any]:
     })
 
 
-def make_eierskap_record(doc: Dict[str, Any], politiker_lookup: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
+def create_ownership_record(doc: Dict[str, Any], politiker_lookup: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
     eier_type = "person" if not is_missing(doc.get("eierPersonNavn")) or not is_missing(doc.get("eierPersonUUID")) else "selskap"
     eier = {"type": eier_type, "aksjonærNavn": doc.get("eierskapAksjonær")}
 
@@ -384,7 +353,7 @@ def make_eierskap_record(doc: Dict[str, Any], politiker_lookup: Dict[str, List[D
     })
 
 
-def make_person_eierskap_summary(doc: Dict[str, Any]) -> Dict[str, Any]:
+def create_person_ownership_summary(doc: Dict[str, Any]) -> Dict[str, Any]:
     return clean_doc({
         "uuid": doc.get("eierskapUUID"),
         "år": doc.get("eierskapår"),
@@ -410,7 +379,7 @@ def make_person_eierskap_summary(doc: Dict[str, Any]) -> Dict[str, Any]:
 # Insert helpers
 # -----------------------------------------------------------------------------
 
-def insert_many_if_any(collection, docs: Iterable[Dict[str, Any]]) -> int:
+def insert_documents(collection, docs: Iterable[Dict[str, Any]]) -> int:
     docs = list(docs)
     if not docs:
         return 0
@@ -418,7 +387,7 @@ def insert_many_if_any(collection, docs: Iterable[Dict[str, Any]]) -> int:
     return len(docs)
 
 
-def safe_insert_companies(target, companies: Iterable[Dict[str, Any]], verbose: bool) -> int:
+def insert_company_documents(target, companies: Iterable[Dict[str, Any]]) -> tuple[int, int]:
     """Insert company documents one by one so one oversized company does not stop the script."""
     written = 0
     skipped = []
@@ -462,32 +431,28 @@ def safe_insert_companies(target, companies: Iterable[Dict[str, Any]], verbose: 
 
     if skipped:
         target["migrationLog"].insert_many(skipped)
-        verbose_print(verbose, f"Skipped {len(skipped)} oversized/problematic selskap documents. See migrationLog.")
 
-    return written
+    return written, len(skipped)
 
 
 # -----------------------------------------------------------------------------
 # Migration
 # -----------------------------------------------------------------------------
 
-def migrate(drop: bool = False, verbose: bool = False) -> None:
+def create_structured_database(drop: bool = False) -> None:
     client = MongoClient(MONGO_URI)
     source = client[SOURCE_DB]
     target = client[TARGET_DB]
 
     if drop:
         client.drop_database(TARGET_DB)
-        verbose_print(verbose, f"Dropped existing database: {TARGET_DB}")
-
-    verbose_print(verbose, f"Source: {SOURCE_DB} -> Target: {TARGET_DB}")
 
     politiker_lookup = build_politiker_lookup(source)
 
     # 1. Build company documents.
     companies_by_orgnr: Dict[Any, Dict[str, Any]] = {}
     for company_doc in source["selskap"].find():
-        company = make_company(company_doc)
+        company = create_company(company_doc)
         orgnr = company.get("orgNr")
         if not is_missing(orgnr):
             companies_by_orgnr[orgnr] = company
@@ -502,40 +467,40 @@ def migrate(drop: bool = False, verbose: bool = False) -> None:
             continue
 
         if p_key not in persons:
-            persons[p_key] = make_base_person(role_doc, politiker_lookup)
+            persons[p_key] = create_person_from_role(role_doc, politiker_lookup)
             name_key = normalize_name(role_doc.get("navn"))
             if name_key:
                 name_to_person_key[name_key] = p_key
 
-        persons[p_key]["roller"].append(make_role(role_doc))
+        persons[p_key]["roller"].append(create_person_role(role_doc))
 
         orgnr = role_doc.get("selskapOrgNr")
         if not is_missing(orgnr) and orgnr in companies_by_orgnr:
-            companies_by_orgnr[orgnr]["roller"].append(make_company_role(role_doc, politiker_lookup))
+            companies_by_orgnr[orgnr]["roller"].append(create_company_role(role_doc, politiker_lookup))
 
     # 3. Add politician-only person documents when no person record exists.
     for name_key, pol_records in politiker_lookup.items():
         if name_key in name_to_person_key:
             continue
         p_key = f"politiker_navn:{name_key}"
-        persons[p_key] = make_person_from_politiker(pol_records[0])
+        persons[p_key] = create_person_from_politician(pol_records[0])
         name_to_person_key[name_key] = p_key
 
     # 4. Embed aksjeeiebok in companies and connect likely politician/person shareholders by name.
     for share_doc in source["aksjeeiebok"].find():
         orgnr = share_doc.get("orgNr")
         if not is_missing(orgnr) and orgnr in companies_by_orgnr:
-            companies_by_orgnr[orgnr]["aksjeeiebok"].append(make_aksjeeiebok_record(share_doc, politiker_lookup))
+            companies_by_orgnr[orgnr]["aksjeeiebok"].append(create_shareholder_record(share_doc, politiker_lookup))
 
         shareholder_key = normalize_name(share_doc.get("aksjonærNavn"))
         if shareholder_key and shareholder_key in name_to_person_key:
-            persons[name_to_person_key[shareholder_key]]["aksjeeiebok"].append(make_person_aksjeeiebok_summary(share_doc))
+            persons[name_to_person_key[shareholder_key]]["aksjeeiebok"].append(create_person_share_summary(share_doc))
 
     # 5. Embed eierskap in companies and ownership summaries in persons.
     for ownership_doc in source["eierskap"].find():
         utsteder_orgnr = ownership_doc.get("utstederOrgNr")
         if not is_missing(utsteder_orgnr) and utsteder_orgnr in companies_by_orgnr:
-            companies_by_orgnr[utsteder_orgnr]["eierskap"].append(make_eierskap_record(ownership_doc, politiker_lookup))
+            companies_by_orgnr[utsteder_orgnr]["eierskap"].append(create_ownership_record(ownership_doc, politiker_lookup))
 
         p_key = person_key_from_eierskap(ownership_doc)
         name_key = normalize_name(ownership_doc.get("eierPersonNavn"))
@@ -545,19 +510,19 @@ def migrate(drop: bool = False, verbose: bool = False) -> None:
             if name_key and name_key in name_to_person_key:
                 p_key = name_to_person_key[name_key]
             elif p_key not in persons:
-                persons[p_key] = make_person_from_eierskap(ownership_doc, politiker_lookup)
+                persons[p_key] = create_person_from_ownership(ownership_doc, politiker_lookup)
                 if name_key:
                     name_to_person_key[name_key] = p_key
 
-            persons[p_key]["eierskap"].append(make_person_eierskap_summary(ownership_doc))
+            persons[p_key]["eierskap"].append(create_person_ownership_summary(ownership_doc))
 
     # 6. Write target collections. Write personer first so selskap cannot prevent it from being created.
     target["personer"].drop()
     target["selskap"].drop()
     target["migrationLog"].drop()
 
-    personer_written = insert_many_if_any(target["personer"], persons.values())
-    selskaper_written = safe_insert_companies(target, companies_by_orgnr.values(), verbose)
+    personer_written = insert_documents(target["personer"], persons.values())
+    selskaper_written, skipped_selskaper = insert_company_documents(target, companies_by_orgnr.values())
 
     # 7. Indexes.
     target["personer"].create_index([("uuid", ASCENDING)])
@@ -570,6 +535,7 @@ def migrate(drop: bool = False, verbose: bool = False) -> None:
     target["selskap"].create_index([("orgNr", ASCENDING)])
     target["selskap"].create_index([("uuid", ASCENDING)])
     target["selskap"].create_index([("navn", ASCENDING)])
+    target["selskap"].create_index([("bransje.naceKode", ASCENDING)])
     target["selskap"].create_index([("roller.person.politiker.erPolitiker", ASCENDING)])
     target["selskap"].create_index([("eierskap.eier.politiker.erPolitiker", ASCENDING)])
     target["selskap"].create_index([("aksjeeiebok.aksjonær.politiker.erPolitiker", ASCENDING)])
@@ -579,6 +545,7 @@ def migrate(drop: bool = False, verbose: bool = False) -> None:
         "targetDb": TARGET_DB,
         "personerWritten": personer_written,
         "selskaperWritten": selskaper_written,
+        "selskaperSkipped": skipped_selskaper,
         "politicianMatching": {
             "method": "normalized name, with birth year when available",
             "fields": [
@@ -590,16 +557,21 @@ def migrate(drop: bool = False, verbose: bool = False) -> None:
         },
     })
 
-    verbose_print(verbose, f"personer written: {personer_written}")
-    verbose_print(verbose, f"selskap written: {selskaper_written}")
-    verbose_print(verbose, "Migration complete.")
+    print(f"Created '{TARGET_DB}' from '{SOURCE_DB}'.")
+    print(f"  personer: {personer_written:,}")
+    print(f"  selskap: {selskaper_written:,}")
+    if skipped_selskaper:
+        print(f"  skipped selskap: {skipped_selskaper:,} (see migrationLog)")
 
     client.close()
 
 
+def migrate(drop: bool = False) -> None:
+    create_structured_database(drop=drop)
+
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Create groundtruthTest with name-based politician matching")
+    parser = argparse.ArgumentParser(description="Create the structured groundtruth MongoDB database")
     parser.add_argument("--drop", action="store_true", help="Drop target database before migrating")
-    parser.add_argument("--verbose", action="store_true", help="Print progress to terminal")
     args = parser.parse_args()
-    migrate(drop=args.drop, verbose=args.verbose)
+    create_structured_database(drop=args.drop)

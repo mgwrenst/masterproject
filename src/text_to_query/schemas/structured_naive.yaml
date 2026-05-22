@@ -1,0 +1,35 @@
+beskrivelse: >
+  Dette er den strukturerte MongoDB-databasen groundtruthStructured. Den inneholder mye av den samme informasjonen som den flate databasen, men data som hører naturlig sammen er samlet i samme dokument. Databasen består hovedsakelig av samlingene selskap og personer. Informasjon om roller, eierskap, aksjeeierbok og politikere ligger ofte inne i disse dokumentene i stedet for i egne separate samlinger.
+
+samlinger:
+
+  - navn: "selskap"
+    beskrivelse: >
+      Selskap inneholder ett dokument per selskap. Dokumentene inneholder vanlig selskapsinformasjon i feltene uuid, navn, orgNr, organisasjonstype, bransje, datoer og status. Bransjeinformasjon ligger i bransje.naceKode og bransje.naceBeskrivelse. Datoer ligger i datoer.etablertDato og datoer.oppløstDato. Konkurs- og likvidasjonsstatus ligger i status.konkursFlagg og status.likvidasjonFlagg. Samlingen kan brukes når spørsmål handler om selskaper, konkurs, likvidasjon, organisasjonstype, bransje eller etablerings- og oppløsningsdatoer.
+
+      Roller ligger i listen roller. Hver rolleoppføring beskriver en person som har en rolle i selskapet. Selve rollen beskrives med feltene roller.rolle, roller.rolleRang, roller.rolleUUID, roller.selskapRolleUUID, roller.startdato, roller.registrertTid og roller.oppdatertTid. Personen som har rollen ligger i objektet roller.person. Dette objektet inneholder feltene roller.person.uuid, roller.person.navn, roller.person.fødselsdato, roller.person.fødselsår, roller.person.kjønn og roller.person.politiker. Dersom personen er politiker, kan politikerinformasjon finnes i felter som roller.person.politiker.erPolitiker, roller.person.politiker.partinavn, roller.person.politiker.kommune, roller.person.politiker.kommunenummer, roller.person.politiker.innvalgt og roller.person.politiker.valg.
+
+      Eierskap ligger i listen eierskap. Hver eierskapsoppføring beskriver en eier av aksjer i selskapet. Oppføringen har blant annet feltene eierskap.uuid og eierskap.år. Eieren ligger i objektet eierskap.eier, med felter som eierskap.eier.uuid, eierskap.eier.navn, eierskap.eier.aksjonærNavn, eierskap.eier.orgNr og eierskap.eier.type. Aksjeinformasjon ligger i eierskap.aksjer.andel, eierskap.aksjer.antall og eierskap.aksjer.totalAntall. Stemmerettigheter ligger i eierskap.stemmer.andel, eierskap.stemmer.antall og eierskap.stemmer.totalAntall.
+
+      Aksjeeierbokoppføringer ligger i listen aksjeeiebok. Hver oppføring beskriver en aksjonær i selskapet for et bestemt år og en bestemt aksjeklasse. Oppføringen har feltene aksjeeiebok.år og aksjeeiebok.aksjeklasse. Antall aksjer ligger i aksjeeiebok.aksjer.antall og aksjeeiebok.aksjer.antallTotaltISelskap. Aksjonæren ligger i objektet aksjeeiebok.aksjonær, med felter som aksjeeiebok.aksjonær.navn, aksjeeiebok.aksjonær.fødselsår, aksjeeiebok.aksjonær.landkode, aksjeeiebok.aksjonær.poststed og aksjeeiebok.aksjonær.politiker. Dersom aksjonæren er politiker, kan dette finnes i aksjeeiebok.aksjonær.politiker.erPolitiker og eventuelle tilhørende politikerfelter.
+
+  - navn: "personer"
+    beskrivelse: >
+      Personer inneholder ett dokument per person. Dokumentene inneholder personinformasjon i feltene uuid, navn, fødselsdato, fødselsår, kjønn, adresse, metadata og politiker. Adresseinformasjon ligger i adresse.gateadresse, adresse.kommuneNavn, adresse.kommuneNr, adresse.postnummer, adresse.poststed, adresse.land og adresse.landkode. Metadata ligger i metadata.registrertTid og metadata.oppdatertTid. Samlingen kan brukes når spørsmål handler om personer, politikere, roller en person har hatt, eller en persons samlede eierskap.
+
+      Politikerinformasjon ligger i objektet politiker. Dette objektet inneholder blant annet feltene politiker.erPolitiker (false eller true), politiker.partinavn, politiker.kommune, politiker.kommunenummer, politiker.innvalgt og politiker.match. Valgresultater ligger i politiker.valg, med feltene politiker.valg.listeplass, politiker.valg.personstemmer, politiker.valg.slengere, politiker.valg.stemmetillegg og politiker.valg.endeligRangering.
+
+      Personens roller i selskaper ligger i listen roller. Hver rolleoppføring beskriver én rolle personen har i et selskap. Selve rollen beskrives med feltene roller.rolle, roller.rolleRang, roller.rolleUUID, roller.selskapRolleUUID, roller.startdato, roller.registrertTid og roller.oppdatertTid. Selskapet personen har rolle i ligger i objektet roller.selskap, med feltene roller.selskap.uuid, roller.selskap.navn, roller.selskap.orgNr, roller.selskap.registrertTid og roller.selskap.oppdatertTid.
+
+      Personens eierskap ligger i listen eierskap. Hver eierskapsoppføring beskriver et selskap personen eier aksjer i. Oppføringen har blant annet feltene eierskap.uuid og eierskap.år. Selskapet som personen eier aksjer i ligger i objektet eierskap.selskap, med feltene eierskap.selskap.uuid, eierskap.selskap.navn og eierskap.selskap.orgNr. Aksjeinformasjon ligger i eierskap.aksjer.andel, eierskap.aksjer.antall og eierskap.aksjer.totalAntall. Stemmerettigheter ligger i eierskap.stemmer.andel, eierskap.stemmer.antall og eierskap.stemmer.totalAntall.
+
+      Personens aksjeeierbokoppføringer kan ligge i listen aksjeeiebok. Hver oppføring beskriver at personen er registrert som aksjonær i et selskap. Oppføringen har blant annet feltene aksjeeiebok.år, aksjeeiebok.aksjeklasse, aksjeeiebok.match og aksjeeiebok.selskap. Selskapet aksjonæren er knyttet til ligger i aksjeeiebok.selskap.navn og aksjeeiebok.selskap.orgNr. Antall aksjer ligger i aksjeeiebok.aksjer.antall og aksjeeiebok.aksjer.antallTotaltISelskap.
+
+notater:
+  - "Dette er en embedded dokumentmodell hvor mye relatert informasjon er samlet i samme dokument."
+  - "Det finnes ikke egne strukturerte samlinger for aksjeeiebok, eierskap eller politikere."
+  - "Når spørsmål handler om aksjonærer eller aksjeeiebok, brukes ofte selskap og listen aksjeeiebok."
+  - "Når spørsmål handler om eiere av selskaper, brukes ofte selskap og listen eierskap."
+  - "Når spørsmål handler om en persons roller, eierskap eller aksjeeierbokoppføringer, brukes ofte personer."
+  - "Politikerinformasjon finnes både i persondokumenter og i enkelte embedded oppføringer knyttet til roller, eierskap og aksjonærer."
+  - "Politikere kan noen ganger sammenlignes med personer eller aksjonærer basert på navn og fødselsdato, men navn alene er ikke alltid en sikker identitetskobling."
