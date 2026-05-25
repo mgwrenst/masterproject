@@ -1,0 +1,529 @@
+[
+  {
+    "id": 101,
+    "question": "Finn partier med politikere som har selskapsroller. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere og antall rolleoppføringer.",
+    "category": "complex_pipeline_stress",
+    "gold": {
+      "op": "aggregate",
+      "collection": "politikere",
+      "pipeline": [
+        {
+          "$lookup": {
+            "from": "roller",
+            "let": {
+              "pnavn": "$navn",
+              "pf": "$fødselsdato"
+            },
+            "pipeline": [
+              {
+                "$match": {
+                  "$expr": {
+                    "$and": [
+                      {
+                        "$eq": [
+                          "$navn",
+                          "$$pnavn"
+                        ]
+                      },
+                      {
+                        "$eq": [
+                          "$fødselsdato",
+                          "$$pf"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "as": "roller"
+          }
+        },
+        {
+          "$match": {
+            "roller.0": {
+              "$exists": true
+            }
+          }
+        },
+        {
+          "$project": {
+            "partinavn": 1,
+            "personKey": {
+              "$concat": [
+                "$navn",
+                "|",
+                {
+                  "$ifNull": [
+                    "$fødselsdato",
+                    ""
+                  ]
+                }
+              ]
+            },
+            "antallRoller": {
+              "$size": "$roller"
+            }
+          }
+        },
+        {
+          "$group": {
+            "_id": "$partinavn",
+            "politikere": {
+              "$addToSet": "$personKey"
+            },
+            "antallRolleoppføringer": {
+              "$sum": "$antallRoller"
+            }
+          }
+        },
+        {
+          "$project": {
+            "_id": 0,
+            "parti": "$_id",
+            "antallPolitikere": {
+              "$size": "$politikere"
+            },
+            "antallRolleoppføringer": 1
+          }
+        },
+        {
+          "$sort": {
+            "antallRolleoppføringer": -1,
+            "parti": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 102,
+    "question": "Finn selskaper som både har eierskapsoppføringer i 2023 og aksjeeierbokoppføringer i 2023. Ta med navn, organisasjonsnummer, antall eierskapsoppføringer i 2023 og antall aksjeeierbokoppføringer i 2023.",
+    "category": "complex_pipeline_stress",
+    "gold": {
+      "op": "aggregate",
+      "collection": "selskap",
+      "pipeline": [
+        {
+          "$lookup": {
+            "from": "eierskap",
+            "let": {
+              "org": "$orgNr"
+            },
+            "pipeline": [
+              {
+                "$match": {
+                  "$expr": {
+                    "$and": [
+                      {
+                        "$eq": [
+                          "$utstederOrgNr",
+                          "$$org"
+                        ]
+                      },
+                      {
+                        "$eq": [
+                          "$eierskapår",
+                          2023
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "as": "eierskap2023"
+          }
+        },
+        {
+          "$lookup": {
+            "from": "aksjeeiebok",
+            "let": {
+              "org": "$orgNr"
+            },
+            "pipeline": [
+              {
+                "$match": {
+                  "$expr": {
+                    "$and": [
+                      {
+                        "$eq": [
+                          "$orgNr",
+                          "$$org"
+                        ]
+                      },
+                      {
+                        "$eq": [
+                          "$år",
+                          2023
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "as": "aksjeeierbok2023"
+          }
+        },
+        {
+          "$match": {
+            "eierskap2023.0": {
+              "$exists": true
+            },
+            "aksjeeierbok2023.0": {
+              "$exists": true
+            }
+          }
+        },
+        {
+          "$project": {
+            "_id": 0,
+            "navn": 1,
+            "orgNr": 1,
+            "antallEierskap2023": {
+              "$size": "$eierskap2023"
+            },
+            "antallAksjeeierbok2023": {
+              "$size": "$aksjeeierbok2023"
+            }
+          }
+        },
+        {
+          "$sort": {
+            "antallAksjeeierbok2023": -1,
+            "antallEierskap2023": -1,
+            "orgNr": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 103,
+    "question": "Finn politikere som både eier aksjer i et selskap og har en rolle i samme selskap. Identifiser politikere med navn og fødselsdato. Ta med navn, fødselsdato, parti, selskap, organisasjonsnummer, rolle og eierandel.",
+    "category": "complex_pipeline_stress",
+    "gold": {
+      "op": "aggregate",
+      "collection": "politikere",
+      "pipeline": [
+        {
+          "$lookup": {
+            "from": "eierskap",
+            "let": {
+              "pnavn": "$navn",
+              "pf": "$fødselsdato"
+            },
+            "pipeline": [
+              {
+                "$match": {
+                  "$expr": {
+                    "$and": [
+                      {
+                        "$eq": [
+                          "$eierPersonNavn",
+                          "$$pnavn"
+                        ]
+                      },
+                      {
+                        "$eq": [
+                          "$eierPersonFødselsdato",
+                          "$$pf"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "as": "eierskap"
+          }
+        },
+        {
+          "$unwind": "$eierskap"
+        },
+        {
+          "$lookup": {
+            "from": "roller",
+            "let": {
+              "pnavn": "$navn",
+              "pf": "$fødselsdato",
+              "org": "$eierskap.utstederOrgNr"
+            },
+            "pipeline": [
+              {
+                "$match": {
+                  "$expr": {
+                    "$and": [
+                      {
+                        "$eq": [
+                          "$navn",
+                          "$$pnavn"
+                        ]
+                      },
+                      {
+                        "$eq": [
+                          "$fødselsdato",
+                          "$$pf"
+                        ]
+                      },
+                      {
+                        "$eq": [
+                          "$selskapOrgNr",
+                          "$$org"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "as": "roller"
+          }
+        },
+        {
+          "$unwind": "$roller"
+        },
+        {
+          "$project": {
+            "_id": 0,
+            "navn": 1,
+            "fødselsdato": 1,
+            "partinavn": 1,
+            "selskap": "$eierskap.utstederNavn",
+            "orgNr": "$eierskap.utstederOrgNr",
+            "rolle": "$roller.selskapRolle",
+            "eierandel": "$eierskap.eierskapAndel"
+          }
+        },
+        {
+          "$sort": {
+            "navn": 1,
+            "orgNr": 1,
+            "rolle": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 104,
+    "question": "Finn de 20 selskapene med flest samlede rolleoppføringer og eierskapsoppføringer. Ta med navn, organisasjonsnummer, antall roller, antall eierskap og totalt antall relasjoner. Sorter synkende på totalt antall relasjoner og stigende på organisasjonsnummer ved likt antall.",
+    "category": "complex_pipeline_stress",
+    "gold": {
+      "op": "aggregate",
+      "collection": "selskap",
+      "pipeline": [
+        {
+          "$lookup": {
+            "from": "roller",
+            "localField": "orgNr",
+            "foreignField": "selskapOrgNr",
+            "as": "roller"
+          }
+        },
+        {
+          "$lookup": {
+            "from": "eierskap",
+            "localField": "orgNr",
+            "foreignField": "utstederOrgNr",
+            "as": "eierskap"
+          }
+        },
+        {
+          "$project": {
+            "navn": 1,
+            "orgNr": 1,
+            "antallRoller": {
+              "$size": "$roller"
+            },
+            "antallEierskap": {
+              "$size": "$eierskap"
+            }
+          }
+        },
+        {
+          "$addFields": {
+            "totaltAntallRelasjoner": {
+              "$add": [
+                "$antallRoller",
+                "$antallEierskap"
+              ]
+            }
+          }
+        },
+        {
+          "$match": {
+            "totaltAntallRelasjoner": {
+              "$gt": 0
+            }
+          }
+        },
+        {
+          "$sort": {
+            "totaltAntallRelasjoner": -1,
+            "orgNr": 1
+          }
+        },
+        {
+          "$limit": 20
+        },
+        {
+          "$project": {
+            "_id": 0,
+            "navn": 1,
+            "orgNr": 1,
+            "antallRoller": 1,
+            "antallEierskap": 1,
+            "totaltAntallRelasjoner": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 105,
+    "question": "Finn partier der politikere har minst én selskapsrolle eller minst ett personlig eierskap. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere, antall rolleoppføringer og antall eierskap.",
+    "category": "complex_pipeline_stress",
+    "gold": {
+      "op": "aggregate",
+      "collection": "politikere",
+      "pipeline": [
+        {
+          "$lookup": {
+            "from": "roller",
+            "let": {
+              "pnavn": "$navn",
+              "pf": "$fødselsdato"
+            },
+            "pipeline": [
+              {
+                "$match": {
+                  "$expr": {
+                    "$and": [
+                      {
+                        "$eq": [
+                          "$navn",
+                          "$$pnavn"
+                        ]
+                      },
+                      {
+                        "$eq": [
+                          "$fødselsdato",
+                          "$$pf"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "as": "roller"
+          }
+        },
+        {
+          "$lookup": {
+            "from": "eierskap",
+            "let": {
+              "pnavn": "$navn",
+              "pf": "$fødselsdato"
+            },
+            "pipeline": [
+              {
+                "$match": {
+                  "$expr": {
+                    "$and": [
+                      {
+                        "$eq": [
+                          "$eierPersonNavn",
+                          "$$pnavn"
+                        ]
+                      },
+                      {
+                        "$eq": [
+                          "$eierPersonFødselsdato",
+                          "$$pf"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "as": "eierskap"
+          }
+        },
+        {
+          "$project": {
+            "partinavn": 1,
+            "personKey": {
+              "$concat": [
+                "$navn",
+                "|",
+                {
+                  "$ifNull": [
+                    "$fødselsdato",
+                    ""
+                  ]
+                }
+              ]
+            },
+            "antallRoller": {
+              "$size": "$roller"
+            },
+            "antallEierskap": {
+              "$size": "$eierskap"
+            }
+          }
+        },
+        {
+          "$match": {
+            "$or": [
+              {
+                "antallRoller": {
+                  "$gt": 0
+                }
+              },
+              {
+                "antallEierskap": {
+                  "$gt": 0
+                }
+              }
+            ]
+          }
+        },
+        {
+          "$group": {
+            "_id": "$partinavn",
+            "politikere": {
+              "$addToSet": "$personKey"
+            },
+            "antallRolleoppføringer": {
+              "$sum": "$antallRoller"
+            },
+            "antallEierskap": {
+              "$sum": "$antallEierskap"
+            }
+          }
+        },
+        {
+          "$project": {
+            "_id": 0,
+            "parti": "$_id",
+            "antallPolitikere": {
+              "$size": "$politikere"
+            },
+            "antallRolleoppføringer": 1,
+            "antallEierskap": 1
+          }
+        },
+        {
+          "$sort": {
+            "antallPolitikere": -1,
+            "parti": 1
+          }
+        }
+      ]
+    }
+  }
+]

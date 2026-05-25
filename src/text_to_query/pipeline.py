@@ -1,3 +1,4 @@
+import ast
 import json
 import re
 import time
@@ -12,6 +13,7 @@ from openai import OpenAI
 from pymongo import MongoClient
 
 import config
+from gold_cache import load_gold_cache, save_gold_cache
 
 load_dotenv()
 
@@ -20,21 +22,21 @@ mongo_client: MongoClient | None = None
 
 
 SYSTEM_PROMPT = """\
-You translate Norwegian natural-language questions into MongoDB queries.
+Du oversetter norske spørsmål i naturlig språk til MongoDB-spørringer.
 
-Return only one valid JSON object. Do not use markdown.
+Returner bare ett gyldig JSON-objekt. Ikke bruk markdown.
 
-Supported operations:
+Støttede operasjoner:
 - find: {"op": "find", "collection": "...", "filter": {...}, "projection": {...}}
 - distinct: {"op": "distinct", "collection": "...", "field": "...", "filter": {...}}
 - aggregate: {"op": "aggregate", "collection": "...", "pipeline": [...]}
 
-Rules:
-- Use exact collection names and field names from the schema.
-- Use dot notation for nested fields.
-- Use aggregate when the question asks for counts, averages, grouping, sorting by calculated values, or rows from embedded arrays.
-- Use distinct when the question asks for unique/distinct values.
-- Use {"_id": 0} in projections unless the question asks for _id.
+Regler:
+- Bruk eksakte samlingsnavn og feltnavn fra skjemaet.
+- Bruk dot notation for nøstede felter.
+- Bruk aggregate når spørsmålet ber om tellinger, gjennomsnitt, gruppering, sortering etter beregnede verdier eller rader fra embedded arrays.
+- Bruk distinct når spørsmålet ber om unike/distinkte verdier.
+- Bruk {"_id": 0} i projections med mindre spørsmålet ber om _id.
 """
 
 
@@ -56,26 +58,40 @@ def load_benchmark(path: str) -> list[dict[str, Any]]:
         return json.load(file)
 
 
-def generate_query(schema_text: str, question: str) -> dict[str, Any]:
+def generate_query(
+    schema_text: str,
+    question: str,
+    model: str | None = None,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+) -> dict[str, Any]:
     prompt = f"Database schema:\n{schema_text}\n\nQuestion:\n{question}\n\nMongoDB query JSON:"
     started = time.perf_counter()
+    model_name = model or config.MODEL
 
     try:
-        response = openai_client.chat.completions.create(
-            model=config.MODEL,
-            temperature=config.TEMPERATURE,
-            max_tokens=config.MAX_TOKENS,
-            messages=[
+        request = {
+            "model": model_name,
+            "messages": [
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": prompt},
             ],
-        )
-        raw_text = (response.choices[0].message.content or "").strip()
+        }
+        if uses_max_completion_tokens(model_name):
+            request["max_completion_tokens"] = max_tokens or config.MAX_TOKENS
+        else:
+            request["temperature"] = config.TEMPERATURE if temperature is None else temperature
+            request["max_tokens"] = max_tokens or config.MAX_TOKENS
+
+        response = openai_client.chat.completions.create(**request)
+        choice = response.choices[0]
+        raw_text = (choice.message.content or "").strip()
         cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_text).strip()
 
         return {
             "query": json.loads(cleaned),
             "raw_text": raw_text,
+            "finish_reason": choice.finish_reason,
             "error": None,
             "duration_ms": elapsed_ms(started),
         }
@@ -83,6 +99,7 @@ def generate_query(schema_text: str, question: str) -> dict[str, Any]:
         return {
             "query": None,
             "raw_text": locals().get("raw_text", ""),
+            "finish_reason": getattr(locals().get("choice", None), "finish_reason", None),
             "error": f"JSON parse error: {exc}",
             "duration_ms": elapsed_ms(started),
         }
@@ -90,27 +107,39 @@ def generate_query(schema_text: str, question: str) -> dict[str, Any]:
         return {
             "query": None,
             "raw_text": "",
+            "finish_reason": None,
             "error": f"LLM error: {exc}",
             "duration_ms": elapsed_ms(started),
         }
 
 
-def run_query(query: dict[str, Any], database_name: str | None = None) -> dict[str, Any]:
+def uses_max_completion_tokens(model: str) -> bool:
+    return model.startswith(("gpt-5", "o1", "o3", "o4"))
+
+
+def run_query(query: dict[str, Any], database_name: str | None = None, max_time_ms: int | None = None) -> dict[str, Any]:
     started = time.perf_counter()
 
     try:
         collection = get_database(database_name)[query["collection"]]
         op = query.get("op", "find")
+        query_max_time_ms = config.QUERY_MAX_TIME_MS if max_time_ms is None else max_time_ms
 
         if op == "find":
             projection = query.get("projection")
             cursor = collection.find(query.get("filter", {}), projection) if projection else collection.find(query.get("filter", {}))
+            if query_max_time_ms:
+                cursor = cursor.max_time_ms(query_max_time_ms)
             results = list(cursor)
         elif op == "distinct":
-            values = collection.distinct(query["field"], query.get("filter", {}))
+            kwargs = {"maxTimeMS": query_max_time_ms} if query_max_time_ms else {}
+            values = collection.distinct(query["field"], query.get("filter", {}), **kwargs) # type: ignore
             results = [{"_value": value} for value in values]
         elif op == "aggregate":
-            results = list(collection.aggregate(query["pipeline"]))
+            if query_max_time_ms:
+                results = list(collection.aggregate(query["pipeline"], allowDiskUse=True, maxTimeMS=query_max_time_ms))
+            else:
+                results = list(collection.aggregate(query["pipeline"], allowDiskUse=True))
         else:
             return {
                 "results": [],
@@ -141,11 +170,15 @@ def stringify_object_ids(value: Any) -> Any:
             stringify_object_ids(item)
     elif isinstance(value, dict):
         for key, item in list(value.items()):
-            if key == "_id":
+            if key == "_id" and is_object_id(item):
                 value[key] = str(item)
             else:
                 stringify_object_ids(item)
     return value
+
+
+def is_object_id(value: Any) -> bool:
+    return value.__class__.__name__ == "ObjectId" and value.__class__.__module__.startswith("bson")
 
 
 def score_results(gold_results: list[dict[str, Any]], generated_results: list[dict[str, Any]], gold_query: dict[str, Any]) -> dict[str, Any]:
@@ -159,6 +192,7 @@ def score_results(gold_results: list[dict[str, Any]], generated_results: list[di
     gold_total = sum(gold_keys.values())
     generated_total = sum(generated_keys.values())
 
+    empty_result_equivalence = gold_total == 0 and generated_total == 0
     precision = true_positive / generated_total if generated_total else (1.0 if gold_total == 0 else 0.0)
     recall = true_positive / gold_total if gold_total else (1.0 if generated_total == 0 else 0.0)
     f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
@@ -178,7 +212,31 @@ def score_results(gold_results: list[dict[str, Any]], generated_results: list[di
         "missing_examples": decode_examples(missing[:5]),
         "extra_examples": decode_examples(extra[:5]),
         "comparison_mode": comparison_mode(op, projection_fields),
+        "empty_result_equivalence": empty_result_equivalence,
+        "empty_result_note": (
+            "Gold and generated query both returned no results; this is treated as full result equivalence, "
+            "not necessarily semantic query equivalence."
+            if empty_result_equivalence else None
+        ),
     }
+
+
+def apply_projection_precision(score: dict[str, Any], projection: dict[str, Any] | None) -> dict[str, Any]:
+    if not projection or projection.get("precision") is None:
+        return score
+
+    row_precision = score["precision"]
+    field_precision = projection["precision"]
+    adjusted_precision = row_precision * field_precision
+    recall = score["recall"]
+    f1 = 2 * adjusted_precision * recall / (adjusted_precision + recall) if adjusted_precision + recall else 0.0
+
+    score["row_precision"] = row_precision
+    score["field_precision"] = field_precision
+    score["precision"] = round(adjusted_precision, 4)
+    score["f1"] = round(f1, 4)
+    score["precision_note"] = "precision = row_precision * field_precision"
+    return score
 
 
 def projected_fields(query: dict[str, Any]) -> set[str] | None:
@@ -191,10 +249,17 @@ def projected_fields(query: dict[str, Any]) -> set[str] | None:
 
 
 def result_counter(results: list[dict[str, Any]], op: str, projection_fields: set[str] | None) -> Counter:
-    return Counter(result_key(row, op, projection_fields) for row in results)
+    keys = []
+    for row in results:
+        row_key = result_key(row, op, projection_fields)
+        if isinstance(row_key, list):
+            keys.extend(row_key)
+        else:
+            keys.append(row_key)
+    return Counter(keys)
 
 
-def result_key(row: dict[str, Any], op: str, projection_fields: set[str] | None) -> str:
+def result_key(row: dict[str, Any], op: str, projection_fields: set[str] | None) -> str | list[str]:
     if op == "distinct":
         return stable_json(normalize_value(row.get("_value")))
 
@@ -202,9 +267,12 @@ def result_key(row: dict[str, Any], op: str, projection_fields: set[str] | None)
         return stable_json(normalize_aggregate_row(row))
 
     if projection_fields:
-        comparable = {field: get_path(row, field) for field in sorted(projection_fields)}
-    else:
-        comparable = {key: value for key, value in row.items() if key != "_id"}
+        return [
+            stable_json({"field": field, "value": normalize_value(get_path(row, field))})
+            for field in sorted(projection_fields)
+        ]
+
+    comparable = {key: value for key, value in row.items() if key != "_id"}
     return stable_json(normalize_value(comparable))
 
 
@@ -214,16 +282,39 @@ def comparison_mode(op: str, projection_fields: set[str] | None) -> str:
     if op == "aggregate":
         return "aggregate row values, ignoring output alias names"
     if projection_fields:
-        return "find documents using gold projection fields"
+        return "find projected field-value pairs using gold projection fields"
     return "find documents using all returned fields except _id"
 
 
 def normalize_aggregate_row(row: dict[str, Any]) -> Any:
-    values = [normalize_value(value) for key, value in row.items() if key != "_id"]
-    id_value = normalize_value(row["_id"]) if "_id" in row and row["_id"] is not None else None
-    if id_value is not None:
-        values.insert(0, id_value)
+    values = []
+    for key, value in row.items():
+        if key == "_id" and value is None:
+            continue
+        values.extend(aggregate_leaf_values(value))
     return sorted(values, key=stable_json)
+
+
+def aggregate_leaf_values(value: Any) -> list[Any]:
+    value = parse_legacy_aggregate_value(value)
+    if isinstance(value, dict):
+        values = []
+        for item in value.values():
+            values.extend(aggregate_leaf_values(item))
+        return values
+    if isinstance(value, list):
+        return [normalize_value(item) for item in value]
+    return [normalize_value(value)]
+
+
+def parse_legacy_aggregate_value(value: Any) -> Any:
+    if not isinstance(value, str) or not value[:1] in "{[":
+        return value
+    try:
+        parsed = ast.literal_eval(value)
+    except (SyntaxError, ValueError):
+        return value
+    return parsed if isinstance(parsed, (dict, list)) else value
 
 
 def normalize_value(value: Any) -> Any:
@@ -268,7 +359,11 @@ def decode_examples(keys: list[str]) -> list[Any]:
     return examples
 
 
-def projection_score(gold_query: dict[str, Any], generated_query: dict[str, Any]) -> dict[str, Any] | None:
+def projection_score(
+    gold_query: dict[str, Any],
+    generated_query: dict[str, Any],
+    generated_results: list[dict[str, Any]] | None = None,
+) -> dict[str, Any] | None:
     if gold_query.get("op", "find") != "find":
         return None
 
@@ -280,11 +375,15 @@ def projection_score(gold_query: dict[str, Any], generated_query: dict[str, Any]
     generated_fields = {field for field, include in generated_projection.items() if field != "_id" and include}
 
     if not generated_fields:
-        return {
-            "recall": 1.0,
-            "precision": None,
-            "note": "Generated query has no projection, so all gold fields are present but extra fields are unknown.",
-        }
+        generated_fields = infer_returned_fields(generated_results or [])
+        if not generated_fields:
+            return {
+                "recall": 0.0,
+                "precision": 0.0,
+                "missing_fields": sorted(gold_fields),
+                "extra_fields": [],
+                "note": "Generated query has no projection and returned no fields to compare.",
+            }
 
     overlap = gold_fields & generated_fields
     return {
@@ -295,12 +394,40 @@ def projection_score(gold_query: dict[str, Any], generated_query: dict[str, Any]
     }
 
 
+def infer_returned_fields(results: list[dict[str, Any]], limit: int = 20) -> set[str]:
+    fields: set[str] = set()
+    for row in results[:limit]:
+        collect_field_paths(row, "", fields)
+    fields.discard("_id")
+    return fields
+
+
+def collect_field_paths(value: Any, prefix: str, fields: set[str]) -> None:
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if key == "_id":
+                continue
+            path = f"{prefix}.{key}" if prefix else key
+            if isinstance(item, dict):
+                collect_field_paths(item, path, fields)
+            elif isinstance(item, list):
+                before = len(fields)
+                for element in item[:5]:
+                    collect_field_paths(element, path, fields)
+                if len(fields) == before:
+                    fields.add(path)
+            else:
+                fields.add(path)
+    elif prefix:
+        fields.add(prefix)
+
+
 def is_success(score: dict[str, Any], projection: dict[str, Any] | None) -> bool:
     if score["recall"] < 1.0:
         return False
-    if score["precision"] < 1.0:
-        return False
     if projection and projection["recall"] < 1.0:
+        return False
+    if score["precision"] < config.SUCCESS_MIN_PRECISION:
         return False
     return True
 
@@ -310,14 +437,26 @@ def explain_failure(score: dict[str, Any], projection: dict[str, Any] | None, st
         return error
     if score["recall"] < 1.0:
         return "Generated query missed one or more expected result documents or values."
-    if score["precision"] < 1.0:
-        return "Generated query returned extra result documents or values."
     if projection and projection["recall"] < 1.0:
         return "Generated query did not include all required projected fields."
+    if score["precision"] < config.SUCCESS_MIN_PRECISION:
+        return f"Generated query precision is below the success threshold ({config.SUCCESS_MIN_PRECISION})."
     return None
 
 
-def evaluate_question(entry: dict[str, Any], schema_text: str, database_name: str | None = None) -> dict[str, Any]:
+def evaluate_question(
+    entry: dict[str, Any],
+    schema_text: str,
+    benchmark_path: str,
+    database_name: str | None = None,
+    model: str | None = None,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+    use_gold_cache: bool = True,
+    refresh_gold_cache: bool = False,
+    gold_cache_dir: str | None = None,
+    query_max_time_ms: int | None = None,
+) -> dict[str, Any]:
     started = time.perf_counter()
     gold_query = entry["gold"]
 
@@ -337,11 +476,13 @@ def evaluate_question(entry: dict[str, Any], schema_text: str, database_name: st
         "counts": None,
         "timing_ms": {},
         "examples": None,
+        "gold_cache": None,
     }
 
-    llm = generate_query(schema_text, entry["question"])
+    llm = generate_query(schema_text, entry["question"], model, temperature, max_tokens)
     result["timing_ms"]["llm"] = llm["duration_ms"]
     result["generated_raw_text"] = llm.get("raw_text")
+    result["generated_finish_reason"] = llm.get("finish_reason")
 
     if llm["error"]:
         result["status"] = "llm_error"
@@ -351,7 +492,21 @@ def evaluate_question(entry: dict[str, Any], schema_text: str, database_name: st
 
     result["generated_query"] = llm["query"]
 
-    gold_run = run_query(gold_query, database_name)
+    database_for_cache = database_name or config.DATABASE_NAME
+    gold_run = None
+    if use_gold_cache and not refresh_gold_cache:
+        gold_run = load_gold_cache(benchmark_path, database_for_cache, entry, gold_cache_dir)
+
+    if gold_run is None:
+        gold_run = run_query(gold_query, database_name, query_max_time_ms)
+        if use_gold_cache and not gold_run["error"]:
+            cache_path = save_gold_cache(benchmark_path, database_for_cache, entry, gold_run, gold_cache_dir)
+            gold_run["cache"] = {
+                "hit": False,
+                "path": str(cache_path) if cache_path else None,
+            }
+
+    result["gold_cache"] = gold_run.get("cache")
     result["timing_ms"]["gold_query"] = gold_run["duration_ms"]
     if gold_run["error"]:
         result["status"] = "gold_query_error"
@@ -359,7 +514,7 @@ def evaluate_question(entry: dict[str, Any], schema_text: str, database_name: st
         result["timing_ms"]["total"] = elapsed_ms(started)
         return result
 
-    generated_run = run_query(llm["query"], database_name)
+    generated_run = run_query(llm["query"], database_name, query_max_time_ms)
     result["timing_ms"]["generated_query"] = generated_run["duration_ms"]
     if generated_run["error"]:
         result["status"] = "generated_query_error"
@@ -369,7 +524,8 @@ def evaluate_question(entry: dict[str, Any], schema_text: str, database_name: st
 
     score_started = time.perf_counter()
     scores = score_results(gold_run["results"], generated_run["results"], gold_query)
-    projection = projection_score(gold_query, llm["query"])
+    projection = projection_score(gold_query, llm["query"], generated_run["results"])
+    scores = apply_projection_precision(scores, projection)
     result["timing_ms"]["scoring"] = elapsed_ms(score_started)
     result["timing_ms"]["total"] = elapsed_ms(started)
 
@@ -396,17 +552,32 @@ def run_evaluation(
     label: str,
     database: str | None = None,
     question_id: int | None = None,
+    model: str | None = None,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+    use_gold_cache: bool = True,
+    refresh_gold_cache: bool = False,
+    gold_cache_dir: str | None = None,
+    query_max_time_ms: int | None = None,
 ) -> None:
     run_started = time.perf_counter()
     database_name = database or config.DATABASE_NAME
+    model_name = model or config.MODEL
+    temperature_value = config.TEMPERATURE if temperature is None else temperature
+    max_tokens_value = max_tokens or config.MAX_TOKENS
+    query_max_time_ms_value = config.QUERY_MAX_TIME_MS if query_max_time_ms is None else query_max_time_ms
 
     print()
     print("=" * 72)
     print(f"Run: {label}")
-    print(f"Model: {config.MODEL}")
+    print(f"Model: {model_name}")
+    print(f"Temperature: {temperature_value}")
+    print(f"Max tokens: {max_tokens_value}")
+    print(f"Query maxTimeMS: {query_max_time_ms_value}")
     print(f"Database: {database_name}")
     print(f"Schema: {Path(schema_path).name}")
     print(f"Benchmark: {Path(benchmark_path).name}")
+    print(f"Gold cache: {'refresh' if refresh_gold_cache else 'on' if use_gold_cache else 'off'}")
     if question_id is not None:
         print(f"Question id: {question_id}")
     print("=" * 72)
@@ -423,13 +594,40 @@ def run_evaluation(
     for index, entry in enumerate(benchmark, start=1):
         op = entry.get("gold", {}).get("op", "find")
         print(f"[{index:>2}/{len(benchmark)}] {op:<9} Q{entry.get('id')}: {entry['question'][:70]}")
-        result = evaluate_question(entry, schema_text, database_name)
+        result = evaluate_question(
+            entry,
+            schema_text,
+            benchmark_path,
+            database_name,
+            model_name,
+            temperature_value,
+            max_tokens_value,
+            use_gold_cache,
+            refresh_gold_cache,
+            gold_cache_dir,
+            query_max_time_ms_value,
+        )
         question_results.append(result)
         print_question_result(result)
 
     summary = summarize_results(question_results, elapsed_ms(run_started))
     print_summary(summary)
-    save_results(label, schema_path, benchmark_path, database_name, question_results, summary, question_id)
+    save_results(
+        label,
+        schema_path,
+        benchmark_path,
+        database_name,
+        question_results,
+        summary,
+        question_id,
+        model_name,
+        temperature_value,
+        max_tokens_value,
+        use_gold_cache,
+        refresh_gold_cache,
+        gold_cache_dir,
+        query_max_time_ms_value,
+    )
 
 
 def print_question_result(result: dict[str, Any]) -> None:
@@ -440,11 +638,13 @@ def print_question_result(result: dict[str, Any]) -> None:
     score = result["scores"]
     tag = "PASS" if result["success"] else "FAIL"
     timing = result["timing_ms"]
+    cache = result.get("gold_cache") or {}
+    cache_label = " cache=hit" if cache.get("hit") else ""
     print(
         f"          {tag} "
         f"P={score['precision']:.2f} R={score['recall']:.2f} F1={score['f1']:.2f} "
         f"gold={result['counts']['gold']} gen={result['counts']['generated']} "
-        f"time={timing['total']}ms"
+        f"time={timing['total']}ms{cache_label}"
     )
     if result["failure_reason"]:
         print(f"          {result['failure_reason']}")
@@ -565,6 +765,13 @@ def save_results(
     question_results: list[dict[str, Any]],
     summary: dict[str, Any],
     question_id: int | None = None,
+    model: str | None = None,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+    use_gold_cache: bool = True,
+    refresh_gold_cache: bool = False,
+    gold_cache_dir: str | None = None,
+    query_max_time_ms: int | None = None,
 ) -> None:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     schema_name = Path(schema_path).stem
@@ -582,13 +789,34 @@ def save_results(
     run_info = {
         "label": label,
         "timestamp": timestamp,
-        "model": config.MODEL,
+        "model": model or config.MODEL,
+        "temperature": config.TEMPERATURE if temperature is None else temperature,
+        "max_tokens": max_tokens or config.MAX_TOKENS,
+        "query_max_time_ms": config.QUERY_MAX_TIME_MS if query_max_time_ms is None else query_max_time_ms,
+        "gold_cache": {
+            "enabled": use_gold_cache,
+            "refresh": refresh_gold_cache,
+            "directory": gold_cache_dir or config.GOLD_CACHE_DIR,
+        },
         "database": database_name,
         "schema": Path(schema_path).name,
         "benchmark": Path(benchmark_path).name,
         "question_id": question_id,
-        "metric": "Precision, recall and F1 are computed over returned values. Precision and recall are equally weighted.",
-        "success_definition": "A question is marked successful only when precision and recall are both 1.0.",
+        "success_min_precision": config.SUCCESS_MIN_PRECISION,
+        "metric": (
+            "Precision, recall and F1 are computed over returned values. For projected find queries, "
+            "precision also includes field precision so extra returned fields are penalized."
+        ),
+        "success_definition": (
+            f"A question is marked successful when recall is 1.0, all required projected fields are included, "
+            f"and precision is at least {config.SUCCESS_MIN_PRECISION}."
+        ),
+        "relevance_definition": (
+            "Generated output is relevant when it contains the same required values as the gold output. "
+            "For direct aggregate answers, output field names do not need to match as long as values match. "
+            "When gold and generated results are both empty, the result is treated as full result equivalence, "
+            "but this does not prove semantic query equivalence."
+        ),
     }
 
     if question_id is not None and len(question_results) == 1:
@@ -608,7 +836,35 @@ def save_results(
     with open(output_path, "w", encoding="utf-8") as file:
         json.dump(report, file, indent=2, ensure_ascii=False, default=str)
 
+    append_result_index(output_path, run_info, summary)
     print(f"Saved results to {output_path}")
+
+
+def append_result_index(output_path: Path, run_info: dict[str, Any], summary: dict[str, Any]) -> None:
+    index_path = Path(config.RESULTS_DIR) / "run_index.jsonl"
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    record = {
+        "timestamp": run_info["timestamp"],
+        "label": run_info["label"],
+        "model": run_info["model"],
+        "database": run_info["database"],
+        "structure": Path(run_info["benchmark"]).stem,
+        "schema_description": Path(run_info["schema"]).stem,
+        "benchmark": run_info["benchmark"],
+        "schema": run_info["schema"],
+        "question_id": run_info["question_id"],
+        "total_questions": summary["total_questions"],
+        "successful_questions": summary["successful_questions"],
+        "failed_questions": summary["failed_questions"],
+        "success_rate": summary["success_rate"],
+        "avg_precision": summary["avg_precision"],
+        "avg_recall": summary["avg_recall"],
+        "avg_f1": summary["avg_f1"],
+        "errors": summary["errors"],
+        "result_path": str(output_path),
+    }
+    with open(index_path, "a", encoding="utf-8") as file:
+        file.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
 
 
 def compact_failure(result: dict[str, Any]) -> dict[str, Any]:
@@ -623,6 +879,7 @@ def compact_failure(result: dict[str, Any]) -> dict[str, Any]:
         "scores": result["scores"],
         "counts": result["counts"],
         "timing_ms": result["timing_ms"],
+        "gold_cache": result.get("gold_cache"),
         "gold_query": result["gold_query"],
         "generated_query": result["generated_query"],
         "missing_examples": (result.get("examples") or {}).get("missing"),

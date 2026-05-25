@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pandas as pd
-from pymongo import MongoClient
+from pymongo import ASCENDING, MongoClient
 from pymongo.database import Database
 
 BASE_DIR = Path(__file__).parent.parent
@@ -31,6 +31,34 @@ def print_database_summary(db: Database) -> None:
     for name in sorted(db.list_collection_names()):
         count = db[name].count_documents({})
         print(f"  {name}: {count:,} documents")
+
+
+def create_indexes(db: Database) -> None:
+    db["selskap"].create_index([("orgNr", ASCENDING)])
+    db["selskap"].create_index([("navn", ASCENDING)])
+    db["selskap"].create_index([("konkursFlagg", ASCENDING)])
+    db["selskap"].create_index([("likvidasjonFlagg", ASCENDING)])
+    db["selskap"].create_index([("naceBeskrivelse", ASCENDING)])
+
+    db["personer"].create_index([("selskapOrgNr", ASCENDING)])
+    db["personer"].create_index([("navn", ASCENDING)])
+    db["personer"].create_index([("fødselsdato", ASCENDING)])
+    db["personer"].create_index([("selskapRolle", ASCENDING)])
+
+    db["politikere"].create_index([("navn", ASCENDING)])
+    db["politikere"].create_index([("fødselsdato", ASCENDING)])
+    db["politikere"].create_index([("partinavn", ASCENDING)])
+    db["politikere"].create_index([("innvalgt", ASCENDING)])
+
+    db["eierskap"].create_index([("utstederOrgNr", ASCENDING)])
+    db["eierskap"].create_index([("eierPersonNavn", ASCENDING)])
+    db["eierskap"].create_index([("eierPersonFødselsdato", ASCENDING)])
+    db["eierskap"].create_index([("eierskapår", ASCENDING)])
+
+    db["aksjeeiebok"].create_index([("orgNr", ASCENDING)])
+    db["aksjeeiebok"].create_index([("år", ASCENDING)])
+    db["aksjeeiebok"].create_index([("aksjonærNavn", ASCENDING)])
+    db["aksjeeiebok"].create_index([("aksjeklasse", ASCENDING)])
 
 
 def import_csv_directory(
@@ -75,6 +103,9 @@ def import_csv_directory(
             print("Failed files:")
             for file_name, error in failed_files:
                 print(f"  {file_name}: {error[:100]}")
+
+        create_indexes(db)
+        print("Created indexes for flat database.")
 
         print("Collections:")
         print_database_summary(db)

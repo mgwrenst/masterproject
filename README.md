@@ -1,131 +1,149 @@
 # Coder In The Loop
 
-Part of a Master's project in Information Science at the University of Bergen (UiB).
+Master's project in Information Science at the University of Bergen (UiB).
 
-This project evaluates whether an LLM can translate Norwegian natural-language questions into MongoDB queries.
+This project tests whether an LLM can translate Norwegian natural-language questions into MongoDB queries.
 
-## Run Evaluations
+## Setup
 
-Flat database, naive schema:
-
-```powershell
-python src/text_to_query/main.py --schema src/text_to_query/schemas/flat_naive.yaml --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth --label flat_naive
-```
-
-Flat database, advanced schema:
+Install dependencies:
 
 ```powershell
-python src/text_to_query/main.py --schema src/text_to_query/schemas/flat_advanced.yaml --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth --label flat_advanced
+pip install -r requirements.txt
 ```
 
-Structured database, naive schema:
+Set your OpenAI API key:
 
 ```powershell
-python src/text_to_query/main.py --schema src/text_to_query/schemas/structured_naive.yaml --benchmark src/text_to_query/benchmarks/structured.json --database groundtruthStructured --label structured_naive
+$env:OPENAI_API_KEY="your_api_key"
 ```
 
-Structured database, advanced schema:
+Make sure MongoDB is running locally. Defaults are in [config.py](src/text_to_query/config.py).
+
+Import the flat database, then build the structured database:
 
 ```powershell
-python src/text_to_query/main.py --schema src/text_to_query/schemas/structured_advanced.yaml --benchmark src/text_to_query/benchmarks/structured.json --database groundtruthStructured --label structured_advanced
+python src/mongoDB/flat.py
 ```
-
-## Multiple Runs
-
-Add `--runs` to repeat a configuration.
-
-Example:
 
 ```powershell
-python src/text_to_query/main.py --schema src/text_to_query/schemas/flat_naive.yaml --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth --label flat_naive --runs 3
+python src/mongoDB/structured.py --drop
 ```
 
-## Run One Question
+Both database structures create indexes for common filter and lookup fields. The structured database is hybrid: it preserves full source rows in `roller`, `politikere`, `eierskap`, and `aksjeeiebok`, and adds structured `selskap` and `personer` documents with embedded summaries.
 
-Add `--id` to run one benchmark question for a configuration.
+## 1. Check Gold Queries
 
-Flat naive, question 15:
+Run and compare gold queries for both database structures:
 
 ```powershell
-python src/text_to_query/main.py --schema src/text_to_query/schemas/flat_naive.yaml --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth --label flat_naive --id 15
+python src/text_to_query/test_gold_queries.py --structure both --compare
 ```
 
-Structured naive, question 15:
+Refresh the gold-result cache after changing benchmark queries or reloading the database:
 
 ```powershell
-python src/text_to_query/main.py --schema src/text_to_query/schemas/structured_naive.yaml --benchmark src/text_to_query/benchmarks/structured.json --database groundtruthStructured --label structured_naive --id 15
+python src/text_to_query/test_gold_queries.py --structure both --compare --refresh-cache
 ```
 
-Run one question three times:
+Run one question:
 
 ```powershell
-python src/text_to_query/main.py --schema src/text_to_query/schemas/flat_naive.yaml --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth --label flat_naive --id 15 --runs 3
+python src/text_to_query/test_gold_queries.py --structure both --compare --id 15
 ```
 
-## Test Gold Queries
-
-Run only the gold queries from the flat benchmark:
+Run and cache the complex pipeline stress benchmark:
 
 ```powershell
-python src/text_to_query/test_gold_queries.py --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth
+python src/text_to_query/test_gold_queries.py --structure both --benchmark-set complex --compare --refresh-cache
 ```
 
-Run only the gold queries from the structured benchmark:
+Gold reports are saved in `src/text_to_query/gold_results/`.
+Cached gold results are saved in `src/text_to_query/gold_cache/`.
+
+## 2. Run Evaluations
+
+Run flat and structured benchmarks with both schema descriptions:
 
 ```powershell
-python src/text_to_query/test_gold_queries.py --benchmark src/text_to_query/benchmarks/structured.json --database groundtruthStructured
+python src/text_to_query/main.py --structure both --schema-version all
 ```
 
-Run one gold query by id:
+Run a single setup:
 
 ```powershell
-python src/text_to_query/test_gold_queries.py --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth --id 15
+python src/text_to_query/main.py --structure flat --schema-version naive
 ```
 
-Print example results in the terminal:
+Run one question:
 
 ```powershell
-python src/text_to_query/test_gold_queries.py --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth --id 15 --show-results
+python src/text_to_query/main.py --structure flat --schema-version naive --id 15
 ```
 
-Save the full result set:
+Compare multiple models:
 
 ```powershell
-python src/text_to_query/test_gold_queries.py --benchmark src/text_to_query/benchmarks/flat.json --database groundtruth --id 15 --save-full
+python src/text_to_query/main.py --structure both --schema-version all --models gpt-4.1-mini gpt-5-mini
 ```
 
-## Compare Results
+Run the complex pipeline stress benchmark:
 
-Compare all saved evaluation result files:
+```powershell
+python src/text_to_query/main.py --structure both --schema-version all --benchmark-set complex
+```
+
+Evaluation results are saved in `results/`.
+Each run also appends one summary row to `results/run_index.jsonl`.
+
+## Useful Options
+
+Gold queries:
+
+```powershell
+python src/text_to_query/test_gold_queries.py --help
+```
+
+LLM evaluations:
+
+```powershell
+python src/text_to_query/main.py --help
+```
+
+Common flags:
+
+- `--structure flat|structured|both`
+- `--schema-version naive|advanced|all`
+- `--benchmark-set main|complex`
+- `--id 15`
+- `--runs 3`
+- `--model gpt-4.1-mini`
+- `--models gpt-4.1-mini gpt-5-mini`
+- `--refresh-cache` for gold-query cache refresh
+- `--refresh-gold-cache` for evaluation cache refresh
+
+## Compare Saved Runs
 
 ```powershell
 python src/text_to_query/compare.py
 ```
 
-Compare selected result files:
+## Analyze Saved Results
+
+Create thesis-ready aggregate tables and key findings for both normal and complex benchmarks:
 
 ```powershell
-python src/text_to_query/compare.py "results/flat/flat_naive/20260522_120000_flat_naive.json" "results/flat/flat_advanced/20260522_120500_flat_advanced.json"
+python src/text_to_query/analyze_results.py
 ```
 
-## Result Folders
-
-LLM evaluation results:
-
-```text
-results/<benchmark_name>/<schema_name>/<timestamp>_<label>.json
-```
-
-Full benchmark runs include a summary, failures, and all questions. Single-question runs with `--id` save a compact file with only the run metadata and that question.
-
-Gold-query test results:
-
-```text
-src/text_to_query/gold_results/<benchmark_name>/<timestamp>_<database>_gold_queries.json
-```
+Outputs are saved in `results/analysis/`, including run summaries, category tables, per-question difficulty, comparison tables, failure cases, and a Markdown summary.
 
 ## Metrics
 
 The main metrics are precision, recall, and F1.
 
-A question is marked successful only when both precision and recall are `1.0`.
+A question passes when recall is `1.0`, all required projected fields are included, and precision is at least `0.5`.
+
+Extra returned documents or fields reduce precision and F1. For direct aggregate answers, field names do not need to match as long as the values match.
+
+If both the gold query and generated query return no results, the run treats this as full result equivalence. This is a practical evaluation choice and does not prove semantic query equivalence.

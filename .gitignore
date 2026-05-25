@@ -5,3 +5,4 @@ src/csv/files
 src/csv/processed
 results/
 src/text_to_query/gold_results
+src/text_to_query/gold_cache

@@ -1,361 +1,209 @@
-```yaml
 beskrivelse: >
-  Teknisk schema for den strukturerte MongoDB-databasen
-  groundtruthStructured. Databasen er modellert som en embedded
-  dokumentdatabase hvor relatert informasjon er samlet i samme dokument.
-  Databasen består hovedsakelig av samlingene selskap og personer.
-  Informasjon om roller, eierskap, aksjeeiebok og politikere er lagret som
-  nested objekter og arrays inne i hoveddokumentene.
+  Teknisk schema for den flate MongoDB-databasen groundtruth. Databasen
+  består av separate samlinger som ligner relasjonelle tabeller. Relasjoner
+  kobles vanligvis med organisasjonsnummer, navn, fødselsdato eller UUID.
 
 samlinger:
 
   - navn: "selskap"
-    beskrivelse: >
-      Ett dokument per selskap. Dokumentene inneholder generell
-      selskapsinformasjon samt embedded arrays for roller,
-      eierskap og aksjeeiebok.
-
+    beskrivelse: "Ett dokument per selskap."
     felt:
       uuid:
         type: "string|null"
-        beskrivelse: "Intern UUID for selskapet"
-
       navn:
         type: "string"
-        beskrivelse: "Selskapsnavn"
-
       orgNr:
         type: "integer|string"
-        beskrivelse: "Organisasjonsnummer for selskapet"
-
       organisasjonstype:
         type: "string|null"
-        eksempelverdier: ["AS", "ASA", "ENK", "ANS", "DA"]
-        beskrivelse: "Selskapsform"
-
-      bransje:
-        type: "object"
-        beskrivelse: "Embedded objekt med informasjon om NACE-bransje"
-        underfelt:
-          naceKode:
-            type: "number|string|null"
-            beskrivelse: "NACE-bransjekode"
-          naceBeskrivelse:
-            type: "string|null"
-            beskrivelse: "Tekstlig beskrivelse av NACE-koden"
-
-      datoer:
-        type: "object"
-        beskrivelse: "Embedded objekt med datoer knyttet til selskapet"
-        underfelt:
-          etablertDato:
-            type: "string|null"
-            format: "ISO 8601 UTC string"
-            beskrivelse: "Dato for etablering"
-          oppløstDato:
-            type: "string|null"
-            format: "ISO 8601 UTC string"
-            beskrivelse: "Dato for oppløsning"
-
-      status:
-        type: "object"
-        beskrivelse: "Embedded objekt med konkurs- og likvidasjonsstatus"
-        underfelt:
-          konkursFlagg:
-            type: "integer"
-            verdier: [0, 1]
-            beskrivelse: "1 hvis selskapet er konkurs"
-          likvidasjonFlagg:
-            type: "integer"
-            verdier: [0, 1]
-            beskrivelse: "1 hvis selskapet er under likvidasjon"
-
-      roller:
-        type: "array<object>"
-        beskrivelse: "Liste over personer med roller i selskapet"
-        objektstruktur:
-          rolle:
-            type: "string"
-            eksempelverdier: ["Daglig leder", "Styreleder", "Styremedlem", "Varamedlem"]
-          rolleRang:
-            type: "integer|number|null"
-          rolleUUID:
-            type: "string|null"
-          selskapRolleUUID:
-            type: "string|null"
-          startdato:
-            type: "string|null"
-            format: "ISO 8601 UTC string"
-          registrertTid:
-            type: "string|null"
-            format: "ISO 8601 UTC string"
-          oppdatertTid:
-            type: "string|null"
-            format: "ISO 8601 UTC string"
-          person:
-            type: "object"
-            beskrivelse: "Embedded informasjon om personen som har rollen"
-            underfelt:
-              uuid:
-                type: "string|null"
-              navn:
-                type: "string"
-              fødselsdato:
-                type: "string|null"
-                format: "ISO 8601 UTC string"
-              fødselsår:
-                type: "integer|number|null"
-              kjønn:
-                type: "string|null"
-              politiker:
-                type: "object"
-                beskrivelse: "Embedded politikerinformasjon dersom personen er politiker"
-                underfelt:
-                  erPolitiker:
-                    type: "boolean"
-                  partinavn:
-                    type: "string|null"
-                  kommune:
-                    type: "string|null"
-                  kommunenummer:
-                    type: "integer|number|null"
-                  innvalgt:
-                    type: "string|null"
-
-      eierskap:
-        type: "array<object>"
-        beskrivelse: "Liste over eierskapsforhold knyttet til selskapet"
-        objektstruktur:
-          uuid:
-            type: "string|null"
-          år:
-            type: "integer"
-          eier:
-            type: "object"
-            beskrivelse: "Embedded informasjon om eieren"
-            underfelt:
-              uuid:
-                type: "string|null"
-              navn:
-                type: "string|null"
-              aksjonærNavn:
-                type: "string|null"
-              orgNr:
-                type: "integer|string|null"
-              type:
-                type: "string|null"
-                eksempelverdier: ["person", "selskap"]
-          aksjer:
-            type: "object"
-            beskrivelse: "Informasjon om aksjeandel"
-            underfelt:
-              andel:
-                type: "number|null"
-              antall:
-                type: "integer|number|null"
-              totalAntall:
-                type: "integer|number|null"
-          stemmer:
-            type: "object"
-            beskrivelse: "Informasjon om stemmerettigheter"
-            underfelt:
-              andel:
-                type: "number|null"
-              antall:
-                type: "integer|number|null"
-              totalAntall:
-                type: "integer|number|null"
-
-      aksjeeiebok:
-        type: "array<object>"
-        beskrivelse: "Liste over aksjonærer i selskapet per år og aksjeklasse"
-        objektstruktur:
-          år:
-            type: "integer"
-          aksjeklasse:
-            type: "string|null"
-          aksjer:
-            type: "object"
-            underfelt:
-              antall:
-                type: "integer|number|null"
-              antallTotaltISelskap:
-                type: "integer|number|null"
-          aksjonær:
-            type: "object"
-            beskrivelse: "Embedded informasjon om aksjonæren"
-            underfelt:
-              navn:
-                type: "string|null"
-              fødselsår:
-                type: "integer|number|null"
-              landkode:
-                type: "string|null"
-              poststed:
-                type: "string|null"
-              politiker:
-                type: "object"
-                underfelt:
-                  erPolitiker:
-                    type: "boolean"
-                  partinavn:
-                    type: "string|null"
-                  kommune:
-                    type: "string|null"
+      konkursFlagg:
+        type: "integer"
+        verdier: [0, 1]
+      likvidasjonFlagg:
+        type: "integer"
+        verdier: [0, 1]
+      naceKode:
+        type: "number|string|null"
+      naceBeskrivelse:
+        type: "string|null"
+      etablertDato:
+        type: "string|date|null"
+      oppløstDato:
+        type: "string|date|null"
 
   - navn: "personer"
     beskrivelse: >
-      Ett dokument per person. Dokumentene inneholder personinformasjon samt
-      embedded arrays for roller og eierskap.
-
+      Rolleoppføringer for personer i selskaper. En person kan forekomme
+      flere ganger dersom personen har flere roller.
     felt:
       uuid:
         type: "string|null"
-        beskrivelse: "Intern UUID for personen"
-
       navn:
         type: "string"
-        beskrivelse: "Personens fulle navn"
-
       fødselsdato:
-        type: "string|null"
-        format: "ISO 8601 UTC string"
-        beskrivelse: "Fødselsdato"
-
+        type: "string|date|null"
       fødselsår:
         type: "integer|number|null"
-        beskrivelse: "Fødselsår"
-
       kjønn:
         type: "string|null"
-        eksempelverdier: ["Mann", "Kvinne"]
-
       adresse:
-        type: "object"
-        beskrivelse: "Embedded adresseinformasjon"
-        underfelt:
-          gateadresse:
-            type: "string|null"
-          kommuneNavn:
-            type: "string|null"
-          kommuneNr:
-            type: "integer|number|string|null"
-          postnummer:
-            type: "integer|number|string|null"
-          poststed:
-            type: "string|null"
-          land:
-            type: "string|null"
-          landkode:
-            type: "string|null"
+        type: "string|null"
+      kommuneNavn:
+        type: "string|null"
+      kommuneNr:
+        type: "integer|number|string|null"
+      postnummer:
+        type: "integer|number|string|null"
+      poststed:
+        type: "string|null"
+      land:
+        type: "string|null"
+      landkode:
+        type: "string|null"
+      selskapNavn:
+        type: "string"
+      selskapOrgNr:
+        type: "integer|string"
+      selskapUUID:
+        type: "string|null"
+      selskapRolle:
+        type: "string"
+      selskapRolleRang:
+        type: "integer|number|null"
+      rolleUUID:
+        type: "string|null"
+      selskapRolleUUID:
+        type: "string|null"
+      rolleStartdato:
+        type: "string|date|null"
+      rolleSluttdato:
+        type: "string|date|null"
+      rolleRegistrert:
+        type: "string|date|null"
+      rolleOppdatert:
+        type: "string|date|null"
+      selskapRegistrert:
+        type: "string|date|null"
+      selskapOppdatert:
+        type: "string|date|null"
+      registrertTid:
+        type: "string|date|null"
+      oppdatertTid:
+        type: "string|date|null"
 
-      politiker:
-        type: "object"
-        beskrivelse: "Embedded politikerinformasjon"
-        underfelt:
-          erPolitiker:
-            type: "boolean"
-          partinavn:
-            type: "string|null"
-          kommune:
-            type: "string|null"
-          kommunenummer:
-            type: "integer|number|null"
-          innvalgt:
-            type: "string|null"
-          valg:
-            type: "object"
-            underfelt:
-              listeplass:
-                type: "integer|number|null"
-              personstemmer:
-                type: "integer|number|null"
-              slengere:
-                type: "integer|number|null"
-              stemmetillegg:
-                type: "string|null"
-              endeligRangering:
-                type: "integer|number|null"
+  - navn: "politikere"
+    beskrivelse: "Politikeroppføringer og valgresultater."
+    felt:
+      navn:
+        type: "string"
+      fødselsdato:
+        type: "string|date|null"
+      partinavn:
+        type: "string|null"
+      kommune:
+        type: "string|null"
+      kommunenummer:
+        type: "integer|number|null"
+      listeplass:
+        type: "integer|number|null"
+      personstemmer:
+        type: "integer|number|null"
+      slengere:
+        type: "integer|number|null"
+      stemmetillegg:
+        type: "string|number|null"
+      endelig_rangering:
+        type: "integer|number|null"
+      innvalgt:
+        type: "string|null"
+        eksempelverdier: ["Ja", "Nei"]
 
-      roller:
-        type: "array<object>"
-        beskrivelse: "Liste over personens roller i selskaper"
-        objektstruktur:
-          rolle:
-            type: "string"
-          rolleRang:
-            type: "integer|number|null"
-          rolleUUID:
-            type: "string|null"
-          selskapRolleUUID:
-            type: "string|null"
-          startdato:
-            type: "string|null"
-            format: "ISO 8601 UTC string"
-          registrertTid:
-            type: "string|null"
-            format: "ISO 8601 UTC string"
-          oppdatertTid:
-            type: "string|null"
-            format: "ISO 8601 UTC string"
-          selskap:
-            type: "object"
-            beskrivelse: "Embedded informasjon om selskapet personen har rolle i"
-            underfelt:
-              uuid:
-                type: "string|null"
-              navn:
-                type: "string|null"
-              orgNr:
-                type: "integer|string|null"
-              registrertTid:
-                type: "string|null"
-                format: "ISO 8601 UTC string"
-              oppdatertTid:
-                type: "string|null"
-                format: "ISO 8601 UTC string"
+  - navn: "eierskap"
+    beskrivelse: "Eierskapsoppføringer for aksjer i selskaper."
+    felt:
+      eierskapUUID:
+        type: "string|null"
+      eierskapår:
+        type: "integer"
+      eierPersonNavn:
+        type: "string|null"
+      eierPersonFødselsdato:
+        type: "string|date|null"
+      eierPersonFødselsår:
+        type: "integer|number|null"
+      eierPersonKjønn:
+        type: "string|null"
+      eierPersonAdresse:
+        type: "string|null"
+      eierPersonKommune:
+        type: "string|null"
+      eierPersonKommuneNr:
+        type: "integer|number|string|null"
+      eierPersonPostkode:
+        type: "integer|number|string|null"
+      eierPersonPoststed:
+        type: "string|null"
+      eierPersonUUID:
+        type: "string|null"
+      eierSelskapNavn:
+        type: "string|null"
+      eierSelskapOrgNr:
+        type: "integer|string|null"
+      eierSelskapUUID:
+        type: "string|null"
+      utstederNavn:
+        type: "string"
+      utstederOrgNr:
+        type: "integer|string"
+      utstederUUID:
+        type: "string|null"
+      eierskapAksjonær:
+        type: "string|null"
+      eierskapAndel:
+        type: "number|null"
+      eierskapAntall:
+        type: "integer|number|null"
+      eierskapStemmeandel:
+        type: "number|null"
+      eierskapStemmeantall:
+        type: "integer|number|null"
+      eierskapTotalAntall:
+        type: "integer|number|null"
+      eierskapTotalStemmeantall:
+        type: "integer|number|null"
 
-      eierskap:
-        type: "array<object>"
-        beskrivelse: "Liste over selskaper personen eier aksjer i"
-        objektstruktur:
-          uuid:
-            type: "string|null"
-          år:
-            type: "integer"
-          selskap:
-            type: "object"
-            beskrivelse: "Embedded informasjon om selskapet personen eier aksjer i"
-            underfelt:
-              uuid:
-                type: "string|null"
-              navn:
-                type: "string|null"
-              orgNr:
-                type: "integer|string|null"
-          aksjer:
-            type: "object"
-            underfelt:
-              andel:
-                type: "number|null"
-              antall:
-                type: "integer|number|null"
-              totalAntall:
-                type: "integer|number|null"
-          stemmer:
-            type: "object"
-            underfelt:
-              andel:
-                type: "number|null"
-              antall:
-                type: "integer|number|null"
-              totalAntall:
-                type: "integer|number|null"
+  - navn: "aksjeeiebok"
+    beskrivelse: "Aksjonærer i selskaper per år og aksjeklasse."
+    felt:
+      orgNr:
+        type: "integer|string"
+      selskap:
+        type: "string"
+      år:
+        type: "integer"
+      aksjeklasse:
+        type: "string|null"
+      aksjonærNavn:
+        type: "string|null"
+      fødselsår:
+        type: "integer|number|null"
+      landkode:
+        type: "string|null"
+      postnr/sted:
+        type: "string|null"
+      antallAksjer:
+        type: "integer|number|null"
+      antallAksjerSelskap:
+        type: "integer|number|null"
 
-notater:
-  - "Datamodellen bruker embedded dokumenter i stedet for separate relasjonstabeller eller samlinger."
-  - "Relatert informasjon er samlet i nested objekter og arrays for å redusere behovet for joins og lookups."
-  - "Roller, eierskap og aksjeeiebok kan nås direkte fra selskap- eller persondokumenter avhengig av kontekst."
-  - "Politikerinformasjon er embedded både i persondokumenter og enkelte nested rolle-, eier- og aksjonærobjekter."
-  - "Navnebaserte koblinger mellom politikere, aksjonærer og personer er sannsynlige treff og ikke nødvendigvis sikre identitetskoblinger."
-```
+regler:
+  - "Koble selskaper til personer via selskap.orgNr = personer.selskapOrgNr."
+  - "Koble selskaper til eierskap via selskap.orgNr = eierskap.utstederOrgNr."
+  - "Koble selskaper til aksjeeierbok via selskap.orgNr = aksjeeiebok.orgNr."
+  - "Koble politikere til personer/eierskap/aksjonærer med navn og eventuelt fødselsdato eller fødselsår når dette finnes."
+  - "Teknisk bruker kjenner til indekser og bør foretrekke indekserte felter i filter og lookup når det passer spørsmålet."
+  - "Indekser i selskap: orgNr, navn, konkursFlagg, likvidasjonFlagg, naceBeskrivelse."
+  - "Indekser i personer: selskapOrgNr, navn, fødselsdato, selskapRolle."
+  - "Indekser i politikere: navn, fødselsdato, partinavn, innvalgt."
+  - "Indekser i eierskap: utstederOrgNr, eierPersonNavn, eierPersonFødselsdato, eierskapår."
+  - "Indekser i aksjeeiebok: orgNr, år, aksjonærNavn, aksjeklasse."
