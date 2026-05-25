@@ -1,0 +1,4686 @@
+{
+  "run": {
+    "label": "structured_advanced_structured_complex_gpt-5-mini_run01",
+    "timestamp": "20260525_185957",
+    "model": "gpt-5-mini",
+    "temperature": 0.0,
+    "max_tokens": 3000,
+    "query_max_time_ms": 60000,
+    "gold_cache": {
+      "enabled": true,
+      "refresh": false,
+      "directory": "src/text_to_query/gold_cache"
+    },
+    "database": "groundtruthStructured",
+    "schema": "structured_advanced.yaml",
+    "benchmark": "structured_complex.json",
+    "question_id": null,
+    "success_min_precision": 0.5,
+    "metric": "Precision, recall and F1 are computed over returned values. For projected find queries, precision also includes field precision so extra returned fields are penalized.",
+    "success_definition": "A question is marked successful when recall is 1.0, all required projected fields are included, and precision is at least 0.5.",
+    "relevance_definition": "Generated output is relevant when it contains the same required values as the gold output. For direct aggregate answers, output field names do not need to match as long as values match. When gold and generated results are both empty, the result is treated as full result equivalence, but this does not prove semantic query equivalence."
+  },
+  "summary": {
+    "total_questions": 5,
+    "scored_questions": 5,
+    "successful_questions": 3,
+    "failed_questions": 2,
+    "success_rate": 0.6,
+    "avg_precision": 0.6,
+    "avg_recall": 0.6,
+    "avg_f1": 0.6,
+    "timing_ms": {
+      "total_run": 130694,
+      "avg_per_question": 26130,
+      "avg_llm": 22761,
+      "avg_gold_query": 0,
+      "avg_generated_query": 3368,
+      "avg_scoring": 1
+    },
+    "errors": {
+      "total": 0,
+      "llm_error": 0,
+      "gold_query_error": 0,
+      "generated_query_error": 0
+    },
+    "by_operation": {
+      "aggregate": {
+        "questions": 5,
+        "successful": 3,
+        "success_rate": 0.6,
+        "avg_precision": 0.6,
+        "avg_recall": 0.6,
+        "avg_f1": 0.6
+      }
+    },
+    "by_category": {
+      "complex_pipeline_stress": {
+        "questions": 5,
+        "successful": 3,
+        "success_rate": 0.6,
+        "avg_precision": 0.6,
+        "avg_recall": 0.6,
+        "avg_f1": 0.6
+      }
+    },
+    "worst_questions": [
+      {
+        "id": 101,
+        "question": "Finn partier med politikere som har selskapsroller. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere og antall rolleoppføringer.",
+        "operation": "aggregate",
+        "category": "complex_pipeline_stress",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "failure_reason": "Generated query missed one or more expected result documents or values."
+      },
+      {
+        "id": 105,
+        "question": "Finn partier der politikere har minst én selskapsrolle eller minst ett personlig eierskap. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere, antall rolleoppføringer og antall eierskap.",
+        "operation": "aggregate",
+        "category": "complex_pipeline_stress",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "failure_reason": "Generated query missed one or more expected result documents or values."
+      },
+      {
+        "id": 102,
+        "question": "Finn selskaper som både har eierskapsoppføringer i 2023 og aksjeeierbokoppføringer i 2023. Ta med navn, organisasjonsnummer, antall eierskapsoppføringer i 2023 og antall aksjeeierbokoppføringer i 2023.",
+        "operation": "aggregate",
+        "category": "complex_pipeline_stress",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "failure_reason": null
+      },
+      {
+        "id": 103,
+        "question": "Finn politikere som både eier aksjer i et selskap og har en rolle i samme selskap. Identifiser politikere med navn og fødselsdato. Ta med navn, fødselsdato, parti, selskap, organisasjonsnummer, rolle og eierandel.",
+        "operation": "aggregate",
+        "category": "complex_pipeline_stress",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "failure_reason": null
+      },
+      {
+        "id": 104,
+        "question": "Finn de 20 selskapene med flest samlede rolleoppføringer og eierskapsoppføringer. Ta med navn, organisasjonsnummer, antall roller, antall eierskap og totalt antall relasjoner. Sorter synkende på totalt antall relasjoner og stigende på organisasjonsnummer ved likt antall.",
+        "operation": "aggregate",
+        "category": "complex_pipeline_stress",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "failure_reason": null
+      }
+    ]
+  },
+  "failures": [
+    {
+      "id": 101,
+      "question": "Finn partier med politikere som har selskapsroller. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere og antall rolleoppføringer.",
+      "operation": "aggregate",
+      "category": "complex_pipeline_stress",
+      "status": "ok",
+      "success": false,
+      "failure_reason": "Generated query missed one or more expected result documents or values.",
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "gold_count": 18,
+        "generated_count": 18,
+        "missing_count": 18,
+        "extra_count": 18,
+        "missing_examples": [
+          [
+            "Høyre",
+            23,
+            30
+          ],
+          [
+            "Venstre",
+            11,
+            15
+          ],
+          [
+            "Høgre",
+            13,
+            9
+          ],
+          [
+            "Arbeiderpartiet",
+            11,
+            11
+          ],
+          [
+            "Senterpartiet",
+            10,
+            10
+          ]
+        ],
+        "extra_examples": [
+          [
+            "Høyre",
+            23,
+            30,
+            {
+              "fødselsdato": "1946-09-07T00:00:00Z",
+              "navn": "Aage Nystøl",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1955-05-11T00:00:00Z",
+              "navn": "Carl Diderik Cappelen",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1956-02-08T00:00:00Z",
+              "navn": "Bjørn Glørstad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1958-05-07T00:00:00Z",
+              "navn": "John Arthur Ødbehr",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1959-08-21T00:00:00Z",
+              "navn": "Ole Vinje",
+              "rolleOppføringer": 3
+            },
+            {
+              "fødselsdato": "1960-06-13T00:00:00Z",
+              "navn": "Oddleiv Aksnes",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1964-02-12T00:00:00Z",
+              "navn": "Roald Dolmen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1965-05-07T00:00:00Z",
+              "navn": "Martin Smith-Sivertsen",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1967-09-09T00:00:00Z",
+              "navn": "Terje Stewart Marriott",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1967-10-02T00:00:00Z",
+              "navn": "Eirik Lundemo",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1968-06-14T00:00:00Z",
+              "navn": "Sonja Mari Berg Christiansen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1968-11-03T00:00:00Z",
+              "navn": "Hilde Vårdal Øverland",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1968-12-25T00:00:00Z",
+              "navn": "Sonja Rødsjø",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1969-12-22T00:00:00Z",
+              "navn": "Vegard Ryen Skullerud",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1970-09-07T00:00:00Z",
+              "navn": "Birgit Nistad",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1972-03-07T00:00:00Z",
+              "navn": "Therese Mossing Eidsaune",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1974-01-02T00:00:00Z",
+              "navn": "Anne Cathrin Østebø",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1974-12-23T00:00:00Z",
+              "navn": "Svein Ove Vetrhus",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1977-06-19T00:00:00Z",
+              "navn": "Svein Gunnar Mæland",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1984-01-12T00:00:00Z",
+              "navn": "Vivien Helen Vestre",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1985-11-27T00:00:00Z",
+              "navn": "Stian Skinnes Fossen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1992-10-12T00:00:00Z",
+              "navn": "Gøril Ødegård",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1996-09-04T00:00:00Z",
+              "navn": "Fredrik Grotle",
+              "rolleOppføringer": 2
+            }
+          ],
+          [
+            "Arbeiderpartiet",
+            11,
+            11,
+            {
+              "fødselsdato": "1946-08-01T00:00:00Z",
+              "navn": "Gustav Kalager",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1959-06-02T00:00:00Z",
+              "navn": "Odd Henning Bentsen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1965-10-19T00:00:00Z",
+              "navn": "Odd Ivar Hvila",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1966-02-25T00:00:00Z",
+              "navn": "Guttorm Anders Aasebøstøl",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1968-12-22T00:00:00Z",
+              "navn": "Helge Roar Åndal",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1972-06-24T00:00:00Z",
+              "navn": "Kenneth Wiik Søttar",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1978-01-27T00:00:00Z",
+              "navn": "Åse Marit Hovden",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1983-08-03T00:00:00Z",
+              "navn": "Hilde Ulsaker Jokerud",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1994-06-18T00:00:00Z",
+              "navn": "Erik Lervåg",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1997-09-16T00:00:00Z",
+              "navn": "Mikael Sivertsen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1997-10-01T00:00:00Z",
+              "navn": "Vegar Fornes Hustad",
+              "rolleOppføringer": 1
+            }
+          ],
+          [
+            "Venstre",
+            11,
+            15,
+            {
+              "fødselsdato": "1959-04-01T00:00:00Z",
+              "navn": "Pål Farstad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1962-01-06T00:00:00Z",
+              "navn": "Kjell Jacob Sæterøy",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1963-07-30T00:00:00Z",
+              "navn": "Rolf Kanstad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1968-12-17T00:00:00Z",
+              "navn": "Thor-Erling Westelius Hansen",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1974-03-07T00:00:00Z",
+              "navn": "Tor Magnus Castberg",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1976-10-07T00:00:00Z",
+              "navn": "Christian Solum Hermansen",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1978-08-18T00:00:00Z",
+              "navn": "Glenn Nøstdahl",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1980-03-04T00:00:00Z",
+              "navn": "Thomas Lervåg",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1981-07-07T00:00:00Z",
+              "navn": "Øyvind Gartland",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1981-10-09T00:00:00Z",
+              "navn": "Rolf Petter Bugge Larssen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1986-02-11T00:00:00Z",
+              "navn": "Kristin Jess-Bakken",
+              "rolleOppføringer": 1
+            }
+          ],
+          [
+            "Senterpartiet",
+            10,
+            10,
+            {
+              "fødselsdato": "1955-09-03T00:00:00Z",
+              "navn": "Magne Gunnar Bugge",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1960-06-06T00:00:00Z",
+              "navn": "Kristin Dingstad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1962-01-30T00:00:00Z",
+              "navn": "Gunhild Kvam",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1973-03-17T00:00:00Z",
+              "navn": "Sissel Mehl",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1976-03-08T00:00:00Z",
+              "navn": "Hans Aanestad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1977-09-16T00:00:00Z",
+              "navn": "Ann Elisabeth Solbue Valaas",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1980-05-24T00:00:00Z",
+              "navn": "Kjell Ingar Bø",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1984-09-29T00:00:00Z",
+              "navn": "Dorrit Vignes",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1996-07-08T00:00:00Z",
+              "navn": "Jakob Mo",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1997-08-24T00:00:00Z",
+              "navn": "Sondre Steinbakken",
+              "rolleOppføringer": 1
+            }
+          ],
+          [
+            "Høgre",
+            13,
+            9,
+            {
+              "fødselsdato": "1958-09-06T00:00:00Z",
+              "navn": "Arne Hindenes",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1961-12-14T00:00:00Z",
+              "navn": "Dag Henning Loe Olsen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1966-07-14T00:00:00Z",
+              "navn": "Torbjørn Anton Hide",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1968-10-08T00:00:00Z",
+              "navn": "Tom Roger Øydne",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1969-06-25T00:00:00Z",
+              "navn": "Gunn Dalen Håland",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1981-08-12T00:00:00Z",
+              "navn": "Odd Henrik Iversen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1988-09-05T00:00:00Z",
+              "navn": "Caroline Bjerk Maurstad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1993-06-11T00:00:00Z",
+              "navn": "Robert Myklebust",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1995-09-29T00:00:00Z",
+              "navn": "Helene Søvold",
+              "rolleOppføringer": 2
+            }
+          ]
+        ],
+        "comparison_mode": "aggregate row values, ignoring output alias names",
+        "empty_result_equivalence": false,
+        "empty_result_note": null
+      },
+      "counts": {
+        "gold": 18,
+        "generated": 18
+      },
+      "timing_ms": {
+        "llm": 21930,
+        "gold_query": 0,
+        "generated_query": 834,
+        "scoring": 1,
+        "total": 22765
+      },
+      "gold_cache": {
+        "hit": true,
+        "path": "src\\text_to_query\\gold_cache\\structured_complex\\groundtruthStructured\\q101_d8e5c5bb717ba9e2.json",
+        "created_at": "2026-05-24T02:18:02"
+      },
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "roller",
+              "let": {
+                "pnavn": "$navn",
+                "pf": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$navn",
+                            "$$pnavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$fødselsdato",
+                            "$$pf"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "roller"
+            }
+          },
+          {
+            "$match": {
+              "roller.0": {
+                "$exists": true
+              }
+            }
+          },
+          {
+            "$project": {
+              "partinavn": 1,
+              "personKey": {
+                "$concat": [
+                  "$navn",
+                  "|",
+                  {
+                    "$ifNull": [
+                      "$fødselsdato",
+                      ""
+                    ]
+                  }
+                ]
+              },
+              "antallRoller": {
+                "$size": "$roller"
+              }
+            }
+          },
+          {
+            "$group": {
+              "_id": "$partinavn",
+              "politikere": {
+                "$addToSet": "$personKey"
+              },
+              "antallRolleoppføringer": {
+                "$sum": "$antallRoller"
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "parti": "$_id",
+              "antallPolitikere": {
+                "$size": "$politikere"
+              },
+              "antallRolleoppføringer": 1
+            }
+          },
+          {
+            "$sort": {
+              "antallRolleoppføringer": -1,
+              "parti": 1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "roller",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "politikere",
+              "let": {
+                "rnav": "$navn",
+                "rdob": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$navn",
+                            "$$rnav"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$fødselsdato",
+                            "$$rdob"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "$project": {
+                    "partinavn": 1,
+                    "navn": 1,
+                    "fødselsdato": 1,
+                    "_id": 0
+                  }
+                }
+              ],
+              "as": "politikerMatches"
+            }
+          },
+          {
+            "$unwind": "$politikerMatches"
+          },
+          {
+            "$match": {
+              "politikerMatches.partinavn": {
+                "$exists": true,
+                "$ne": null
+              }
+            }
+          },
+          {
+            "$group": {
+              "_id": {
+                "parti": "$politikerMatches.partinavn",
+                "navn": "$politikerMatches.navn",
+                "fødselsdato": "$politikerMatches.fødselsdato"
+              },
+              "rolleCount": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$group": {
+              "_id": "$_id.parti",
+              "politikere": {
+                "$push": {
+                  "navn": "$_id.navn",
+                  "fødselsdato": "$_id.fødselsdato",
+                  "rolleOppføringer": "$rolleCount"
+                }
+              },
+              "antallUnikePolitikere": {
+                "$sum": 1
+              },
+              "antallRolleoppføringer": {
+                "$sum": "$rolleCount"
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "parti": "$_id",
+              "antallUnikePolitikere": 1,
+              "antallRolleoppføringer": 1,
+              "politikere": 1
+            }
+          },
+          {
+            "$sort": {
+              "antallUnikePolitikere": -1,
+              "parti": 1
+            }
+          }
+        ]
+      },
+      "missing_examples": [
+        [
+          "Høyre",
+          23,
+          30
+        ],
+        [
+          "Venstre",
+          11,
+          15
+        ],
+        [
+          "Høgre",
+          13,
+          9
+        ],
+        [
+          "Arbeiderpartiet",
+          11,
+          11
+        ],
+        [
+          "Senterpartiet",
+          10,
+          10
+        ]
+      ],
+      "extra_examples": [
+        [
+          "Høyre",
+          23,
+          30,
+          {
+            "fødselsdato": "1946-09-07T00:00:00Z",
+            "navn": "Aage Nystøl",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1955-05-11T00:00:00Z",
+            "navn": "Carl Diderik Cappelen",
+            "rolleOppføringer": 2
+          },
+          {
+            "fødselsdato": "1956-02-08T00:00:00Z",
+            "navn": "Bjørn Glørstad",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1958-05-07T00:00:00Z",
+            "navn": "John Arthur Ødbehr",
+            "rolleOppføringer": 2
+          },
+          {
+            "fødselsdato": "1959-08-21T00:00:00Z",
+            "navn": "Ole Vinje",
+            "rolleOppføringer": 3
+          },
+          {
+            "fødselsdato": "1960-06-13T00:00:00Z",
+            "navn": "Oddleiv Aksnes",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1964-02-12T00:00:00Z",
+            "navn": "Roald Dolmen",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1965-05-07T00:00:00Z",
+            "navn": "Martin Smith-Sivertsen",
+            "rolleOppføringer": 2
+          },
+          {
+            "fødselsdato": "1967-09-09T00:00:00Z",
+            "navn": "Terje Stewart Marriott",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1967-10-02T00:00:00Z",
+            "navn": "Eirik Lundemo",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1968-06-14T00:00:00Z",
+            "navn": "Sonja Mari Berg Christiansen",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1968-11-03T00:00:00Z",
+            "navn": "Hilde Vårdal Øverland",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1968-12-25T00:00:00Z",
+            "navn": "Sonja Rødsjø",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1969-12-22T00:00:00Z",
+            "navn": "Vegard Ryen Skullerud",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1970-09-07T00:00:00Z",
+            "navn": "Birgit Nistad",
+            "rolleOppføringer": 2
+          },
+          {
+            "fødselsdato": "1972-03-07T00:00:00Z",
+            "navn": "Therese Mossing Eidsaune",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1974-01-02T00:00:00Z",
+            "navn": "Anne Cathrin Østebø",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1974-12-23T00:00:00Z",
+            "navn": "Svein Ove Vetrhus",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1977-06-19T00:00:00Z",
+            "navn": "Svein Gunnar Mæland",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1984-01-12T00:00:00Z",
+            "navn": "Vivien Helen Vestre",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1985-11-27T00:00:00Z",
+            "navn": "Stian Skinnes Fossen",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1992-10-12T00:00:00Z",
+            "navn": "Gøril Ødegård",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1996-09-04T00:00:00Z",
+            "navn": "Fredrik Grotle",
+            "rolleOppføringer": 2
+          }
+        ],
+        [
+          "Arbeiderpartiet",
+          11,
+          11,
+          {
+            "fødselsdato": "1946-08-01T00:00:00Z",
+            "navn": "Gustav Kalager",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1959-06-02T00:00:00Z",
+            "navn": "Odd Henning Bentsen",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1965-10-19T00:00:00Z",
+            "navn": "Odd Ivar Hvila",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1966-02-25T00:00:00Z",
+            "navn": "Guttorm Anders Aasebøstøl",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1968-12-22T00:00:00Z",
+            "navn": "Helge Roar Åndal",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1972-06-24T00:00:00Z",
+            "navn": "Kenneth Wiik Søttar",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1978-01-27T00:00:00Z",
+            "navn": "Åse Marit Hovden",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1983-08-03T00:00:00Z",
+            "navn": "Hilde Ulsaker Jokerud",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1994-06-18T00:00:00Z",
+            "navn": "Erik Lervåg",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1997-09-16T00:00:00Z",
+            "navn": "Mikael Sivertsen",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1997-10-01T00:00:00Z",
+            "navn": "Vegar Fornes Hustad",
+            "rolleOppføringer": 1
+          }
+        ],
+        [
+          "Venstre",
+          11,
+          15,
+          {
+            "fødselsdato": "1959-04-01T00:00:00Z",
+            "navn": "Pål Farstad",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1962-01-06T00:00:00Z",
+            "navn": "Kjell Jacob Sæterøy",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1963-07-30T00:00:00Z",
+            "navn": "Rolf Kanstad",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1968-12-17T00:00:00Z",
+            "navn": "Thor-Erling Westelius Hansen",
+            "rolleOppføringer": 2
+          },
+          {
+            "fødselsdato": "1974-03-07T00:00:00Z",
+            "navn": "Tor Magnus Castberg",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1976-10-07T00:00:00Z",
+            "navn": "Christian Solum Hermansen",
+            "rolleOppføringer": 2
+          },
+          {
+            "fødselsdato": "1978-08-18T00:00:00Z",
+            "navn": "Glenn Nøstdahl",
+            "rolleOppføringer": 2
+          },
+          {
+            "fødselsdato": "1980-03-04T00:00:00Z",
+            "navn": "Thomas Lervåg",
+            "rolleOppføringer": 2
+          },
+          {
+            "fødselsdato": "1981-07-07T00:00:00Z",
+            "navn": "Øyvind Gartland",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1981-10-09T00:00:00Z",
+            "navn": "Rolf Petter Bugge Larssen",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1986-02-11T00:00:00Z",
+            "navn": "Kristin Jess-Bakken",
+            "rolleOppføringer": 1
+          }
+        ],
+        [
+          "Senterpartiet",
+          10,
+          10,
+          {
+            "fødselsdato": "1955-09-03T00:00:00Z",
+            "navn": "Magne Gunnar Bugge",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1960-06-06T00:00:00Z",
+            "navn": "Kristin Dingstad",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1962-01-30T00:00:00Z",
+            "navn": "Gunhild Kvam",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1973-03-17T00:00:00Z",
+            "navn": "Sissel Mehl",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1976-03-08T00:00:00Z",
+            "navn": "Hans Aanestad",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1977-09-16T00:00:00Z",
+            "navn": "Ann Elisabeth Solbue Valaas",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1980-05-24T00:00:00Z",
+            "navn": "Kjell Ingar Bø",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1984-09-29T00:00:00Z",
+            "navn": "Dorrit Vignes",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1996-07-08T00:00:00Z",
+            "navn": "Jakob Mo",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1997-08-24T00:00:00Z",
+            "navn": "Sondre Steinbakken",
+            "rolleOppføringer": 1
+          }
+        ],
+        [
+          "Høgre",
+          13,
+          9,
+          {
+            "fødselsdato": "1958-09-06T00:00:00Z",
+            "navn": "Arne Hindenes",
+            "rolleOppføringer": 2
+          },
+          {
+            "fødselsdato": "1961-12-14T00:00:00Z",
+            "navn": "Dag Henning Loe Olsen",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1966-07-14T00:00:00Z",
+            "navn": "Torbjørn Anton Hide",
+            "rolleOppføringer": 2
+          },
+          {
+            "fødselsdato": "1968-10-08T00:00:00Z",
+            "navn": "Tom Roger Øydne",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1969-06-25T00:00:00Z",
+            "navn": "Gunn Dalen Håland",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1981-08-12T00:00:00Z",
+            "navn": "Odd Henrik Iversen",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1988-09-05T00:00:00Z",
+            "navn": "Caroline Bjerk Maurstad",
+            "rolleOppføringer": 1
+          },
+          {
+            "fødselsdato": "1993-06-11T00:00:00Z",
+            "navn": "Robert Myklebust",
+            "rolleOppføringer": 2
+          },
+          {
+            "fødselsdato": "1995-09-29T00:00:00Z",
+            "navn": "Helene Søvold",
+            "rolleOppføringer": 2
+          }
+        ]
+      ]
+    },
+    {
+      "id": 105,
+      "question": "Finn partier der politikere har minst én selskapsrolle eller minst ett personlig eierskap. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere, antall rolleoppføringer og antall eierskap.",
+      "operation": "aggregate",
+      "category": "complex_pipeline_stress",
+      "status": "ok",
+      "success": false,
+      "failure_reason": "Generated query missed one or more expected result documents or values.",
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "gold_count": 18,
+        "generated_count": 18,
+        "missing_count": 18,
+        "extra_count": 18,
+        "missing_examples": [
+          [
+            "Høyre",
+            0,
+            23,
+            30
+          ],
+          [
+            "Venstre",
+            12,
+            15,
+            2
+          ],
+          [
+            "Arbeiderpartiet",
+            0,
+            11,
+            11
+          ],
+          [
+            "Senterpartiet",
+            0,
+            10,
+            10
+          ],
+          [
+            "Høgre",
+            0,
+            13,
+            9
+          ]
+        ],
+        "extra_examples": [
+          [
+            "Miljøpartiet De Grønne",
+            0,
+            2,
+            2,
+            {
+              "fødselsdato": "1967-06-28T00:00:00Z",
+              "navn": "Hans Wilmers"
+            },
+            {
+              "fødselsdato": "1974-07-11T00:00:00Z",
+              "navn": "Knut Torstein Skinnarland"
+            }
+          ],
+          [
+            "Bygdelista Framover",
+            0,
+            3,
+            3,
+            {
+              "fødselsdato": "1961-02-07T00:00:00Z",
+              "navn": "Kjersti Aasen"
+            },
+            {
+              "fødselsdato": "1981-03-11T00:00:00Z",
+              "navn": "Cathrine Kronstad"
+            },
+            {
+              "fødselsdato": "1988-05-09T00:00:00Z",
+              "navn": "Ole Gunnar Skinnes"
+            }
+          ],
+          [
+            "Høyre",
+            0,
+            23,
+            30,
+            {
+              "fødselsdato": "1946-09-07T00:00:00Z",
+              "navn": "Aage Nystøl"
+            },
+            {
+              "fødselsdato": "1955-05-11T00:00:00Z",
+              "navn": "Carl Diderik Cappelen"
+            },
+            {
+              "fødselsdato": "1956-02-08T00:00:00Z",
+              "navn": "Bjørn Glørstad"
+            },
+            {
+              "fødselsdato": "1958-05-07T00:00:00Z",
+              "navn": "John Arthur Ødbehr"
+            },
+            {
+              "fødselsdato": "1959-08-21T00:00:00Z",
+              "navn": "Ole Vinje"
+            },
+            {
+              "fødselsdato": "1960-06-13T00:00:00Z",
+              "navn": "Oddleiv Aksnes"
+            },
+            {
+              "fødselsdato": "1964-02-12T00:00:00Z",
+              "navn": "Roald Dolmen"
+            },
+            {
+              "fødselsdato": "1965-05-07T00:00:00Z",
+              "navn": "Martin Smith-Sivertsen"
+            },
+            {
+              "fødselsdato": "1967-09-09T00:00:00Z",
+              "navn": "Terje Stewart Marriott"
+            },
+            {
+              "fødselsdato": "1967-10-02T00:00:00Z",
+              "navn": "Eirik Lundemo"
+            },
+            {
+              "fødselsdato": "1968-06-14T00:00:00Z",
+              "navn": "Sonja Mari Berg Christiansen"
+            },
+            {
+              "fødselsdato": "1968-11-03T00:00:00Z",
+              "navn": "Hilde Vårdal Øverland"
+            },
+            {
+              "fødselsdato": "1968-12-25T00:00:00Z",
+              "navn": "Sonja Rødsjø"
+            },
+            {
+              "fødselsdato": "1969-12-22T00:00:00Z",
+              "navn": "Vegard Ryen Skullerud"
+            },
+            {
+              "fødselsdato": "1970-09-07T00:00:00Z",
+              "navn": "Birgit Nistad"
+            },
+            {
+              "fødselsdato": "1972-03-07T00:00:00Z",
+              "navn": "Therese Mossing Eidsaune"
+            },
+            {
+              "fødselsdato": "1974-01-02T00:00:00Z",
+              "navn": "Anne Cathrin Østebø"
+            },
+            {
+              "fødselsdato": "1974-12-23T00:00:00Z",
+              "navn": "Svein Ove Vetrhus"
+            },
+            {
+              "fødselsdato": "1977-06-19T00:00:00Z",
+              "navn": "Svein Gunnar Mæland"
+            },
+            {
+              "fødselsdato": "1984-01-12T00:00:00Z",
+              "navn": "Vivien Helen Vestre"
+            },
+            {
+              "fødselsdato": "1985-11-27T00:00:00Z",
+              "navn": "Stian Skinnes Fossen"
+            },
+            {
+              "fødselsdato": "1992-10-12T00:00:00Z",
+              "navn": "Gøril Ødegård"
+            },
+            {
+              "fødselsdato": "1996-09-04T00:00:00Z",
+              "navn": "Fredrik Grotle"
+            }
+          ],
+          [
+            "Framstegspartiet",
+            0,
+            2,
+            2,
+            {
+              "fødselsdato": "1981-07-18T00:00:00Z",
+              "navn": "Antonina Kolodziejczyk"
+            },
+            {
+              "fødselsdato": "1984-01-11T00:00:00Z",
+              "navn": "Tor Even Fredriksen Fet"
+            }
+          ],
+          [
+            "Rødt",
+            0,
+            2,
+            3,
+            {
+              "fødselsdato": "1954-12-20T00:00:00Z",
+              "navn": "Tormod Åge Stensland"
+            },
+            {
+              "fødselsdato": "1984-07-25T00:00:00Z",
+              "navn": "Kari-Anne Thu"
+            }
+          ]
+        ],
+        "comparison_mode": "aggregate row values, ignoring output alias names",
+        "empty_result_equivalence": false,
+        "empty_result_note": null
+      },
+      "counts": {
+        "gold": 18,
+        "generated": 18
+      },
+      "timing_ms": {
+        "llm": 27031,
+        "gold_query": 0,
+        "generated_query": 13430,
+        "scoring": 1,
+        "total": 40463
+      },
+      "gold_cache": {
+        "hit": true,
+        "path": "src\\text_to_query\\gold_cache\\structured_complex\\groundtruthStructured\\q105_393c0d69b257b241.json",
+        "created_at": "2026-05-24T02:18:25"
+      },
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "roller",
+              "let": {
+                "pnavn": "$navn",
+                "pf": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$navn",
+                            "$$pnavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$fødselsdato",
+                            "$$pf"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "roller"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "let": {
+                "pnavn": "$navn",
+                "pf": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$eierPersonNavn",
+                            "$$pnavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$eierPersonFødselsdato",
+                            "$$pf"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "eierskap"
+            }
+          },
+          {
+            "$project": {
+              "partinavn": 1,
+              "personKey": {
+                "$concat": [
+                  "$navn",
+                  "|",
+                  {
+                    "$ifNull": [
+                      "$fødselsdato",
+                      ""
+                    ]
+                  }
+                ]
+              },
+              "antallRoller": {
+                "$size": "$roller"
+              },
+              "antallEierskap": {
+                "$size": "$eierskap"
+              }
+            }
+          },
+          {
+            "$match": {
+              "$or": [
+                {
+                  "antallRoller": {
+                    "$gt": 0
+                  }
+                },
+                {
+                  "antallEierskap": {
+                    "$gt": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "$group": {
+              "_id": "$partinavn",
+              "politikere": {
+                "$addToSet": "$personKey"
+              },
+              "antallRolleoppføringer": {
+                "$sum": "$antallRoller"
+              },
+              "antallEierskap": {
+                "$sum": "$antallEierskap"
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "parti": "$_id",
+              "antallPolitikere": {
+                "$size": "$politikere"
+              },
+              "antallRolleoppføringer": 1,
+              "antallEierskap": 1
+            }
+          },
+          {
+            "$sort": {
+              "antallPolitikere": -1,
+              "parti": 1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$match": {
+              "partinavn": {
+                "$exists": true,
+                "$ne": null
+              }
+            }
+          },
+          {
+            "$lookup": {
+              "from": "roller",
+              "let": {
+                "p_name": "$navn",
+                "p_fd": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$navn",
+                            "$$p_name"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$fødselsdato",
+                            "$$p_fd"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "roles"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "let": {
+                "p_name": "$navn",
+                "p_fd": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$eierPersonNavn",
+                            "$$p_name"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$eierPersonFødselsdato",
+                            "$$p_fd"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "ownerships"
+            }
+          },
+          {
+            "$addFields": {
+              "roleCount": {
+                "$size": "$roles"
+              },
+              "ownershipCount": {
+                "$size": "$ownerships"
+              }
+            }
+          },
+          {
+            "$match": {
+              "$or": [
+                {
+                  "roleCount": {
+                    "$gt": 0
+                  }
+                },
+                {
+                  "ownershipCount": {
+                    "$gt": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "$group": {
+              "_id": "$partinavn",
+              "politicians": {
+                "$addToSet": {
+                  "navn": "$navn",
+                  "fødselsdato": "$fødselsdato"
+                }
+              },
+              "total_role_entries": {
+                "$sum": "$roleCount"
+              },
+              "total_eierskap": {
+                "$sum": "$ownershipCount"
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "partinavn": "$_id",
+              "politikere": "$politicians",
+              "antall_unike_politikere": {
+                "$size": "$politicians"
+              },
+              "antall_rolleoppføringer": "$total_role_entries",
+              "antall_eierskap": "$total_eierskap"
+            }
+          }
+        ]
+      },
+      "missing_examples": [
+        [
+          "Høyre",
+          0,
+          23,
+          30
+        ],
+        [
+          "Venstre",
+          12,
+          15,
+          2
+        ],
+        [
+          "Arbeiderpartiet",
+          0,
+          11,
+          11
+        ],
+        [
+          "Senterpartiet",
+          0,
+          10,
+          10
+        ],
+        [
+          "Høgre",
+          0,
+          13,
+          9
+        ]
+      ],
+      "extra_examples": [
+        [
+          "Miljøpartiet De Grønne",
+          0,
+          2,
+          2,
+          {
+            "fødselsdato": "1967-06-28T00:00:00Z",
+            "navn": "Hans Wilmers"
+          },
+          {
+            "fødselsdato": "1974-07-11T00:00:00Z",
+            "navn": "Knut Torstein Skinnarland"
+          }
+        ],
+        [
+          "Bygdelista Framover",
+          0,
+          3,
+          3,
+          {
+            "fødselsdato": "1961-02-07T00:00:00Z",
+            "navn": "Kjersti Aasen"
+          },
+          {
+            "fødselsdato": "1981-03-11T00:00:00Z",
+            "navn": "Cathrine Kronstad"
+          },
+          {
+            "fødselsdato": "1988-05-09T00:00:00Z",
+            "navn": "Ole Gunnar Skinnes"
+          }
+        ],
+        [
+          "Høyre",
+          0,
+          23,
+          30,
+          {
+            "fødselsdato": "1946-09-07T00:00:00Z",
+            "navn": "Aage Nystøl"
+          },
+          {
+            "fødselsdato": "1955-05-11T00:00:00Z",
+            "navn": "Carl Diderik Cappelen"
+          },
+          {
+            "fødselsdato": "1956-02-08T00:00:00Z",
+            "navn": "Bjørn Glørstad"
+          },
+          {
+            "fødselsdato": "1958-05-07T00:00:00Z",
+            "navn": "John Arthur Ødbehr"
+          },
+          {
+            "fødselsdato": "1959-08-21T00:00:00Z",
+            "navn": "Ole Vinje"
+          },
+          {
+            "fødselsdato": "1960-06-13T00:00:00Z",
+            "navn": "Oddleiv Aksnes"
+          },
+          {
+            "fødselsdato": "1964-02-12T00:00:00Z",
+            "navn": "Roald Dolmen"
+          },
+          {
+            "fødselsdato": "1965-05-07T00:00:00Z",
+            "navn": "Martin Smith-Sivertsen"
+          },
+          {
+            "fødselsdato": "1967-09-09T00:00:00Z",
+            "navn": "Terje Stewart Marriott"
+          },
+          {
+            "fødselsdato": "1967-10-02T00:00:00Z",
+            "navn": "Eirik Lundemo"
+          },
+          {
+            "fødselsdato": "1968-06-14T00:00:00Z",
+            "navn": "Sonja Mari Berg Christiansen"
+          },
+          {
+            "fødselsdato": "1968-11-03T00:00:00Z",
+            "navn": "Hilde Vårdal Øverland"
+          },
+          {
+            "fødselsdato": "1968-12-25T00:00:00Z",
+            "navn": "Sonja Rødsjø"
+          },
+          {
+            "fødselsdato": "1969-12-22T00:00:00Z",
+            "navn": "Vegard Ryen Skullerud"
+          },
+          {
+            "fødselsdato": "1970-09-07T00:00:00Z",
+            "navn": "Birgit Nistad"
+          },
+          {
+            "fødselsdato": "1972-03-07T00:00:00Z",
+            "navn": "Therese Mossing Eidsaune"
+          },
+          {
+            "fødselsdato": "1974-01-02T00:00:00Z",
+            "navn": "Anne Cathrin Østebø"
+          },
+          {
+            "fødselsdato": "1974-12-23T00:00:00Z",
+            "navn": "Svein Ove Vetrhus"
+          },
+          {
+            "fødselsdato": "1977-06-19T00:00:00Z",
+            "navn": "Svein Gunnar Mæland"
+          },
+          {
+            "fødselsdato": "1984-01-12T00:00:00Z",
+            "navn": "Vivien Helen Vestre"
+          },
+          {
+            "fødselsdato": "1985-11-27T00:00:00Z",
+            "navn": "Stian Skinnes Fossen"
+          },
+          {
+            "fødselsdato": "1992-10-12T00:00:00Z",
+            "navn": "Gøril Ødegård"
+          },
+          {
+            "fødselsdato": "1996-09-04T00:00:00Z",
+            "navn": "Fredrik Grotle"
+          }
+        ],
+        [
+          "Framstegspartiet",
+          0,
+          2,
+          2,
+          {
+            "fødselsdato": "1981-07-18T00:00:00Z",
+            "navn": "Antonina Kolodziejczyk"
+          },
+          {
+            "fødselsdato": "1984-01-11T00:00:00Z",
+            "navn": "Tor Even Fredriksen Fet"
+          }
+        ],
+        [
+          "Rødt",
+          0,
+          2,
+          3,
+          {
+            "fødselsdato": "1954-12-20T00:00:00Z",
+            "navn": "Tormod Åge Stensland"
+          },
+          {
+            "fødselsdato": "1984-07-25T00:00:00Z",
+            "navn": "Kari-Anne Thu"
+          }
+        ]
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": 101,
+      "question": "Finn partier med politikere som har selskapsroller. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere og antall rolleoppføringer.",
+      "category": "complex_pipeline_stress",
+      "operation": "aggregate",
+      "status": "ok",
+      "success": false,
+      "failure_reason": "Generated query missed one or more expected result documents or values.",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "roller",
+              "let": {
+                "pnavn": "$navn",
+                "pf": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$navn",
+                            "$$pnavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$fødselsdato",
+                            "$$pf"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "roller"
+            }
+          },
+          {
+            "$match": {
+              "roller.0": {
+                "$exists": true
+              }
+            }
+          },
+          {
+            "$project": {
+              "partinavn": 1,
+              "personKey": {
+                "$concat": [
+                  "$navn",
+                  "|",
+                  {
+                    "$ifNull": [
+                      "$fødselsdato",
+                      ""
+                    ]
+                  }
+                ]
+              },
+              "antallRoller": {
+                "$size": "$roller"
+              }
+            }
+          },
+          {
+            "$group": {
+              "_id": "$partinavn",
+              "politikere": {
+                "$addToSet": "$personKey"
+              },
+              "antallRolleoppføringer": {
+                "$sum": "$antallRoller"
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "parti": "$_id",
+              "antallPolitikere": {
+                "$size": "$politikere"
+              },
+              "antallRolleoppføringer": 1
+            }
+          },
+          {
+            "$sort": {
+              "antallRolleoppføringer": -1,
+              "parti": 1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "roller",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "politikere",
+              "let": {
+                "rnav": "$navn",
+                "rdob": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$navn",
+                            "$$rnav"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$fødselsdato",
+                            "$$rdob"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "$project": {
+                    "partinavn": 1,
+                    "navn": 1,
+                    "fødselsdato": 1,
+                    "_id": 0
+                  }
+                }
+              ],
+              "as": "politikerMatches"
+            }
+          },
+          {
+            "$unwind": "$politikerMatches"
+          },
+          {
+            "$match": {
+              "politikerMatches.partinavn": {
+                "$exists": true,
+                "$ne": null
+              }
+            }
+          },
+          {
+            "$group": {
+              "_id": {
+                "parti": "$politikerMatches.partinavn",
+                "navn": "$politikerMatches.navn",
+                "fødselsdato": "$politikerMatches.fødselsdato"
+              },
+              "rolleCount": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$group": {
+              "_id": "$_id.parti",
+              "politikere": {
+                "$push": {
+                  "navn": "$_id.navn",
+                  "fødselsdato": "$_id.fødselsdato",
+                  "rolleOppføringer": "$rolleCount"
+                }
+              },
+              "antallUnikePolitikere": {
+                "$sum": 1
+              },
+              "antallRolleoppføringer": {
+                "$sum": "$rolleCount"
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "parti": "$_id",
+              "antallUnikePolitikere": 1,
+              "antallRolleoppføringer": 1,
+              "politikere": 1
+            }
+          },
+          {
+            "$sort": {
+              "antallUnikePolitikere": -1,
+              "parti": 1
+            }
+          }
+        ]
+      },
+      "generated_raw_text": "{\"op\":\"aggregate\",\"collection\":\"roller\",\"pipeline\":[{\"$lookup\":{\"from\":\"politikere\",\"let\":{\"rnav\":\"$navn\",\"rdob\":\"$fødselsdato\"},\"pipeline\":[{\"$match\":{\"$expr\":{\"$and\":[{\"$eq\":[\"$navn\",\"$$rnav\"]},{\"$eq\":[\"$fødselsdato\",\"$$rdob\"]}]}}},{\"$project\":{\"partinavn\":1,\"navn\":1,\"fødselsdato\":1,\"_id\":0}}],\"as\":\"politikerMatches\"}},{\"$unwind\":\"$politikerMatches\"},{\"$match\":{\"politikerMatches.partinavn\":{\"$exists\":true,\"$ne\":null}}},{\"$group\":{\"_id\":{\"parti\":\"$politikerMatches.partinavn\",\"navn\":\"$politikerMatches.navn\",\"fødselsdato\":\"$politikerMatches.fødselsdato\"},\"rolleCount\":{\"$sum\":1}}},{\"$group\":{\"_id\":\"$_id.parti\",\"politikere\":{\"$push\":{\"navn\":\"$_id.navn\",\"fødselsdato\":\"$_id.fødselsdato\",\"rolleOppføringer\":\"$rolleCount\"}},\"antallUnikePolitikere\":{\"$sum\":1},\"antallRolleoppføringer\":{\"$sum\":\"$rolleCount\"}}},{\"$project\":{\"_id\":0,\"parti\":\"$_id\",\"antallUnikePolitikere\":1,\"antallRolleoppføringer\":1,\"politikere\":1}},{\"$sort\":{\"antallUnikePolitikere\":-1,\"parti\":1}}]}",
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "gold_count": 18,
+        "generated_count": 18,
+        "missing_count": 18,
+        "extra_count": 18,
+        "missing_examples": [
+          [
+            "Høyre",
+            23,
+            30
+          ],
+          [
+            "Venstre",
+            11,
+            15
+          ],
+          [
+            "Høgre",
+            13,
+            9
+          ],
+          [
+            "Arbeiderpartiet",
+            11,
+            11
+          ],
+          [
+            "Senterpartiet",
+            10,
+            10
+          ]
+        ],
+        "extra_examples": [
+          [
+            "Høyre",
+            23,
+            30,
+            {
+              "fødselsdato": "1946-09-07T00:00:00Z",
+              "navn": "Aage Nystøl",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1955-05-11T00:00:00Z",
+              "navn": "Carl Diderik Cappelen",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1956-02-08T00:00:00Z",
+              "navn": "Bjørn Glørstad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1958-05-07T00:00:00Z",
+              "navn": "John Arthur Ødbehr",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1959-08-21T00:00:00Z",
+              "navn": "Ole Vinje",
+              "rolleOppføringer": 3
+            },
+            {
+              "fødselsdato": "1960-06-13T00:00:00Z",
+              "navn": "Oddleiv Aksnes",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1964-02-12T00:00:00Z",
+              "navn": "Roald Dolmen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1965-05-07T00:00:00Z",
+              "navn": "Martin Smith-Sivertsen",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1967-09-09T00:00:00Z",
+              "navn": "Terje Stewart Marriott",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1967-10-02T00:00:00Z",
+              "navn": "Eirik Lundemo",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1968-06-14T00:00:00Z",
+              "navn": "Sonja Mari Berg Christiansen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1968-11-03T00:00:00Z",
+              "navn": "Hilde Vårdal Øverland",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1968-12-25T00:00:00Z",
+              "navn": "Sonja Rødsjø",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1969-12-22T00:00:00Z",
+              "navn": "Vegard Ryen Skullerud",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1970-09-07T00:00:00Z",
+              "navn": "Birgit Nistad",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1972-03-07T00:00:00Z",
+              "navn": "Therese Mossing Eidsaune",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1974-01-02T00:00:00Z",
+              "navn": "Anne Cathrin Østebø",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1974-12-23T00:00:00Z",
+              "navn": "Svein Ove Vetrhus",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1977-06-19T00:00:00Z",
+              "navn": "Svein Gunnar Mæland",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1984-01-12T00:00:00Z",
+              "navn": "Vivien Helen Vestre",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1985-11-27T00:00:00Z",
+              "navn": "Stian Skinnes Fossen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1992-10-12T00:00:00Z",
+              "navn": "Gøril Ødegård",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1996-09-04T00:00:00Z",
+              "navn": "Fredrik Grotle",
+              "rolleOppføringer": 2
+            }
+          ],
+          [
+            "Arbeiderpartiet",
+            11,
+            11,
+            {
+              "fødselsdato": "1946-08-01T00:00:00Z",
+              "navn": "Gustav Kalager",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1959-06-02T00:00:00Z",
+              "navn": "Odd Henning Bentsen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1965-10-19T00:00:00Z",
+              "navn": "Odd Ivar Hvila",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1966-02-25T00:00:00Z",
+              "navn": "Guttorm Anders Aasebøstøl",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1968-12-22T00:00:00Z",
+              "navn": "Helge Roar Åndal",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1972-06-24T00:00:00Z",
+              "navn": "Kenneth Wiik Søttar",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1978-01-27T00:00:00Z",
+              "navn": "Åse Marit Hovden",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1983-08-03T00:00:00Z",
+              "navn": "Hilde Ulsaker Jokerud",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1994-06-18T00:00:00Z",
+              "navn": "Erik Lervåg",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1997-09-16T00:00:00Z",
+              "navn": "Mikael Sivertsen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1997-10-01T00:00:00Z",
+              "navn": "Vegar Fornes Hustad",
+              "rolleOppføringer": 1
+            }
+          ],
+          [
+            "Venstre",
+            11,
+            15,
+            {
+              "fødselsdato": "1959-04-01T00:00:00Z",
+              "navn": "Pål Farstad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1962-01-06T00:00:00Z",
+              "navn": "Kjell Jacob Sæterøy",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1963-07-30T00:00:00Z",
+              "navn": "Rolf Kanstad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1968-12-17T00:00:00Z",
+              "navn": "Thor-Erling Westelius Hansen",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1974-03-07T00:00:00Z",
+              "navn": "Tor Magnus Castberg",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1976-10-07T00:00:00Z",
+              "navn": "Christian Solum Hermansen",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1978-08-18T00:00:00Z",
+              "navn": "Glenn Nøstdahl",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1980-03-04T00:00:00Z",
+              "navn": "Thomas Lervåg",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1981-07-07T00:00:00Z",
+              "navn": "Øyvind Gartland",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1981-10-09T00:00:00Z",
+              "navn": "Rolf Petter Bugge Larssen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1986-02-11T00:00:00Z",
+              "navn": "Kristin Jess-Bakken",
+              "rolleOppføringer": 1
+            }
+          ],
+          [
+            "Senterpartiet",
+            10,
+            10,
+            {
+              "fødselsdato": "1955-09-03T00:00:00Z",
+              "navn": "Magne Gunnar Bugge",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1960-06-06T00:00:00Z",
+              "navn": "Kristin Dingstad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1962-01-30T00:00:00Z",
+              "navn": "Gunhild Kvam",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1973-03-17T00:00:00Z",
+              "navn": "Sissel Mehl",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1976-03-08T00:00:00Z",
+              "navn": "Hans Aanestad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1977-09-16T00:00:00Z",
+              "navn": "Ann Elisabeth Solbue Valaas",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1980-05-24T00:00:00Z",
+              "navn": "Kjell Ingar Bø",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1984-09-29T00:00:00Z",
+              "navn": "Dorrit Vignes",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1996-07-08T00:00:00Z",
+              "navn": "Jakob Mo",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1997-08-24T00:00:00Z",
+              "navn": "Sondre Steinbakken",
+              "rolleOppføringer": 1
+            }
+          ],
+          [
+            "Høgre",
+            13,
+            9,
+            {
+              "fødselsdato": "1958-09-06T00:00:00Z",
+              "navn": "Arne Hindenes",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1961-12-14T00:00:00Z",
+              "navn": "Dag Henning Loe Olsen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1966-07-14T00:00:00Z",
+              "navn": "Torbjørn Anton Hide",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1968-10-08T00:00:00Z",
+              "navn": "Tom Roger Øydne",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1969-06-25T00:00:00Z",
+              "navn": "Gunn Dalen Håland",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1981-08-12T00:00:00Z",
+              "navn": "Odd Henrik Iversen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1988-09-05T00:00:00Z",
+              "navn": "Caroline Bjerk Maurstad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1993-06-11T00:00:00Z",
+              "navn": "Robert Myklebust",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1995-09-29T00:00:00Z",
+              "navn": "Helene Søvold",
+              "rolleOppføringer": 2
+            }
+          ]
+        ],
+        "comparison_mode": "aggregate row values, ignoring output alias names",
+        "empty_result_equivalence": false,
+        "empty_result_note": null
+      },
+      "projection_score": null,
+      "counts": {
+        "gold": 18,
+        "generated": 18
+      },
+      "timing_ms": {
+        "llm": 21930,
+        "gold_query": 0,
+        "generated_query": 834,
+        "scoring": 1,
+        "total": 22765
+      },
+      "examples": {
+        "gold_first_3": [
+          {
+            "antallRolleoppføringer": 30,
+            "parti": "Høyre",
+            "antallPolitikere": 23
+          },
+          {
+            "antallRolleoppføringer": 15,
+            "parti": "Venstre",
+            "antallPolitikere": 11
+          },
+          {
+            "antallRolleoppføringer": 13,
+            "parti": "Høgre",
+            "antallPolitikere": 9
+          }
+        ],
+        "generated_first_3": [
+          {
+            "politikere": [
+              {
+                "navn": "Vegard Ryen Skullerud",
+                "fødselsdato": "1969-12-22T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Terje Stewart Marriott",
+                "fødselsdato": "1967-09-09T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "John Arthur Ødbehr",
+                "fødselsdato": "1958-05-07T00:00:00Z",
+                "rolleOppføringer": 2
+              },
+              {
+                "navn": "Svein Ove Vetrhus",
+                "fødselsdato": "1974-12-23T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Hilde Vårdal Øverland",
+                "fødselsdato": "1968-11-03T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Bjørn Glørstad",
+                "fødselsdato": "1956-02-08T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Svein Gunnar Mæland",
+                "fødselsdato": "1977-06-19T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Gøril Ødegård",
+                "fødselsdato": "1992-10-12T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Martin Smith-Sivertsen",
+                "fødselsdato": "1965-05-07T00:00:00Z",
+                "rolleOppføringer": 2
+              },
+              {
+                "navn": "Birgit Nistad",
+                "fødselsdato": "1970-09-07T00:00:00Z",
+                "rolleOppføringer": 2
+              },
+              {
+                "navn": "Sonja Rødsjø",
+                "fødselsdato": "1968-12-25T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Ole Vinje",
+                "fødselsdato": "1959-08-21T00:00:00Z",
+                "rolleOppføringer": 3
+              },
+              {
+                "navn": "Fredrik Grotle",
+                "fødselsdato": "1996-09-04T00:00:00Z",
+                "rolleOppføringer": 2
+              },
+              {
+                "navn": "Sonja Mari Berg Christiansen",
+                "fødselsdato": "1968-06-14T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Roald Dolmen",
+                "fødselsdato": "1964-02-12T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Vivien Helen Vestre",
+                "fødselsdato": "1984-01-12T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Stian Skinnes Fossen",
+                "fødselsdato": "1985-11-27T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Oddleiv Aksnes",
+                "fødselsdato": "1960-06-13T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Therese Mossing Eidsaune",
+                "fødselsdato": "1972-03-07T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Eirik Lundemo",
+                "fødselsdato": "1967-10-02T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Carl Diderik Cappelen",
+                "fødselsdato": "1955-05-11T00:00:00Z",
+                "rolleOppføringer": 2
+              },
+              {
+                "navn": "Aage Nystøl",
+                "fødselsdato": "1946-09-07T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Anne Cathrin Østebø",
+                "fødselsdato": "1974-01-02T00:00:00Z",
+                "rolleOppføringer": 1
+              }
+            ],
+            "antallUnikePolitikere": 23,
+            "antallRolleoppføringer": 30,
+            "parti": "Høyre"
+          },
+          {
+            "politikere": [
+              {
+                "navn": "Åse Marit Hovden",
+                "fødselsdato": "1978-01-27T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Helge Roar Åndal",
+                "fødselsdato": "1968-12-22T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Odd Ivar Hvila",
+                "fødselsdato": "1965-10-19T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Kenneth Wiik Søttar",
+                "fødselsdato": "1972-06-24T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Guttorm Anders Aasebøstøl",
+                "fødselsdato": "1966-02-25T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Odd Henning Bentsen",
+                "fødselsdato": "1959-06-02T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Vegar Fornes Hustad",
+                "fødselsdato": "1997-10-01T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Gustav Kalager",
+                "fødselsdato": "1946-08-01T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Erik Lervåg",
+                "fødselsdato": "1994-06-18T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Mikael Sivertsen",
+                "fødselsdato": "1997-09-16T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Hilde Ulsaker Jokerud",
+                "fødselsdato": "1983-08-03T00:00:00Z",
+                "rolleOppføringer": 1
+              }
+            ],
+            "antallUnikePolitikere": 11,
+            "antallRolleoppføringer": 11,
+            "parti": "Arbeiderpartiet"
+          },
+          {
+            "politikere": [
+              {
+                "navn": "Glenn Nøstdahl",
+                "fødselsdato": "1978-08-18T00:00:00Z",
+                "rolleOppføringer": 2
+              },
+              {
+                "navn": "Rolf Kanstad",
+                "fødselsdato": "1963-07-30T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Øyvind Gartland",
+                "fødselsdato": "1981-07-07T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Pål Farstad",
+                "fødselsdato": "1959-04-01T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Tor Magnus Castberg",
+                "fødselsdato": "1974-03-07T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Kristin Jess-Bakken",
+                "fødselsdato": "1986-02-11T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Kjell Jacob Sæterøy",
+                "fødselsdato": "1962-01-06T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Rolf Petter Bugge Larssen",
+                "fødselsdato": "1981-10-09T00:00:00Z",
+                "rolleOppføringer": 1
+              },
+              {
+                "navn": "Thor-Erling Westelius Hansen",
+                "fødselsdato": "1968-12-17T00:00:00Z",
+                "rolleOppføringer": 2
+              },
+              {
+                "navn": "Thomas Lervåg",
+                "fødselsdato": "1980-03-04T00:00:00Z",
+                "rolleOppføringer": 2
+              },
+              {
+                "navn": "Christian Solum Hermansen",
+                "fødselsdato": "1976-10-07T00:00:00Z",
+                "rolleOppføringer": 2
+              }
+            ],
+            "antallUnikePolitikere": 11,
+            "antallRolleoppføringer": 15,
+            "parti": "Venstre"
+          }
+        ],
+        "missing": [
+          [
+            "Høyre",
+            23,
+            30
+          ],
+          [
+            "Venstre",
+            11,
+            15
+          ],
+          [
+            "Høgre",
+            13,
+            9
+          ],
+          [
+            "Arbeiderpartiet",
+            11,
+            11
+          ],
+          [
+            "Senterpartiet",
+            10,
+            10
+          ]
+        ],
+        "extra": [
+          [
+            "Høyre",
+            23,
+            30,
+            {
+              "fødselsdato": "1946-09-07T00:00:00Z",
+              "navn": "Aage Nystøl",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1955-05-11T00:00:00Z",
+              "navn": "Carl Diderik Cappelen",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1956-02-08T00:00:00Z",
+              "navn": "Bjørn Glørstad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1958-05-07T00:00:00Z",
+              "navn": "John Arthur Ødbehr",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1959-08-21T00:00:00Z",
+              "navn": "Ole Vinje",
+              "rolleOppføringer": 3
+            },
+            {
+              "fødselsdato": "1960-06-13T00:00:00Z",
+              "navn": "Oddleiv Aksnes",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1964-02-12T00:00:00Z",
+              "navn": "Roald Dolmen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1965-05-07T00:00:00Z",
+              "navn": "Martin Smith-Sivertsen",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1967-09-09T00:00:00Z",
+              "navn": "Terje Stewart Marriott",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1967-10-02T00:00:00Z",
+              "navn": "Eirik Lundemo",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1968-06-14T00:00:00Z",
+              "navn": "Sonja Mari Berg Christiansen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1968-11-03T00:00:00Z",
+              "navn": "Hilde Vårdal Øverland",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1968-12-25T00:00:00Z",
+              "navn": "Sonja Rødsjø",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1969-12-22T00:00:00Z",
+              "navn": "Vegard Ryen Skullerud",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1970-09-07T00:00:00Z",
+              "navn": "Birgit Nistad",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1972-03-07T00:00:00Z",
+              "navn": "Therese Mossing Eidsaune",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1974-01-02T00:00:00Z",
+              "navn": "Anne Cathrin Østebø",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1974-12-23T00:00:00Z",
+              "navn": "Svein Ove Vetrhus",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1977-06-19T00:00:00Z",
+              "navn": "Svein Gunnar Mæland",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1984-01-12T00:00:00Z",
+              "navn": "Vivien Helen Vestre",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1985-11-27T00:00:00Z",
+              "navn": "Stian Skinnes Fossen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1992-10-12T00:00:00Z",
+              "navn": "Gøril Ødegård",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1996-09-04T00:00:00Z",
+              "navn": "Fredrik Grotle",
+              "rolleOppføringer": 2
+            }
+          ],
+          [
+            "Arbeiderpartiet",
+            11,
+            11,
+            {
+              "fødselsdato": "1946-08-01T00:00:00Z",
+              "navn": "Gustav Kalager",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1959-06-02T00:00:00Z",
+              "navn": "Odd Henning Bentsen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1965-10-19T00:00:00Z",
+              "navn": "Odd Ivar Hvila",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1966-02-25T00:00:00Z",
+              "navn": "Guttorm Anders Aasebøstøl",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1968-12-22T00:00:00Z",
+              "navn": "Helge Roar Åndal",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1972-06-24T00:00:00Z",
+              "navn": "Kenneth Wiik Søttar",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1978-01-27T00:00:00Z",
+              "navn": "Åse Marit Hovden",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1983-08-03T00:00:00Z",
+              "navn": "Hilde Ulsaker Jokerud",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1994-06-18T00:00:00Z",
+              "navn": "Erik Lervåg",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1997-09-16T00:00:00Z",
+              "navn": "Mikael Sivertsen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1997-10-01T00:00:00Z",
+              "navn": "Vegar Fornes Hustad",
+              "rolleOppføringer": 1
+            }
+          ],
+          [
+            "Venstre",
+            11,
+            15,
+            {
+              "fødselsdato": "1959-04-01T00:00:00Z",
+              "navn": "Pål Farstad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1962-01-06T00:00:00Z",
+              "navn": "Kjell Jacob Sæterøy",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1963-07-30T00:00:00Z",
+              "navn": "Rolf Kanstad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1968-12-17T00:00:00Z",
+              "navn": "Thor-Erling Westelius Hansen",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1974-03-07T00:00:00Z",
+              "navn": "Tor Magnus Castberg",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1976-10-07T00:00:00Z",
+              "navn": "Christian Solum Hermansen",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1978-08-18T00:00:00Z",
+              "navn": "Glenn Nøstdahl",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1980-03-04T00:00:00Z",
+              "navn": "Thomas Lervåg",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1981-07-07T00:00:00Z",
+              "navn": "Øyvind Gartland",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1981-10-09T00:00:00Z",
+              "navn": "Rolf Petter Bugge Larssen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1986-02-11T00:00:00Z",
+              "navn": "Kristin Jess-Bakken",
+              "rolleOppføringer": 1
+            }
+          ],
+          [
+            "Senterpartiet",
+            10,
+            10,
+            {
+              "fødselsdato": "1955-09-03T00:00:00Z",
+              "navn": "Magne Gunnar Bugge",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1960-06-06T00:00:00Z",
+              "navn": "Kristin Dingstad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1962-01-30T00:00:00Z",
+              "navn": "Gunhild Kvam",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1973-03-17T00:00:00Z",
+              "navn": "Sissel Mehl",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1976-03-08T00:00:00Z",
+              "navn": "Hans Aanestad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1977-09-16T00:00:00Z",
+              "navn": "Ann Elisabeth Solbue Valaas",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1980-05-24T00:00:00Z",
+              "navn": "Kjell Ingar Bø",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1984-09-29T00:00:00Z",
+              "navn": "Dorrit Vignes",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1996-07-08T00:00:00Z",
+              "navn": "Jakob Mo",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1997-08-24T00:00:00Z",
+              "navn": "Sondre Steinbakken",
+              "rolleOppføringer": 1
+            }
+          ],
+          [
+            "Høgre",
+            13,
+            9,
+            {
+              "fødselsdato": "1958-09-06T00:00:00Z",
+              "navn": "Arne Hindenes",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1961-12-14T00:00:00Z",
+              "navn": "Dag Henning Loe Olsen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1966-07-14T00:00:00Z",
+              "navn": "Torbjørn Anton Hide",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1968-10-08T00:00:00Z",
+              "navn": "Tom Roger Øydne",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1969-06-25T00:00:00Z",
+              "navn": "Gunn Dalen Håland",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1981-08-12T00:00:00Z",
+              "navn": "Odd Henrik Iversen",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1988-09-05T00:00:00Z",
+              "navn": "Caroline Bjerk Maurstad",
+              "rolleOppføringer": 1
+            },
+            {
+              "fødselsdato": "1993-06-11T00:00:00Z",
+              "navn": "Robert Myklebust",
+              "rolleOppføringer": 2
+            },
+            {
+              "fødselsdato": "1995-09-29T00:00:00Z",
+              "navn": "Helene Søvold",
+              "rolleOppføringer": 2
+            }
+          ]
+        ]
+      },
+      "gold_cache": {
+        "hit": true,
+        "path": "src\\text_to_query\\gold_cache\\structured_complex\\groundtruthStructured\\q101_d8e5c5bb717ba9e2.json",
+        "created_at": "2026-05-24T02:18:02"
+      },
+      "generated_finish_reason": "stop"
+    },
+    {
+      "id": 102,
+      "question": "Finn selskaper som både har eierskapsoppføringer i 2023 og aksjeeierbokoppføringer i 2023. Ta med navn, organisasjonsnummer, antall eierskapsoppføringer i 2023 og antall aksjeeierbokoppføringer i 2023.",
+      "category": "complex_pipeline_stress",
+      "operation": "aggregate",
+      "status": "ok",
+      "success": true,
+      "failure_reason": null,
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "let": {
+                "org": "$orgNr"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$utstederOrgNr",
+                            "$$org"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$eierskapår",
+                            2023
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "eierskap2023"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "aksjeeiebok",
+              "let": {
+                "org": "$orgNr"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$orgNr",
+                            "$$org"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$år",
+                            2023
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "aksjeeierbok2023"
+            }
+          },
+          {
+            "$match": {
+              "eierskap2023.0": {
+                "$exists": true
+              },
+              "aksjeeierbok2023.0": {
+                "$exists": true
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "navn": 1,
+              "orgNr": 1,
+              "antallEierskap2023": {
+                "$size": "$eierskap2023"
+              },
+              "antallAksjeeierbok2023": {
+                "$size": "$aksjeeierbok2023"
+              }
+            }
+          },
+          {
+            "$sort": {
+              "antallAksjeeierbok2023": -1,
+              "antallEierskap2023": -1,
+              "orgNr": 1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "let": {
+                "orgNr": "$orgNr"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$eierskapår",
+                            2023
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$utstederOrgNr",
+                            "$$orgNr"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "$count": "count"
+                }
+              ],
+              "as": "eierskap2023"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "aksjeeiebok",
+              "let": {
+                "orgNr": "$orgNr"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$år",
+                            2023
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$orgNr",
+                            "$$orgNr"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "$count": "count"
+                }
+              ],
+              "as": "aksjeeiebok2023"
+            }
+          },
+          {
+            "$addFields": {
+              "eierskapCount": {
+                "$ifNull": [
+                  {
+                    "$arrayElemAt": [
+                      "$eierskap2023.count",
+                      0
+                    ]
+                  },
+                  0
+                ]
+              },
+              "aksjeeiebokCount": {
+                "$ifNull": [
+                  {
+                    "$arrayElemAt": [
+                      "$aksjeeiebok2023.count",
+                      0
+                    ]
+                  },
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "$match": {
+              "eierskapCount": {
+                "$gt": 0
+              },
+              "aksjeeiebokCount": {
+                "$gt": 0
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "navn": 1,
+              "orgNr": 1,
+              "eierskapCount": 1,
+              "aksjeeiebokCount": 1
+            }
+          }
+        ]
+      },
+      "generated_raw_text": "{\n  \"op\": \"aggregate\",\n  \"collection\": \"selskap\",\n  \"pipeline\": [\n    {\n      \"$lookup\": {\n        \"from\": \"eierskap\",\n        \"let\": { \"orgNr\": \"$orgNr\" },\n        \"pipeline\": [\n          {\n            \"$match\": {\n              \"$expr\": {\n                \"$and\": [\n                  { \"$eq\": [\"$eierskapår\", 2023] },\n                  { \"$eq\": [\"$utstederOrgNr\", \"$$orgNr\"] }\n                ]\n              }\n            }\n          },\n          { \"$count\": \"count\" }\n        ],\n        \"as\": \"eierskap2023\"\n      }\n    },\n    {\n      \"$lookup\": {\n        \"from\": \"aksjeeiebok\",\n        \"let\": { \"orgNr\": \"$orgNr\" },\n        \"pipeline\": [\n          {\n            \"$match\": {\n              \"$expr\": {\n                \"$and\": [\n                  { \"$eq\": [\"$år\", 2023] },\n                  { \"$eq\": [\"$orgNr\", \"$$orgNr\"] }\n                ]\n              }\n            }\n          },\n          { \"$count\": \"count\" }\n        ],\n        \"as\": \"aksjeeiebok2023\"\n      }\n    },\n    {\n      \"$addFields\": {\n        \"eierskapCount\": { \"$ifNull\": [{ \"$arrayElemAt\": [\"$eierskap2023.count\", 0] }, 0] },\n        \"aksjeeiebokCount\": { \"$ifNull\": [{ \"$arrayElemAt\": [\"$aksjeeiebok2023.count\", 0] }, 0] }\n      }\n    },\n    {\n      \"$match\": {\n        \"eierskapCount\": { \"$gt\": 0 },\n        \"aksjeeiebokCount\": { \"$gt\": 0 }\n      }\n    },\n    {\n      \"$project\": {\n        \"_id\": 0,\n        \"navn\": 1,\n        \"orgNr\": 1,\n        \"eierskapCount\": 1,\n        \"aksjeeiebokCount\": 1\n      }\n    }\n  ]\n}",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "true_positive": 19,
+        "gold_count": 19,
+        "generated_count": 19,
+        "missing_count": 0,
+        "extra_count": 0,
+        "missing_examples": [],
+        "extra_examples": [],
+        "comparison_mode": "aggregate row values, ignoring output alias names",
+        "empty_result_equivalence": false,
+        "empty_result_note": null
+      },
+      "projection_score": null,
+      "counts": {
+        "gold": 19,
+        "generated": 19
+      },
+      "timing_ms": {
+        "llm": 20420,
+        "gold_query": 0,
+        "generated_query": 2567,
+        "scoring": 1,
+        "total": 22987
+      },
+      "examples": {
+        "gold_first_3": [
+          {
+            "orgNr": 943753709,
+            "navn": "KONGSBERG GRUPPEN ASA",
+            "antallEierskap2023": 3,
+            "antallAksjeeierbok2023": 28711
+          },
+          {
+            "orgNr": 917103801,
+            "navn": "Veidekke ASA",
+            "antallEierskap2023": 2,
+            "antallAksjeeierbok2023": 11816
+          },
+          {
+            "orgNr": 832554332,
+            "navn": "SPAREBANKEN NORGE",
+            "antallEierskap2023": 9,
+            "antallAksjeeierbok2023": 9564
+          }
+        ],
+        "generated_first_3": [
+          {
+            "orgNr": 931317199,
+            "navn": "KAITOMTA HOLDING AS",
+            "eierskapCount": 1,
+            "aksjeeiebokCount": 1
+          },
+          {
+            "orgNr": 923377476,
+            "navn": "HORISONT ENERGI AS",
+            "eierskapCount": 2,
+            "aksjeeiebokCount": 1196
+          },
+          {
+            "orgNr": 988893501,
+            "navn": "LIONERO AS",
+            "eierskapCount": 2,
+            "aksjeeiebokCount": 303
+          }
+        ],
+        "missing": [],
+        "extra": []
+      },
+      "gold_cache": {
+        "hit": true,
+        "path": "src\\text_to_query\\gold_cache\\structured_complex\\groundtruthStructured\\q102_f0e5aafcc1c4022f.json",
+        "created_at": "2026-05-24T02:18:04"
+      },
+      "generated_finish_reason": "stop"
+    },
+    {
+      "id": 103,
+      "question": "Finn politikere som både eier aksjer i et selskap og har en rolle i samme selskap. Identifiser politikere med navn og fødselsdato. Ta med navn, fødselsdato, parti, selskap, organisasjonsnummer, rolle og eierandel.",
+      "category": "complex_pipeline_stress",
+      "operation": "aggregate",
+      "status": "ok",
+      "success": true,
+      "failure_reason": null,
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "let": {
+                "pnavn": "$navn",
+                "pf": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$eierPersonNavn",
+                            "$$pnavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$eierPersonFødselsdato",
+                            "$$pf"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "eierskap"
+            }
+          },
+          {
+            "$unwind": "$eierskap"
+          },
+          {
+            "$lookup": {
+              "from": "roller",
+              "let": {
+                "pnavn": "$navn",
+                "pf": "$fødselsdato",
+                "org": "$eierskap.utstederOrgNr"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$navn",
+                            "$$pnavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$fødselsdato",
+                            "$$pf"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$selskapOrgNr",
+                            "$$org"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "roller"
+            }
+          },
+          {
+            "$unwind": "$roller"
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "navn": 1,
+              "fødselsdato": 1,
+              "partinavn": 1,
+              "selskap": "$eierskap.utstederNavn",
+              "orgNr": "$eierskap.utstederOrgNr",
+              "rolle": "$roller.selskapRolle",
+              "eierandel": "$eierskap.eierskapAndel"
+            }
+          },
+          {
+            "$sort": {
+              "navn": 1,
+              "orgNr": 1,
+              "rolle": 1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "politkere",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "let": {
+                "p_name": "$navn",
+                "p_fodt": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$eierPersonNavn",
+                            "$$p_name"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$eierPersonFødselsdato",
+                            "$$p_fodt"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "$project": {
+                    "utstederNavn": 1,
+                    "utstederOrgNr": 1,
+                    "eierskapAndel": 1,
+                    "eierskapAntall": 1,
+                    "eierskapår": 1,
+                    "_id": 0
+                  }
+                }
+              ],
+              "as": "ownerships"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "roller",
+              "let": {
+                "p_name": "$navn",
+                "p_fodt": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$navn",
+                            "$$p_name"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$fødselsdato",
+                            "$$p_fodt"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "$project": {
+                    "selskapNavn": 1,
+                    "selskapOrgNr": 1,
+                    "selskapRolle": 1,
+                    "rolleStartdato": 1,
+                    "rolleSluttdato": 1,
+                    "_id": 0
+                  }
+                }
+              ],
+              "as": "roles"
+            }
+          },
+          {
+            "$unwind": "$ownerships"
+          },
+          {
+            "$unwind": "$roles"
+          },
+          {
+            "$match": {
+              "$expr": {
+                "$eq": [
+                  "$ownerships.utstederOrgNr",
+                  "$roles.selskapOrgNr"
+                ]
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "navn": 1,
+              "fødselsdato": 1,
+              "partinavn": 1,
+              "selskap": "$roles.selskapNavn",
+              "orgNr": "$roles.selskapOrgNr",
+              "rolle": "$roles.selskapRolle",
+              "eierandel": "$ownerships.eierskapAndel"
+            }
+          }
+        ]
+      },
+      "generated_raw_text": "{\"op\":\"aggregate\",\"collection\":\"politkere\",\"pipeline\":[{\"$lookup\":{\"from\":\"eierskap\",\"let\":{\"p_name\":\"$navn\",\"p_fodt\":\"$fødselsdato\"},\"pipeline\":[{\"$match\":{\"$expr\":{\"$and\":[{\"$eq\":[\"$eierPersonNavn\",\"$$p_name\"]},{\"$eq\":[\"$eierPersonFødselsdato\",\"$$p_fodt\"]}]}}},{\"$project\":{\"utstederNavn\":1,\"utstederOrgNr\":1,\"eierskapAndel\":1,\"eierskapAntall\":1,\"eierskapår\":1,\"_id\":0}}],\"as\":\"ownerships\"}},{\"$lookup\":{\"from\":\"roller\",\"let\":{\"p_name\":\"$navn\",\"p_fodt\":\"$fødselsdato\"},\"pipeline\":[{\"$match\":{\"$expr\":{\"$and\":[{\"$eq\":[\"$navn\",\"$$p_name\"]},{\"$eq\":[\"$fødselsdato\",\"$$p_fodt\"]}]}}},{\"$project\":{\"selskapNavn\":1,\"selskapOrgNr\":1,\"selskapRolle\":1,\"rolleStartdato\":1,\"rolleSluttdato\":1,\"_id\":0}}],\"as\":\"roles\"}},{\"$unwind\":\"$ownerships\"},{\"$unwind\":\"$roles\"},{\"$match\":{\"$expr\":{\"$eq\":[\"$ownerships.utstederOrgNr\",\"$roles.selskapOrgNr\"]}}},{\"$project\":{\"_id\":0,\"navn\":1,\"fødselsdato\":1,\"partinavn\":1,\"selskap\":\"$roles.selskapNavn\",\"orgNr\":\"$roles.selskapOrgNr\",\"rolle\":\"$roles.selskapRolle\",\"eierandel\":\"$ownerships.eierskapAndel\"}}]}",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "true_positive": 0,
+        "gold_count": 0,
+        "generated_count": 0,
+        "missing_count": 0,
+        "extra_count": 0,
+        "missing_examples": [],
+        "extra_examples": [],
+        "comparison_mode": "aggregate row values, ignoring output alias names",
+        "empty_result_equivalence": true,
+        "empty_result_note": "Gold and generated query both returned no results; this is treated as full result equivalence, not necessarily semantic query equivalence."
+      },
+      "projection_score": null,
+      "counts": {
+        "gold": 0,
+        "generated": 0
+      },
+      "timing_ms": {
+        "llm": 30743,
+        "gold_query": 0,
+        "generated_query": 1,
+        "scoring": 0,
+        "total": 30745
+      },
+      "examples": {
+        "gold_first_3": [],
+        "generated_first_3": [],
+        "missing": [],
+        "extra": []
+      },
+      "gold_cache": {
+        "hit": true,
+        "path": "src\\text_to_query\\gold_cache\\structured_complex\\groundtruthStructured\\q103_351fc498e27b4f93.json",
+        "created_at": "2026-05-24T02:18:11"
+      },
+      "generated_finish_reason": "stop"
+    },
+    {
+      "id": 104,
+      "question": "Finn de 20 selskapene med flest samlede rolleoppføringer og eierskapsoppføringer. Ta med navn, organisasjonsnummer, antall roller, antall eierskap og totalt antall relasjoner. Sorter synkende på totalt antall relasjoner og stigende på organisasjonsnummer ved likt antall.",
+      "category": "complex_pipeline_stress",
+      "operation": "aggregate",
+      "status": "ok",
+      "success": true,
+      "failure_reason": null,
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "roller",
+              "localField": "orgNr",
+              "foreignField": "selskapOrgNr",
+              "as": "roller"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "localField": "orgNr",
+              "foreignField": "utstederOrgNr",
+              "as": "eierskap"
+            }
+          },
+          {
+            "$project": {
+              "navn": 1,
+              "orgNr": 1,
+              "antallRoller": {
+                "$size": "$roller"
+              },
+              "antallEierskap": {
+                "$size": "$eierskap"
+              }
+            }
+          },
+          {
+            "$addFields": {
+              "totaltAntallRelasjoner": {
+                "$add": [
+                  "$antallRoller",
+                  "$antallEierskap"
+                ]
+              }
+            }
+          },
+          {
+            "$match": {
+              "totaltAntallRelasjoner": {
+                "$gt": 0
+              }
+            }
+          },
+          {
+            "$sort": {
+              "totaltAntallRelasjoner": -1,
+              "orgNr": 1
+            }
+          },
+          {
+            "$limit": 20
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "navn": 1,
+              "orgNr": 1,
+              "antallRoller": 1,
+              "antallEierskap": 1,
+              "totaltAntallRelasjoner": 1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$project": {
+              "_id": 0,
+              "navn": "$navn",
+              "orgNr": "$orgNr",
+              "antallRoller": {
+                "$ifNull": [
+                  "$relasjoner.antallRoller",
+                  0
+                ]
+              },
+              "antallEierskap": {
+                "$ifNull": [
+                  "$relasjoner.antallEierskap",
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "$addFields": {
+              "totalt": {
+                "$add": [
+                  "$antallRoller",
+                  "$antallEierskap"
+                ]
+              }
+            }
+          },
+          {
+            "$sort": {
+              "totalt": -1,
+              "orgNr": 1
+            }
+          },
+          {
+            "$limit": 20
+          }
+        ]
+      },
+      "generated_raw_text": "{\"op\":\"aggregate\",\"collection\":\"selskap\",\"pipeline\":[{\"$project\":{\"_id\":0,\"navn\":\"$navn\",\"orgNr\":\"$orgNr\",\"antallRoller\":{\"$ifNull\":[\"$relasjoner.antallRoller\",0]},\"antallEierskap\":{\"$ifNull\":[\"$relasjoner.antallEierskap\",0]}}},{\"$addFields\":{\"totalt\":{\"$add\":[\"$antallRoller\",\"$antallEierskap\"]}}},{\"$sort\":{\"totalt\":-1,\"orgNr\":1}},{\"$limit\":20}]}",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "true_positive": 20,
+        "gold_count": 20,
+        "generated_count": 20,
+        "missing_count": 0,
+        "extra_count": 0,
+        "missing_examples": [],
+        "extra_examples": [],
+        "comparison_mode": "aggregate row values, ignoring output alias names",
+        "empty_result_equivalence": false,
+        "empty_result_note": null
+      },
+      "projection_score": null,
+      "counts": {
+        "gold": 20,
+        "generated": 20
+      },
+      "timing_ms": {
+        "llm": 13683,
+        "gold_query": 0,
+        "generated_query": 8,
+        "scoring": 1,
+        "total": 13691
+      },
+      "examples": {
+        "gold_first_3": [
+          {
+            "orgNr": 832554332,
+            "navn": "SPAREBANKEN NORGE",
+            "antallRoller": 19,
+            "antallEierskap": 21,
+            "totaltAntallRelasjoner": 40
+          },
+          {
+            "orgNr": 910909088,
+            "navn": "SOPRA STERIA AS",
+            "antallRoller": 36,
+            "antallEierskap": 0,
+            "totaltAntallRelasjoner": 36
+          },
+          {
+            "orgNr": 919408049,
+            "navn": "NORCE RESEARCH AS",
+            "antallRoller": 31,
+            "antallEierskap": 0,
+            "totaltAntallRelasjoner": 31
+          }
+        ],
+        "generated_first_3": [
+          {
+            "navn": "SPAREBANKEN NORGE",
+            "orgNr": 832554332,
+            "antallRoller": 19,
+            "antallEierskap": 21,
+            "totalt": 40
+          },
+          {
+            "navn": "SOPRA STERIA AS",
+            "orgNr": 910909088,
+            "antallRoller": 36,
+            "antallEierskap": 0,
+            "totalt": 36
+          },
+          {
+            "navn": "NORCE RESEARCH AS",
+            "orgNr": 919408049,
+            "antallRoller": 31,
+            "antallEierskap": 0,
+            "totalt": 31
+          }
+        ],
+        "missing": [],
+        "extra": []
+      },
+      "gold_cache": {
+        "hit": true,
+        "path": "src\\text_to_query\\gold_cache\\structured_complex\\groundtruthStructured\\q104_2fa91c66c76fb4f8.json",
+        "created_at": "2026-05-24T02:18:11"
+      },
+      "generated_finish_reason": "stop"
+    },
+    {
+      "id": 105,
+      "question": "Finn partier der politikere har minst én selskapsrolle eller minst ett personlig eierskap. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere, antall rolleoppføringer og antall eierskap.",
+      "category": "complex_pipeline_stress",
+      "operation": "aggregate",
+      "status": "ok",
+      "success": false,
+      "failure_reason": "Generated query missed one or more expected result documents or values.",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "roller",
+              "let": {
+                "pnavn": "$navn",
+                "pf": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$navn",
+                            "$$pnavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$fødselsdato",
+                            "$$pf"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "roller"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "let": {
+                "pnavn": "$navn",
+                "pf": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$eierPersonNavn",
+                            "$$pnavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$eierPersonFødselsdato",
+                            "$$pf"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "eierskap"
+            }
+          },
+          {
+            "$project": {
+              "partinavn": 1,
+              "personKey": {
+                "$concat": [
+                  "$navn",
+                  "|",
+                  {
+                    "$ifNull": [
+                      "$fødselsdato",
+                      ""
+                    ]
+                  }
+                ]
+              },
+              "antallRoller": {
+                "$size": "$roller"
+              },
+              "antallEierskap": {
+                "$size": "$eierskap"
+              }
+            }
+          },
+          {
+            "$match": {
+              "$or": [
+                {
+                  "antallRoller": {
+                    "$gt": 0
+                  }
+                },
+                {
+                  "antallEierskap": {
+                    "$gt": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "$group": {
+              "_id": "$partinavn",
+              "politikere": {
+                "$addToSet": "$personKey"
+              },
+              "antallRolleoppføringer": {
+                "$sum": "$antallRoller"
+              },
+              "antallEierskap": {
+                "$sum": "$antallEierskap"
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "parti": "$_id",
+              "antallPolitikere": {
+                "$size": "$politikere"
+              },
+              "antallRolleoppføringer": 1,
+              "antallEierskap": 1
+            }
+          },
+          {
+            "$sort": {
+              "antallPolitikere": -1,
+              "parti": 1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$match": {
+              "partinavn": {
+                "$exists": true,
+                "$ne": null
+              }
+            }
+          },
+          {
+            "$lookup": {
+              "from": "roller",
+              "let": {
+                "p_name": "$navn",
+                "p_fd": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$navn",
+                            "$$p_name"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$fødselsdato",
+                            "$$p_fd"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "roles"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "let": {
+                "p_name": "$navn",
+                "p_fd": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$eierPersonNavn",
+                            "$$p_name"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$eierPersonFødselsdato",
+                            "$$p_fd"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "ownerships"
+            }
+          },
+          {
+            "$addFields": {
+              "roleCount": {
+                "$size": "$roles"
+              },
+              "ownershipCount": {
+                "$size": "$ownerships"
+              }
+            }
+          },
+          {
+            "$match": {
+              "$or": [
+                {
+                  "roleCount": {
+                    "$gt": 0
+                  }
+                },
+                {
+                  "ownershipCount": {
+                    "$gt": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "$group": {
+              "_id": "$partinavn",
+              "politicians": {
+                "$addToSet": {
+                  "navn": "$navn",
+                  "fødselsdato": "$fødselsdato"
+                }
+              },
+              "total_role_entries": {
+                "$sum": "$roleCount"
+              },
+              "total_eierskap": {
+                "$sum": "$ownershipCount"
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "partinavn": "$_id",
+              "politikere": "$politicians",
+              "antall_unike_politikere": {
+                "$size": "$politicians"
+              },
+              "antall_rolleoppføringer": "$total_role_entries",
+              "antall_eierskap": "$total_eierskap"
+            }
+          }
+        ]
+      },
+      "generated_raw_text": "{\"op\":\"aggregate\",\"collection\":\"politikere\",\"pipeline\":[{\"$match\":{\"partinavn\":{\"$exists\":true,\"$ne\":null}}},{\"$lookup\":{\"from\":\"roller\",\"let\":{\"p_name\":\"$navn\",\"p_fd\":\"$fødselsdato\"},\"pipeline\":[{\"$match\":{\"$expr\":{\"$and\":[{\"$eq\":[\"$navn\",\"$$p_name\"]},{\"$eq\":[\"$fødselsdato\",\"$$p_fd\"]}]}}}],\"as\":\"roles\"}},{\"$lookup\":{\"from\":\"eierskap\",\"let\":{\"p_name\":\"$navn\",\"p_fd\":\"$fødselsdato\"},\"pipeline\":[{\"$match\":{\"$expr\":{\"$and\":[{\"$eq\":[\"$eierPersonNavn\",\"$$p_name\"]},{\"$eq\":[\"$eierPersonFødselsdato\",\"$$p_fd\"]}]}}}],\"as\":\"ownerships\"}},{\"$addFields\":{\"roleCount\":{\"$size\":\"$roles\"},\"ownershipCount\":{\"$size\":\"$ownerships\"}}},{\"$match\":{\"$or\":[{\"roleCount\":{\"$gt\":0}},{\"ownershipCount\":{\"$gt\":0}}]}},{\"$group\":{\"_id\":\"$partinavn\",\"politicians\":{\"$addToSet\":{\"navn\":\"$navn\",\"fødselsdato\":\"$fødselsdato\"}},\"total_role_entries\":{\"$sum\":\"$roleCount\"},\"total_eierskap\":{\"$sum\":\"$ownershipCount\"}}},{\"$project\":{\"_id\":0,\"partinavn\":\"$_id\",\"politikere\":\"$politicians\",\"antall_unike_politikere\":{\"$size\":\"$politicians\"},\"antall_rolleoppføringer\":\"$total_role_entries\",\"antall_eierskap\":\"$total_eierskap\"}}]}",
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "gold_count": 18,
+        "generated_count": 18,
+        "missing_count": 18,
+        "extra_count": 18,
+        "missing_examples": [
+          [
+            "Høyre",
+            0,
+            23,
+            30
+          ],
+          [
+            "Venstre",
+            12,
+            15,
+            2
+          ],
+          [
+            "Arbeiderpartiet",
+            0,
+            11,
+            11
+          ],
+          [
+            "Senterpartiet",
+            0,
+            10,
+            10
+          ],
+          [
+            "Høgre",
+            0,
+            13,
+            9
+          ]
+        ],
+        "extra_examples": [
+          [
+            "Miljøpartiet De Grønne",
+            0,
+            2,
+            2,
+            {
+              "fødselsdato": "1967-06-28T00:00:00Z",
+              "navn": "Hans Wilmers"
+            },
+            {
+              "fødselsdato": "1974-07-11T00:00:00Z",
+              "navn": "Knut Torstein Skinnarland"
+            }
+          ],
+          [
+            "Bygdelista Framover",
+            0,
+            3,
+            3,
+            {
+              "fødselsdato": "1961-02-07T00:00:00Z",
+              "navn": "Kjersti Aasen"
+            },
+            {
+              "fødselsdato": "1981-03-11T00:00:00Z",
+              "navn": "Cathrine Kronstad"
+            },
+            {
+              "fødselsdato": "1988-05-09T00:00:00Z",
+              "navn": "Ole Gunnar Skinnes"
+            }
+          ],
+          [
+            "Høyre",
+            0,
+            23,
+            30,
+            {
+              "fødselsdato": "1946-09-07T00:00:00Z",
+              "navn": "Aage Nystøl"
+            },
+            {
+              "fødselsdato": "1955-05-11T00:00:00Z",
+              "navn": "Carl Diderik Cappelen"
+            },
+            {
+              "fødselsdato": "1956-02-08T00:00:00Z",
+              "navn": "Bjørn Glørstad"
+            },
+            {
+              "fødselsdato": "1958-05-07T00:00:00Z",
+              "navn": "John Arthur Ødbehr"
+            },
+            {
+              "fødselsdato": "1959-08-21T00:00:00Z",
+              "navn": "Ole Vinje"
+            },
+            {
+              "fødselsdato": "1960-06-13T00:00:00Z",
+              "navn": "Oddleiv Aksnes"
+            },
+            {
+              "fødselsdato": "1964-02-12T00:00:00Z",
+              "navn": "Roald Dolmen"
+            },
+            {
+              "fødselsdato": "1965-05-07T00:00:00Z",
+              "navn": "Martin Smith-Sivertsen"
+            },
+            {
+              "fødselsdato": "1967-09-09T00:00:00Z",
+              "navn": "Terje Stewart Marriott"
+            },
+            {
+              "fødselsdato": "1967-10-02T00:00:00Z",
+              "navn": "Eirik Lundemo"
+            },
+            {
+              "fødselsdato": "1968-06-14T00:00:00Z",
+              "navn": "Sonja Mari Berg Christiansen"
+            },
+            {
+              "fødselsdato": "1968-11-03T00:00:00Z",
+              "navn": "Hilde Vårdal Øverland"
+            },
+            {
+              "fødselsdato": "1968-12-25T00:00:00Z",
+              "navn": "Sonja Rødsjø"
+            },
+            {
+              "fødselsdato": "1969-12-22T00:00:00Z",
+              "navn": "Vegard Ryen Skullerud"
+            },
+            {
+              "fødselsdato": "1970-09-07T00:00:00Z",
+              "navn": "Birgit Nistad"
+            },
+            {
+              "fødselsdato": "1972-03-07T00:00:00Z",
+              "navn": "Therese Mossing Eidsaune"
+            },
+            {
+              "fødselsdato": "1974-01-02T00:00:00Z",
+              "navn": "Anne Cathrin Østebø"
+            },
+            {
+              "fødselsdato": "1974-12-23T00:00:00Z",
+              "navn": "Svein Ove Vetrhus"
+            },
+            {
+              "fødselsdato": "1977-06-19T00:00:00Z",
+              "navn": "Svein Gunnar Mæland"
+            },
+            {
+              "fødselsdato": "1984-01-12T00:00:00Z",
+              "navn": "Vivien Helen Vestre"
+            },
+            {
+              "fødselsdato": "1985-11-27T00:00:00Z",
+              "navn": "Stian Skinnes Fossen"
+            },
+            {
+              "fødselsdato": "1992-10-12T00:00:00Z",
+              "navn": "Gøril Ødegård"
+            },
+            {
+              "fødselsdato": "1996-09-04T00:00:00Z",
+              "navn": "Fredrik Grotle"
+            }
+          ],
+          [
+            "Framstegspartiet",
+            0,
+            2,
+            2,
+            {
+              "fødselsdato": "1981-07-18T00:00:00Z",
+              "navn": "Antonina Kolodziejczyk"
+            },
+            {
+              "fødselsdato": "1984-01-11T00:00:00Z",
+              "navn": "Tor Even Fredriksen Fet"
+            }
+          ],
+          [
+            "Rødt",
+            0,
+            2,
+            3,
+            {
+              "fødselsdato": "1954-12-20T00:00:00Z",
+              "navn": "Tormod Åge Stensland"
+            },
+            {
+              "fødselsdato": "1984-07-25T00:00:00Z",
+              "navn": "Kari-Anne Thu"
+            }
+          ]
+        ],
+        "comparison_mode": "aggregate row values, ignoring output alias names",
+        "empty_result_equivalence": false,
+        "empty_result_note": null
+      },
+      "projection_score": null,
+      "counts": {
+        "gold": 18,
+        "generated": 18
+      },
+      "timing_ms": {
+        "llm": 27031,
+        "gold_query": 0,
+        "generated_query": 13430,
+        "scoring": 1,
+        "total": 40463
+      },
+      "examples": {
+        "gold_first_3": [
+          {
+            "antallRolleoppføringer": 30,
+            "antallEierskap": 0,
+            "parti": "Høyre",
+            "antallPolitikere": 23
+          },
+          {
+            "antallRolleoppføringer": 15,
+            "antallEierskap": 2,
+            "parti": "Venstre",
+            "antallPolitikere": 12
+          },
+          {
+            "antallRolleoppføringer": 11,
+            "antallEierskap": 0,
+            "parti": "Arbeiderpartiet",
+            "antallPolitikere": 11
+          }
+        ],
+        "generated_first_3": [
+          {
+            "partinavn": "Miljøpartiet De Grønne",
+            "politikere": [
+              {
+                "navn": "Hans Wilmers",
+                "fødselsdato": "1967-06-28T00:00:00Z"
+              },
+              {
+                "navn": "Knut Torstein Skinnarland",
+                "fødselsdato": "1974-07-11T00:00:00Z"
+              }
+            ],
+            "antall_unike_politikere": 2,
+            "antall_rolleoppføringer": 2,
+            "antall_eierskap": 0
+          },
+          {
+            "partinavn": "Bygdelista Framover",
+            "politikere": [
+              {
+                "navn": "Kjersti Aasen",
+                "fødselsdato": "1961-02-07T00:00:00Z"
+              },
+              {
+                "navn": "Cathrine Kronstad",
+                "fødselsdato": "1981-03-11T00:00:00Z"
+              },
+              {
+                "navn": "Ole Gunnar Skinnes",
+                "fødselsdato": "1988-05-09T00:00:00Z"
+              }
+            ],
+            "antall_unike_politikere": 3,
+            "antall_rolleoppføringer": 3,
+            "antall_eierskap": 0
+          },
+          {
+            "partinavn": "Høyre",
+            "politikere": [
+              {
+                "navn": "Vivien Helen Vestre",
+                "fødselsdato": "1984-01-12T00:00:00Z"
+              },
+              {
+                "navn": "Gøril Ødegård",
+                "fødselsdato": "1992-10-12T00:00:00Z"
+              },
+              {
+                "navn": "Stian Skinnes Fossen",
+                "fødselsdato": "1985-11-27T00:00:00Z"
+              },
+              {
+                "navn": "Carl Diderik Cappelen",
+                "fødselsdato": "1955-05-11T00:00:00Z"
+              },
+              {
+                "navn": "Svein Gunnar Mæland",
+                "fødselsdato": "1977-06-19T00:00:00Z"
+              },
+              {
+                "navn": "Fredrik Grotle",
+                "fødselsdato": "1996-09-04T00:00:00Z"
+              },
+              {
+                "navn": "Terje Stewart Marriott",
+                "fødselsdato": "1967-09-09T00:00:00Z"
+              },
+              {
+                "navn": "Birgit Nistad",
+                "fødselsdato": "1970-09-07T00:00:00Z"
+              },
+              {
+                "navn": "Sonja Mari Berg Christiansen",
+                "fødselsdato": "1968-06-14T00:00:00Z"
+              },
+              {
+                "navn": "Vegard Ryen Skullerud",
+                "fødselsdato": "1969-12-22T00:00:00Z"
+              },
+              {
+                "navn": "Bjørn Glørstad",
+                "fødselsdato": "1956-02-08T00:00:00Z"
+              },
+              {
+                "navn": "Ole Vinje",
+                "fødselsdato": "1959-08-21T00:00:00Z"
+              },
+              {
+                "navn": "Hilde Vårdal Øverland",
+                "fødselsdato": "1968-11-03T00:00:00Z"
+              },
+              {
+                "navn": "Svein Ove Vetrhus",
+                "fødselsdato": "1974-12-23T00:00:00Z"
+              },
+              {
+                "navn": "Anne Cathrin Østebø",
+                "fødselsdato": "1974-01-02T00:00:00Z"
+              },
+              {
+                "navn": "Eirik Lundemo",
+                "fødselsdato": "1967-10-02T00:00:00Z"
+              },
+              {
+                "navn": "John Arthur Ødbehr",
+                "fødselsdato": "1958-05-07T00:00:00Z"
+              },
+              {
+                "navn": "Therese Mossing Eidsaune",
+                "fødselsdato": "1972-03-07T00:00:00Z"
+              },
+              {
+                "navn": "Martin Smith-Sivertsen",
+                "fødselsdato": "1965-05-07T00:00:00Z"
+              },
+              {
+                "navn": "Roald Dolmen",
+                "fødselsdato": "1964-02-12T00:00:00Z"
+              },
+              {
+                "navn": "Oddleiv Aksnes",
+                "fødselsdato": "1960-06-13T00:00:00Z"
+              },
+              {
+                "navn": "Aage Nystøl",
+                "fødselsdato": "1946-09-07T00:00:00Z"
+              },
+              {
+                "navn": "Sonja Rødsjø",
+                "fødselsdato": "1968-12-25T00:00:00Z"
+              }
+            ],
+            "antall_unike_politikere": 23,
+            "antall_rolleoppføringer": 30,
+            "antall_eierskap": 0
+          }
+        ],
+        "missing": [
+          [
+            "Høyre",
+            0,
+            23,
+            30
+          ],
+          [
+            "Venstre",
+            12,
+            15,
+            2
+          ],
+          [
+            "Arbeiderpartiet",
+            0,
+            11,
+            11
+          ],
+          [
+            "Senterpartiet",
+            0,
+            10,
+            10
+          ],
+          [
+            "Høgre",
+            0,
+            13,
+            9
+          ]
+        ],
+        "extra": [
+          [
+            "Miljøpartiet De Grønne",
+            0,
+            2,
+            2,
+            {
+              "fødselsdato": "1967-06-28T00:00:00Z",
+              "navn": "Hans Wilmers"
+            },
+            {
+              "fødselsdato": "1974-07-11T00:00:00Z",
+              "navn": "Knut Torstein Skinnarland"
+            }
+          ],
+          [
+            "Bygdelista Framover",
+            0,
+            3,
+            3,
+            {
+              "fødselsdato": "1961-02-07T00:00:00Z",
+              "navn": "Kjersti Aasen"
+            },
+            {
+              "fødselsdato": "1981-03-11T00:00:00Z",
+              "navn": "Cathrine Kronstad"
+            },
+            {
+              "fødselsdato": "1988-05-09T00:00:00Z",
+              "navn": "Ole Gunnar Skinnes"
+            }
+          ],
+          [
+            "Høyre",
+            0,
+            23,
+            30,
+            {
+              "fødselsdato": "1946-09-07T00:00:00Z",
+              "navn": "Aage Nystøl"
+            },
+            {
+              "fødselsdato": "1955-05-11T00:00:00Z",
+              "navn": "Carl Diderik Cappelen"
+            },
+            {
+              "fødselsdato": "1956-02-08T00:00:00Z",
+              "navn": "Bjørn Glørstad"
+            },
+            {
+              "fødselsdato": "1958-05-07T00:00:00Z",
+              "navn": "John Arthur Ødbehr"
+            },
+            {
+              "fødselsdato": "1959-08-21T00:00:00Z",
+              "navn": "Ole Vinje"
+            },
+            {
+              "fødselsdato": "1960-06-13T00:00:00Z",
+              "navn": "Oddleiv Aksnes"
+            },
+            {
+              "fødselsdato": "1964-02-12T00:00:00Z",
+              "navn": "Roald Dolmen"
+            },
+            {
+              "fødselsdato": "1965-05-07T00:00:00Z",
+              "navn": "Martin Smith-Sivertsen"
+            },
+            {
+              "fødselsdato": "1967-09-09T00:00:00Z",
+              "navn": "Terje Stewart Marriott"
+            },
+            {
+              "fødselsdato": "1967-10-02T00:00:00Z",
+              "navn": "Eirik Lundemo"
+            },
+            {
+              "fødselsdato": "1968-06-14T00:00:00Z",
+              "navn": "Sonja Mari Berg Christiansen"
+            },
+            {
+              "fødselsdato": "1968-11-03T00:00:00Z",
+              "navn": "Hilde Vårdal Øverland"
+            },
+            {
+              "fødselsdato": "1968-12-25T00:00:00Z",
+              "navn": "Sonja Rødsjø"
+            },
+            {
+              "fødselsdato": "1969-12-22T00:00:00Z",
+              "navn": "Vegard Ryen Skullerud"
+            },
+            {
+              "fødselsdato": "1970-09-07T00:00:00Z",
+              "navn": "Birgit Nistad"
+            },
+            {
+              "fødselsdato": "1972-03-07T00:00:00Z",
+              "navn": "Therese Mossing Eidsaune"
+            },
+            {
+              "fødselsdato": "1974-01-02T00:00:00Z",
+              "navn": "Anne Cathrin Østebø"
+            },
+            {
+              "fødselsdato": "1974-12-23T00:00:00Z",
+              "navn": "Svein Ove Vetrhus"
+            },
+            {
+              "fødselsdato": "1977-06-19T00:00:00Z",
+              "navn": "Svein Gunnar Mæland"
+            },
+            {
+              "fødselsdato": "1984-01-12T00:00:00Z",
+              "navn": "Vivien Helen Vestre"
+            },
+            {
+              "fødselsdato": "1985-11-27T00:00:00Z",
+              "navn": "Stian Skinnes Fossen"
+            },
+            {
+              "fødselsdato": "1992-10-12T00:00:00Z",
+              "navn": "Gøril Ødegård"
+            },
+            {
+              "fødselsdato": "1996-09-04T00:00:00Z",
+              "navn": "Fredrik Grotle"
+            }
+          ],
+          [
+            "Framstegspartiet",
+            0,
+            2,
+            2,
+            {
+              "fødselsdato": "1981-07-18T00:00:00Z",
+              "navn": "Antonina Kolodziejczyk"
+            },
+            {
+              "fødselsdato": "1984-01-11T00:00:00Z",
+              "navn": "Tor Even Fredriksen Fet"
+            }
+          ],
+          [
+            "Rødt",
+            0,
+            2,
+            3,
+            {
+              "fødselsdato": "1954-12-20T00:00:00Z",
+              "navn": "Tormod Åge Stensland"
+            },
+            {
+              "fødselsdato": "1984-07-25T00:00:00Z",
+              "navn": "Kari-Anne Thu"
+            }
+          ]
+        ]
+      },
+      "gold_cache": {
+        "hit": true,
+        "path": "src\\text_to_query\\gold_cache\\structured_complex\\groundtruthStructured\\q105_393c0d69b257b241.json",
+        "created_at": "2026-05-24T02:18:25"
+      },
+      "generated_finish_reason": "stop"
+    }
+  ]
+}

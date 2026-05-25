@@ -1,0 +1,2190 @@
+{
+  "run": {
+    "label": "structured_advanced_structured_complex_gpt-4.1-mini_run03",
+    "timestamp": "20260525_191443",
+    "model": "gpt-4.1-mini",
+    "temperature": 0.0,
+    "max_tokens": 3000,
+    "query_max_time_ms": 60000,
+    "gold_cache": {
+      "enabled": true,
+      "refresh": false,
+      "directory": "src/text_to_query/gold_cache"
+    },
+    "database": "groundtruthStructured",
+    "schema": "structured_advanced.yaml",
+    "benchmark": "structured_complex.json",
+    "question_id": null,
+    "success_min_precision": 0.5,
+    "metric": "Precision, recall and F1 are computed over returned values. For projected find queries, precision also includes field precision so extra returned fields are penalized.",
+    "success_definition": "A question is marked successful when recall is 1.0, all required projected fields are included, and precision is at least 0.5.",
+    "relevance_definition": "Generated output is relevant when it contains the same required values as the gold output. For direct aggregate answers, output field names do not need to match as long as values match. When gold and generated results are both empty, the result is treated as full result equivalence, but this does not prove semantic query equivalence."
+  },
+  "summary": {
+    "total_questions": 5,
+    "scored_questions": 4,
+    "successful_questions": 2,
+    "failed_questions": 3,
+    "success_rate": 0.5,
+    "avg_precision": 0.5796,
+    "avg_recall": 0.5972,
+    "avg_f1": 0.5875,
+    "timing_ms": {
+      "total_run": 74737,
+      "avg_per_question": 14939,
+      "avg_llm": 2917,
+      "avg_gold_query": 0,
+      "avg_generated_query": 12022,
+      "avg_scoring": 0
+    },
+    "errors": {
+      "total": 1,
+      "llm_error": 0,
+      "gold_query_error": 0,
+      "generated_query_error": 1
+    },
+    "by_operation": {
+      "aggregate": {
+        "questions": 4,
+        "successful": 2,
+        "success_rate": 0.5,
+        "avg_precision": 0.5796,
+        "avg_recall": 0.5972,
+        "avg_f1": 0.5875
+      }
+    },
+    "by_category": {
+      "complex_pipeline_stress": {
+        "questions": 4,
+        "successful": 2,
+        "success_rate": 0.5,
+        "avg_precision": 0.5796,
+        "avg_recall": 0.5972,
+        "avg_f1": 0.5875
+      }
+    },
+    "worst_questions": [
+      {
+        "id": 101,
+        "question": "Finn partier med politikere som har selskapsroller. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere og antall rolleoppføringer.",
+        "operation": "aggregate",
+        "category": "complex_pipeline_stress",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "failure_reason": "Generated query missed one or more expected result documents or values."
+      },
+      {
+        "id": 105,
+        "question": "Finn partier der politikere har minst én selskapsrolle eller minst ett personlig eierskap. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere, antall rolleoppføringer og antall eierskap.",
+        "operation": "aggregate",
+        "category": "complex_pipeline_stress",
+        "precision": 0.3182,
+        "recall": 0.3889,
+        "f1": 0.35,
+        "failure_reason": "Generated query missed one or more expected result documents or values."
+      },
+      {
+        "id": 103,
+        "question": "Finn politikere som både eier aksjer i et selskap og har en rolle i samme selskap. Identifiser politikere med navn og fødselsdato. Ta med navn, fødselsdato, parti, selskap, organisasjonsnummer, rolle og eierandel.",
+        "operation": "aggregate",
+        "category": "complex_pipeline_stress",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "failure_reason": null
+      },
+      {
+        "id": 104,
+        "question": "Finn de 20 selskapene med flest samlede rolleoppføringer og eierskapsoppføringer. Ta med navn, organisasjonsnummer, antall roller, antall eierskap og totalt antall relasjoner. Sorter synkende på totalt antall relasjoner og stigende på organisasjonsnummer ved likt antall.",
+        "operation": "aggregate",
+        "category": "complex_pipeline_stress",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "failure_reason": null
+      }
+    ]
+  },
+  "failures": [
+    {
+      "id": 101,
+      "question": "Finn partier med politikere som har selskapsroller. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere og antall rolleoppføringer.",
+      "operation": "aggregate",
+      "category": "complex_pipeline_stress",
+      "status": "ok",
+      "success": false,
+      "failure_reason": "Generated query missed one or more expected result documents or values.",
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "gold_count": 18,
+        "generated_count": 0,
+        "missing_count": 18,
+        "extra_count": 0,
+        "missing_examples": [
+          [
+            "Høyre",
+            23,
+            30
+          ],
+          [
+            "Venstre",
+            11,
+            15
+          ],
+          [
+            "Høgre",
+            13,
+            9
+          ],
+          [
+            "Arbeiderpartiet",
+            11,
+            11
+          ],
+          [
+            "Senterpartiet",
+            10,
+            10
+          ]
+        ],
+        "extra_examples": [],
+        "comparison_mode": "aggregate row values, ignoring output alias names",
+        "empty_result_equivalence": false,
+        "empty_result_note": null
+      },
+      "counts": {
+        "gold": 18,
+        "generated": 0
+      },
+      "timing_ms": {
+        "llm": 3347,
+        "gold_query": 0,
+        "generated_query": 4,
+        "scoring": 0,
+        "total": 3351
+      },
+      "gold_cache": {
+        "hit": true,
+        "path": "src\\text_to_query\\gold_cache\\structured_complex\\groundtruthStructured\\q101_d8e5c5bb717ba9e2.json",
+        "created_at": "2026-05-24T02:18:02"
+      },
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "roller",
+              "let": {
+                "pnavn": "$navn",
+                "pf": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$navn",
+                            "$$pnavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$fødselsdato",
+                            "$$pf"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "roller"
+            }
+          },
+          {
+            "$match": {
+              "roller.0": {
+                "$exists": true
+              }
+            }
+          },
+          {
+            "$project": {
+              "partinavn": 1,
+              "personKey": {
+                "$concat": [
+                  "$navn",
+                  "|",
+                  {
+                    "$ifNull": [
+                      "$fødselsdato",
+                      ""
+                    ]
+                  }
+                ]
+              },
+              "antallRoller": {
+                "$size": "$roller"
+              }
+            }
+          },
+          {
+            "$group": {
+              "_id": "$partinavn",
+              "politikere": {
+                "$addToSet": "$personKey"
+              },
+              "antallRolleoppføringer": {
+                "$sum": "$antallRoller"
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "parti": "$_id",
+              "antallPolitikere": {
+                "$size": "$politikere"
+              },
+              "antallRolleoppføringer": 1
+            }
+          },
+          {
+            "$sort": {
+              "antallRolleoppføringer": -1,
+              "parti": 1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "roller",
+        "pipeline": [
+          {
+            "$match": {
+              "person.politiker.erPolitiker": true
+            }
+          },
+          {
+            "$group": {
+              "_id": {
+                "partinavn": "$person.politiker.partinavn",
+                "personUUID": "$person.uuid",
+                "navn": "$person.navn",
+                "fødselsdato": "$person.fødselsdato"
+              },
+              "rolleCount": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$group": {
+              "_id": "$_id.partinavn",
+              "unikePolitikere": {
+                "$sum": 1
+              },
+              "totalRoller": {
+                "$sum": "$rolleCount"
+              },
+              "politikere": {
+                "$push": {
+                  "navn": "$_id.navn",
+                  "fødselsdato": "$_id.fødselsdato"
+                }
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "parti": "$_id",
+              "antallUnikePolitikere": "$unikePolitikere",
+              "antallRolleoppføringer": "$totalRoller",
+              "politikere": 1
+            }
+          }
+        ]
+      },
+      "missing_examples": [
+        [
+          "Høyre",
+          23,
+          30
+        ],
+        [
+          "Venstre",
+          11,
+          15
+        ],
+        [
+          "Høgre",
+          13,
+          9
+        ],
+        [
+          "Arbeiderpartiet",
+          11,
+          11
+        ],
+        [
+          "Senterpartiet",
+          10,
+          10
+        ]
+      ],
+      "extra_examples": []
+    },
+    {
+      "id": 102,
+      "question": "Finn selskaper som både har eierskapsoppføringer i 2023 og aksjeeierbokoppføringer i 2023. Ta med navn, organisasjonsnummer, antall eierskapsoppføringer i 2023 og antall aksjeeierbokoppføringer i 2023.",
+      "operation": "aggregate",
+      "category": "complex_pipeline_stress",
+      "status": "generated_query_error",
+      "success": false,
+      "failure_reason": "Executor error during aggregate command on namespace: groundtruthStructured.selskap :: caused by :: operation exceeded time limit, full error: {'ok': 0.0, 'errmsg': 'Executor error during aggregate command on namespace: groundtruthStructured.selskap :: caused by :: operation exceeded time limit', 'code': 50, 'codeName': 'MaxTimeMSExpired'}",
+      "scores": null,
+      "counts": null,
+      "timing_ms": {
+        "llm": 3407,
+        "gold_query": 0,
+        "generated_query": 60018,
+        "total": 63426
+      },
+      "gold_cache": {
+        "hit": true,
+        "path": "src\\text_to_query\\gold_cache\\structured_complex\\groundtruthStructured\\q102_f0e5aafcc1c4022f.json",
+        "created_at": "2026-05-24T02:18:04"
+      },
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "let": {
+                "org": "$orgNr"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$utstederOrgNr",
+                            "$$org"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$eierskapår",
+                            2023
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "eierskap2023"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "aksjeeiebok",
+              "let": {
+                "org": "$orgNr"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$orgNr",
+                            "$$org"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$år",
+                            2023
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "aksjeeierbok2023"
+            }
+          },
+          {
+            "$match": {
+              "eierskap2023.0": {
+                "$exists": true
+              },
+              "aksjeeierbok2023.0": {
+                "$exists": true
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "navn": 1,
+              "orgNr": 1,
+              "antallEierskap2023": {
+                "$size": "$eierskap2023"
+              },
+              "antallAksjeeierbok2023": {
+                "$size": "$aksjeeierbok2023"
+              }
+            }
+          },
+          {
+            "$sort": {
+              "antallAksjeeierbok2023": -1,
+              "antallEierskap2023": -1,
+              "orgNr": 1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "localField": "uuid",
+              "foreignField": "eierSelskapUUID",
+              "as": "eierskap2023"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "aksjeeiebok",
+              "localField": "uuid",
+              "foreignField": "selskap",
+              "as": "aksjeeiebok2023"
+            }
+          },
+          {
+            "$addFields": {
+              "eierskap2023Count": {
+                "$size": {
+                  "$filter": {
+                    "input": "$eierskap2023",
+                    "as": "e",
+                    "cond": {
+                      "$eq": [
+                        "$$e.eierskapår",
+                        2023
+                      ]
+                    }
+                  }
+                }
+              },
+              "aksjeeiebok2023Count": {
+                "$size": {
+                  "$filter": {
+                    "input": "$aksjeeiebok2023",
+                    "as": "a",
+                    "cond": {
+                      "$eq": [
+                        "$$a.år",
+                        2023
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "$match": {
+              "eierskap2023Count": {
+                "$gt": 0
+              },
+              "aksjeeiebok2023Count": {
+                "$gt": 0
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "navn": 1,
+              "orgNr": 1,
+              "eierskap2023Count": 1,
+              "aksjeeiebok2023Count": 1
+            }
+          }
+        ]
+      },
+      "missing_examples": null,
+      "extra_examples": null
+    },
+    {
+      "id": 105,
+      "question": "Finn partier der politikere har minst én selskapsrolle eller minst ett personlig eierskap. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere, antall rolleoppføringer og antall eierskap.",
+      "operation": "aggregate",
+      "category": "complex_pipeline_stress",
+      "status": "ok",
+      "success": false,
+      "failure_reason": "Generated query missed one or more expected result documents or values.",
+      "scores": {
+        "precision": 0.3182,
+        "recall": 0.3889,
+        "f1": 0.35,
+        "true_positive": 7,
+        "gold_count": 18,
+        "generated_count": 22,
+        "missing_count": 11,
+        "extra_count": 15,
+        "missing_examples": [
+          [
+            "Høyre",
+            0,
+            23,
+            30
+          ],
+          [
+            "Venstre",
+            12,
+            15,
+            2
+          ],
+          [
+            "Arbeiderpartiet",
+            0,
+            11,
+            11
+          ],
+          [
+            "Senterpartiet",
+            0,
+            10,
+            10
+          ],
+          [
+            "Fremskrittspartiet",
+            0,
+            4,
+            5
+          ]
+        ],
+        "extra_examples": [
+          [
+            "Arbeiderpartiet",
+            0,
+            15,
+            15
+          ],
+          [
+            "Ålesundlista Tverrpolitisk liste for Ålesund",
+            0,
+            1,
+            1
+          ],
+          [
+            "Industri- og Næringspartiet",
+            0,
+            4,
+            6
+          ],
+          [
+            "Høyre",
+            0,
+            31,
+            39
+          ],
+          [
+            "SV - Sosialistisk Venstreparti",
+            3,
+            7,
+            9
+          ]
+        ],
+        "comparison_mode": "aggregate row values, ignoring output alias names",
+        "empty_result_equivalence": false,
+        "empty_result_note": null
+      },
+      "counts": {
+        "gold": 18,
+        "generated": 22
+      },
+      "timing_ms": {
+        "llm": 2260,
+        "gold_query": 0,
+        "generated_query": 77,
+        "scoring": 1,
+        "total": 2338
+      },
+      "gold_cache": {
+        "hit": true,
+        "path": "src\\text_to_query\\gold_cache\\structured_complex\\groundtruthStructured\\q105_393c0d69b257b241.json",
+        "created_at": "2026-05-24T02:18:25"
+      },
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "roller",
+              "let": {
+                "pnavn": "$navn",
+                "pf": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$navn",
+                            "$$pnavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$fødselsdato",
+                            "$$pf"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "roller"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "let": {
+                "pnavn": "$navn",
+                "pf": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$eierPersonNavn",
+                            "$$pnavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$eierPersonFødselsdato",
+                            "$$pf"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "eierskap"
+            }
+          },
+          {
+            "$project": {
+              "partinavn": 1,
+              "personKey": {
+                "$concat": [
+                  "$navn",
+                  "|",
+                  {
+                    "$ifNull": [
+                      "$fødselsdato",
+                      ""
+                    ]
+                  }
+                ]
+              },
+              "antallRoller": {
+                "$size": "$roller"
+              },
+              "antallEierskap": {
+                "$size": "$eierskap"
+              }
+            }
+          },
+          {
+            "$match": {
+              "$or": [
+                {
+                  "antallRoller": {
+                    "$gt": 0
+                  }
+                },
+                {
+                  "antallEierskap": {
+                    "$gt": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "$group": {
+              "_id": "$partinavn",
+              "politikere": {
+                "$addToSet": "$personKey"
+              },
+              "antallRolleoppføringer": {
+                "$sum": "$antallRoller"
+              },
+              "antallEierskap": {
+                "$sum": "$antallEierskap"
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "parti": "$_id",
+              "antallPolitikere": {
+                "$size": "$politikere"
+              },
+              "antallRolleoppføringer": 1,
+              "antallEierskap": 1
+            }
+          },
+          {
+            "$sort": {
+              "antallPolitikere": -1,
+              "parti": 1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "personer",
+        "pipeline": [
+          {
+            "$match": {
+              "$or": [
+                {
+                  "relasjoner.antallRoller": {
+                    "$gt": 0
+                  }
+                },
+                {
+                  "relasjoner.antallEierskap": {
+                    "$gt": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "$match": {
+              "politiker.erPolitiker": true
+            }
+          },
+          {
+            "$group": {
+              "_id": "$politiker.partinavn",
+              "unike_politikere": {
+                "$addToSet": {
+                  "navn": "$navn",
+                  "fødselsdato": "$fødselsdato"
+                }
+              },
+              "rolleoppføringer": {
+                "$sum": "$relasjoner.antallRoller"
+              },
+              "eierskap": {
+                "$sum": "$relasjoner.antallEierskap"
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "parti": "$_id",
+              "antall_unike_politikere": {
+                "$size": "$unike_politikere"
+              },
+              "rolleoppføringer": 1,
+              "eierskap": 1
+            }
+          }
+        ]
+      },
+      "missing_examples": [
+        [
+          "Høyre",
+          0,
+          23,
+          30
+        ],
+        [
+          "Venstre",
+          12,
+          15,
+          2
+        ],
+        [
+          "Arbeiderpartiet",
+          0,
+          11,
+          11
+        ],
+        [
+          "Senterpartiet",
+          0,
+          10,
+          10
+        ],
+        [
+          "Fremskrittspartiet",
+          0,
+          4,
+          5
+        ]
+      ],
+      "extra_examples": [
+        [
+          "Arbeiderpartiet",
+          0,
+          15,
+          15
+        ],
+        [
+          "Ålesundlista Tverrpolitisk liste for Ålesund",
+          0,
+          1,
+          1
+        ],
+        [
+          "Industri- og Næringspartiet",
+          0,
+          4,
+          6
+        ],
+        [
+          "Høyre",
+          0,
+          31,
+          39
+        ],
+        [
+          "SV - Sosialistisk Venstreparti",
+          3,
+          7,
+          9
+        ]
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": 101,
+      "question": "Finn partier med politikere som har selskapsroller. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere og antall rolleoppføringer.",
+      "category": "complex_pipeline_stress",
+      "operation": "aggregate",
+      "status": "ok",
+      "success": false,
+      "failure_reason": "Generated query missed one or more expected result documents or values.",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "roller",
+              "let": {
+                "pnavn": "$navn",
+                "pf": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$navn",
+                            "$$pnavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$fødselsdato",
+                            "$$pf"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "roller"
+            }
+          },
+          {
+            "$match": {
+              "roller.0": {
+                "$exists": true
+              }
+            }
+          },
+          {
+            "$project": {
+              "partinavn": 1,
+              "personKey": {
+                "$concat": [
+                  "$navn",
+                  "|",
+                  {
+                    "$ifNull": [
+                      "$fødselsdato",
+                      ""
+                    ]
+                  }
+                ]
+              },
+              "antallRoller": {
+                "$size": "$roller"
+              }
+            }
+          },
+          {
+            "$group": {
+              "_id": "$partinavn",
+              "politikere": {
+                "$addToSet": "$personKey"
+              },
+              "antallRolleoppføringer": {
+                "$sum": "$antallRoller"
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "parti": "$_id",
+              "antallPolitikere": {
+                "$size": "$politikere"
+              },
+              "antallRolleoppføringer": 1
+            }
+          },
+          {
+            "$sort": {
+              "antallRolleoppføringer": -1,
+              "parti": 1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "roller",
+        "pipeline": [
+          {
+            "$match": {
+              "person.politiker.erPolitiker": true
+            }
+          },
+          {
+            "$group": {
+              "_id": {
+                "partinavn": "$person.politiker.partinavn",
+                "personUUID": "$person.uuid",
+                "navn": "$person.navn",
+                "fødselsdato": "$person.fødselsdato"
+              },
+              "rolleCount": {
+                "$sum": 1
+              }
+            }
+          },
+          {
+            "$group": {
+              "_id": "$_id.partinavn",
+              "unikePolitikere": {
+                "$sum": 1
+              },
+              "totalRoller": {
+                "$sum": "$rolleCount"
+              },
+              "politikere": {
+                "$push": {
+                  "navn": "$_id.navn",
+                  "fødselsdato": "$_id.fødselsdato"
+                }
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "parti": "$_id",
+              "antallUnikePolitikere": "$unikePolitikere",
+              "antallRolleoppføringer": "$totalRoller",
+              "politikere": 1
+            }
+          }
+        ]
+      },
+      "generated_raw_text": "{\"op\":\"aggregate\",\"collection\":\"roller\",\"pipeline\":[{\"$match\":{\"person.politiker.erPolitiker\":true}},{\"$group\":{\"_id\":{\"partinavn\":\"$person.politiker.partinavn\",\"personUUID\":\"$person.uuid\",\"navn\":\"$person.navn\",\"fødselsdato\":\"$person.fødselsdato\"},\"rolleCount\":{\"$sum\":1}}},{\"$group\":{\"_id\":\"$_id.partinavn\",\"unikePolitikere\":{\"$sum\":1},\"totalRoller\":{\"$sum\":\"$rolleCount\"},\"politikere\":{\"$push\":{\"navn\":\"$_id.navn\",\"fødselsdato\":\"$_id.fødselsdato\"}}}},{\"$project\":{\"_id\":0,\"parti\":\"$_id\",\"antallUnikePolitikere\":\"$unikePolitikere\",\"antallRolleoppføringer\":\"$totalRoller\",\"politikere\":1}}]}",
+      "scores": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "gold_count": 18,
+        "generated_count": 0,
+        "missing_count": 18,
+        "extra_count": 0,
+        "missing_examples": [
+          [
+            "Høyre",
+            23,
+            30
+          ],
+          [
+            "Venstre",
+            11,
+            15
+          ],
+          [
+            "Høgre",
+            13,
+            9
+          ],
+          [
+            "Arbeiderpartiet",
+            11,
+            11
+          ],
+          [
+            "Senterpartiet",
+            10,
+            10
+          ]
+        ],
+        "extra_examples": [],
+        "comparison_mode": "aggregate row values, ignoring output alias names",
+        "empty_result_equivalence": false,
+        "empty_result_note": null
+      },
+      "projection_score": null,
+      "counts": {
+        "gold": 18,
+        "generated": 0
+      },
+      "timing_ms": {
+        "llm": 3347,
+        "gold_query": 0,
+        "generated_query": 4,
+        "scoring": 0,
+        "total": 3351
+      },
+      "examples": {
+        "gold_first_3": [
+          {
+            "antallRolleoppføringer": 30,
+            "parti": "Høyre",
+            "antallPolitikere": 23
+          },
+          {
+            "antallRolleoppføringer": 15,
+            "parti": "Venstre",
+            "antallPolitikere": 11
+          },
+          {
+            "antallRolleoppføringer": 13,
+            "parti": "Høgre",
+            "antallPolitikere": 9
+          }
+        ],
+        "generated_first_3": [],
+        "missing": [
+          [
+            "Høyre",
+            23,
+            30
+          ],
+          [
+            "Venstre",
+            11,
+            15
+          ],
+          [
+            "Høgre",
+            13,
+            9
+          ],
+          [
+            "Arbeiderpartiet",
+            11,
+            11
+          ],
+          [
+            "Senterpartiet",
+            10,
+            10
+          ]
+        ],
+        "extra": []
+      },
+      "gold_cache": {
+        "hit": true,
+        "path": "src\\text_to_query\\gold_cache\\structured_complex\\groundtruthStructured\\q101_d8e5c5bb717ba9e2.json",
+        "created_at": "2026-05-24T02:18:02"
+      },
+      "generated_finish_reason": "stop"
+    },
+    {
+      "id": 102,
+      "question": "Finn selskaper som både har eierskapsoppføringer i 2023 og aksjeeierbokoppføringer i 2023. Ta med navn, organisasjonsnummer, antall eierskapsoppføringer i 2023 og antall aksjeeierbokoppføringer i 2023.",
+      "category": "complex_pipeline_stress",
+      "operation": "aggregate",
+      "status": "generated_query_error",
+      "success": false,
+      "failure_reason": "Executor error during aggregate command on namespace: groundtruthStructured.selskap :: caused by :: operation exceeded time limit, full error: {'ok': 0.0, 'errmsg': 'Executor error during aggregate command on namespace: groundtruthStructured.selskap :: caused by :: operation exceeded time limit', 'code': 50, 'codeName': 'MaxTimeMSExpired'}",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "let": {
+                "org": "$orgNr"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$utstederOrgNr",
+                            "$$org"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$eierskapår",
+                            2023
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "eierskap2023"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "aksjeeiebok",
+              "let": {
+                "org": "$orgNr"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$orgNr",
+                            "$$org"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$år",
+                            2023
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "aksjeeierbok2023"
+            }
+          },
+          {
+            "$match": {
+              "eierskap2023.0": {
+                "$exists": true
+              },
+              "aksjeeierbok2023.0": {
+                "$exists": true
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "navn": 1,
+              "orgNr": 1,
+              "antallEierskap2023": {
+                "$size": "$eierskap2023"
+              },
+              "antallAksjeeierbok2023": {
+                "$size": "$aksjeeierbok2023"
+              }
+            }
+          },
+          {
+            "$sort": {
+              "antallAksjeeierbok2023": -1,
+              "antallEierskap2023": -1,
+              "orgNr": 1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "localField": "uuid",
+              "foreignField": "eierSelskapUUID",
+              "as": "eierskap2023"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "aksjeeiebok",
+              "localField": "uuid",
+              "foreignField": "selskap",
+              "as": "aksjeeiebok2023"
+            }
+          },
+          {
+            "$addFields": {
+              "eierskap2023Count": {
+                "$size": {
+                  "$filter": {
+                    "input": "$eierskap2023",
+                    "as": "e",
+                    "cond": {
+                      "$eq": [
+                        "$$e.eierskapår",
+                        2023
+                      ]
+                    }
+                  }
+                }
+              },
+              "aksjeeiebok2023Count": {
+                "$size": {
+                  "$filter": {
+                    "input": "$aksjeeiebok2023",
+                    "as": "a",
+                    "cond": {
+                      "$eq": [
+                        "$$a.år",
+                        2023
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "$match": {
+              "eierskap2023Count": {
+                "$gt": 0
+              },
+              "aksjeeiebok2023Count": {
+                "$gt": 0
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "navn": 1,
+              "orgNr": 1,
+              "eierskap2023Count": 1,
+              "aksjeeiebok2023Count": 1
+            }
+          }
+        ]
+      },
+      "generated_raw_text": "{\"op\":\"aggregate\",\"collection\":\"selskap\",\"pipeline\":[{\"$lookup\":{\"from\":\"eierskap\",\"localField\":\"uuid\",\"foreignField\":\"eierSelskapUUID\",\"as\":\"eierskap2023\"}},{\"$lookup\":{\"from\":\"aksjeeiebok\",\"localField\":\"uuid\",\"foreignField\":\"selskap\",\"as\":\"aksjeeiebok2023\"}},{\"$addFields\":{\"eierskap2023Count\":{\"$size\":{\"$filter\":{\"input\":\"$eierskap2023\",\"as\":\"e\",\"cond\":{\"$eq\":[\"$$e.eierskapår\",2023]}}}},\"aksjeeiebok2023Count\":{\"$size\":{\"$filter\":{\"input\":\"$aksjeeiebok2023\",\"as\":\"a\",\"cond\":{\"$eq\":[\"$$a.år\",2023]}}}}}},{\"$match\":{\"eierskap2023Count\":{\"$gt\":0},\"aksjeeiebok2023Count\":{\"$gt\":0}}},{\"$project\":{\"_id\":0,\"navn\":1,\"orgNr\":1,\"eierskap2023Count\":1,\"aksjeeiebok2023Count\":1}}]}",
+      "scores": null,
+      "projection_score": null,
+      "counts": null,
+      "timing_ms": {
+        "llm": 3407,
+        "gold_query": 0,
+        "generated_query": 60018,
+        "total": 63426
+      },
+      "examples": null,
+      "gold_cache": {
+        "hit": true,
+        "path": "src\\text_to_query\\gold_cache\\structured_complex\\groundtruthStructured\\q102_f0e5aafcc1c4022f.json",
+        "created_at": "2026-05-24T02:18:04"
+      },
+      "generated_finish_reason": "stop"
+    },
+    {
+      "id": 103,
+      "question": "Finn politikere som både eier aksjer i et selskap og har en rolle i samme selskap. Identifiser politikere med navn og fødselsdato. Ta med navn, fødselsdato, parti, selskap, organisasjonsnummer, rolle og eierandel.",
+      "category": "complex_pipeline_stress",
+      "operation": "aggregate",
+      "status": "ok",
+      "success": true,
+      "failure_reason": null,
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "let": {
+                "pnavn": "$navn",
+                "pf": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$eierPersonNavn",
+                            "$$pnavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$eierPersonFødselsdato",
+                            "$$pf"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "eierskap"
+            }
+          },
+          {
+            "$unwind": "$eierskap"
+          },
+          {
+            "$lookup": {
+              "from": "roller",
+              "let": {
+                "pnavn": "$navn",
+                "pf": "$fødselsdato",
+                "org": "$eierskap.utstederOrgNr"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$navn",
+                            "$$pnavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$fødselsdato",
+                            "$$pf"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$selskapOrgNr",
+                            "$$org"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "roller"
+            }
+          },
+          {
+            "$unwind": "$roller"
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "navn": 1,
+              "fødselsdato": 1,
+              "partinavn": 1,
+              "selskap": "$eierskap.utstederNavn",
+              "orgNr": "$eierskap.utstederOrgNr",
+              "rolle": "$roller.selskapRolle",
+              "eierandel": "$eierskap.eierskapAndel"
+            }
+          },
+          {
+            "$sort": {
+              "navn": 1,
+              "orgNr": 1,
+              "rolle": 1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "roller",
+        "pipeline": [
+          {
+            "$match": {
+              "person.politiker.erPolitiker": true
+            }
+          },
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "let": {
+                "personNavn": "$person.navn",
+                "personFødselsdato": "$person.fødselsdato",
+                "selskapOrgNr": "$selskapOrgNr"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$eierPersonNavn",
+                            "$$personNavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$eierPersonFødselsdato",
+                            "$$personFødselsdato"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$utstederOrgNr",
+                            "$$selskapOrgNr"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "eierskapData"
+            }
+          },
+          {
+            "$match": {
+              "eierskapData": {
+                "$ne": []
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "politikerNavn": "$person.navn",
+              "politikerFødselsdato": "$person.fødselsdato",
+              "politikerParti": "$person.politiker.partinavn",
+              "selskapNavn": "$selskapNavn",
+              "selskapOrgNr": "$selskapOrgNr",
+              "rolle": "$selskapRolle",
+              "eierandel": {
+                "$arrayElemAt": [
+                  "$eierskapData.eierskapAndel",
+                  0
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "generated_raw_text": "{\"op\":\"aggregate\",\"collection\":\"roller\",\"pipeline\":[{\"$match\":{\"person.politiker.erPolitiker\":true}},{\"$lookup\":{\"from\":\"eierskap\",\"let\":{\"personNavn\":\"$person.navn\",\"personFødselsdato\":\"$person.fødselsdato\",\"selskapOrgNr\":\"$selskapOrgNr\"},\"pipeline\":[{\"$match\":{\"$expr\":{\"$and\":[{\"$eq\":[\"$eierPersonNavn\",\"$$personNavn\"]},{\"$eq\":[\"$eierPersonFødselsdato\",\"$$personFødselsdato\"]},{\"$eq\":[\"$utstederOrgNr\",\"$$selskapOrgNr\"]}]}}}],\"as\":\"eierskapData\"}},{\"$match\":{\"eierskapData\":{\"$ne\":[]}}},{\"$project\":{\"_id\":0,\"politikerNavn\":\"$person.navn\",\"politikerFødselsdato\":\"$person.fødselsdato\",\"politikerParti\":\"$person.politiker.partinavn\",\"selskapNavn\":\"$selskapNavn\",\"selskapOrgNr\":\"$selskapOrgNr\",\"rolle\":\"$selskapRolle\",\"eierandel\":{\"$arrayElemAt\":[\"$eierskapData.eierskapAndel\",0]}}}]}",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "true_positive": 0,
+        "gold_count": 0,
+        "generated_count": 0,
+        "missing_count": 0,
+        "extra_count": 0,
+        "missing_examples": [],
+        "extra_examples": [],
+        "comparison_mode": "aggregate row values, ignoring output alias names",
+        "empty_result_equivalence": true,
+        "empty_result_note": "Gold and generated query both returned no results; this is treated as full result equivalence, not necessarily semantic query equivalence."
+      },
+      "projection_score": null,
+      "counts": {
+        "gold": 0,
+        "generated": 0
+      },
+      "timing_ms": {
+        "llm": 3112,
+        "gold_query": 0,
+        "generated_query": 4,
+        "scoring": 0,
+        "total": 3116
+      },
+      "examples": {
+        "gold_first_3": [],
+        "generated_first_3": [],
+        "missing": [],
+        "extra": []
+      },
+      "gold_cache": {
+        "hit": true,
+        "path": "src\\text_to_query\\gold_cache\\structured_complex\\groundtruthStructured\\q103_351fc498e27b4f93.json",
+        "created_at": "2026-05-24T02:18:11"
+      },
+      "generated_finish_reason": "stop"
+    },
+    {
+      "id": 104,
+      "question": "Finn de 20 selskapene med flest samlede rolleoppføringer og eierskapsoppføringer. Ta med navn, organisasjonsnummer, antall roller, antall eierskap og totalt antall relasjoner. Sorter synkende på totalt antall relasjoner og stigende på organisasjonsnummer ved likt antall.",
+      "category": "complex_pipeline_stress",
+      "operation": "aggregate",
+      "status": "ok",
+      "success": true,
+      "failure_reason": null,
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "roller",
+              "localField": "orgNr",
+              "foreignField": "selskapOrgNr",
+              "as": "roller"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "localField": "orgNr",
+              "foreignField": "utstederOrgNr",
+              "as": "eierskap"
+            }
+          },
+          {
+            "$project": {
+              "navn": 1,
+              "orgNr": 1,
+              "antallRoller": {
+                "$size": "$roller"
+              },
+              "antallEierskap": {
+                "$size": "$eierskap"
+              }
+            }
+          },
+          {
+            "$addFields": {
+              "totaltAntallRelasjoner": {
+                "$add": [
+                  "$antallRoller",
+                  "$antallEierskap"
+                ]
+              }
+            }
+          },
+          {
+            "$match": {
+              "totaltAntallRelasjoner": {
+                "$gt": 0
+              }
+            }
+          },
+          {
+            "$sort": {
+              "totaltAntallRelasjoner": -1,
+              "orgNr": 1
+            }
+          },
+          {
+            "$limit": 20
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "navn": 1,
+              "orgNr": 1,
+              "antallRoller": 1,
+              "antallEierskap": 1,
+              "totaltAntallRelasjoner": 1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "selskap",
+        "pipeline": [
+          {
+            "$addFields": {
+              "totaltAntallRelasjoner": {
+                "$add": [
+                  "$relasjoner.antallRoller",
+                  "$relasjoner.antallEierskap"
+                ]
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "navn": 1,
+              "orgNr": 1,
+              "antallRoller": "$relasjoner.antallRoller",
+              "antallEierskap": "$relasjoner.antallEierskap",
+              "totaltAntallRelasjoner": 1
+            }
+          },
+          {
+            "$sort": {
+              "totaltAntallRelasjoner": -1,
+              "orgNr": 1
+            }
+          },
+          {
+            "$limit": 20
+          }
+        ]
+      },
+      "generated_raw_text": "{\"op\": \"aggregate\", \"collection\": \"selskap\", \"pipeline\": [{\"$addFields\": {\"totaltAntallRelasjoner\": {\"$add\": [\"$relasjoner.antallRoller\", \"$relasjoner.antallEierskap\"]}}}, {\"$project\": {\"_id\": 0, \"navn\": 1, \"orgNr\": 1, \"antallRoller\": \"$relasjoner.antallRoller\", \"antallEierskap\": \"$relasjoner.antallEierskap\", \"totaltAntallRelasjoner\": 1}}, {\"$sort\": {\"totaltAntallRelasjoner\": -1, \"orgNr\": 1}}, {\"$limit\": 20}]}",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "true_positive": 20,
+        "gold_count": 20,
+        "generated_count": 20,
+        "missing_count": 0,
+        "extra_count": 0,
+        "missing_examples": [],
+        "extra_examples": [],
+        "comparison_mode": "aggregate row values, ignoring output alias names",
+        "empty_result_equivalence": false,
+        "empty_result_note": null
+      },
+      "projection_score": null,
+      "counts": {
+        "gold": 20,
+        "generated": 20
+      },
+      "timing_ms": {
+        "llm": 2457,
+        "gold_query": 0,
+        "generated_query": 8,
+        "scoring": 1,
+        "total": 2466
+      },
+      "examples": {
+        "gold_first_3": [
+          {
+            "orgNr": 832554332,
+            "navn": "SPAREBANKEN NORGE",
+            "antallRoller": 19,
+            "antallEierskap": 21,
+            "totaltAntallRelasjoner": 40
+          },
+          {
+            "orgNr": 910909088,
+            "navn": "SOPRA STERIA AS",
+            "antallRoller": 36,
+            "antallEierskap": 0,
+            "totaltAntallRelasjoner": 36
+          },
+          {
+            "orgNr": 919408049,
+            "navn": "NORCE RESEARCH AS",
+            "antallRoller": 31,
+            "antallEierskap": 0,
+            "totaltAntallRelasjoner": 31
+          }
+        ],
+        "generated_first_3": [
+          {
+            "orgNr": 832554332,
+            "navn": "SPAREBANKEN NORGE",
+            "totaltAntallRelasjoner": 40,
+            "antallRoller": 19,
+            "antallEierskap": 21
+          },
+          {
+            "orgNr": 910909088,
+            "navn": "SOPRA STERIA AS",
+            "totaltAntallRelasjoner": 36,
+            "antallRoller": 36,
+            "antallEierskap": 0
+          },
+          {
+            "orgNr": 919408049,
+            "navn": "NORCE RESEARCH AS",
+            "totaltAntallRelasjoner": 31,
+            "antallRoller": 31,
+            "antallEierskap": 0
+          }
+        ],
+        "missing": [],
+        "extra": []
+      },
+      "gold_cache": {
+        "hit": true,
+        "path": "src\\text_to_query\\gold_cache\\structured_complex\\groundtruthStructured\\q104_2fa91c66c76fb4f8.json",
+        "created_at": "2026-05-24T02:18:11"
+      },
+      "generated_finish_reason": "stop"
+    },
+    {
+      "id": 105,
+      "question": "Finn partier der politikere har minst én selskapsrolle eller minst ett personlig eierskap. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere, antall rolleoppføringer og antall eierskap.",
+      "category": "complex_pipeline_stress",
+      "operation": "aggregate",
+      "status": "ok",
+      "success": false,
+      "failure_reason": "Generated query missed one or more expected result documents or values.",
+      "gold_query": {
+        "op": "aggregate",
+        "collection": "politikere",
+        "pipeline": [
+          {
+            "$lookup": {
+              "from": "roller",
+              "let": {
+                "pnavn": "$navn",
+                "pf": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$navn",
+                            "$$pnavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$fødselsdato",
+                            "$$pf"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "roller"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "eierskap",
+              "let": {
+                "pnavn": "$navn",
+                "pf": "$fødselsdato"
+              },
+              "pipeline": [
+                {
+                  "$match": {
+                    "$expr": {
+                      "$and": [
+                        {
+                          "$eq": [
+                            "$eierPersonNavn",
+                            "$$pnavn"
+                          ]
+                        },
+                        {
+                          "$eq": [
+                            "$eierPersonFødselsdato",
+                            "$$pf"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "as": "eierskap"
+            }
+          },
+          {
+            "$project": {
+              "partinavn": 1,
+              "personKey": {
+                "$concat": [
+                  "$navn",
+                  "|",
+                  {
+                    "$ifNull": [
+                      "$fødselsdato",
+                      ""
+                    ]
+                  }
+                ]
+              },
+              "antallRoller": {
+                "$size": "$roller"
+              },
+              "antallEierskap": {
+                "$size": "$eierskap"
+              }
+            }
+          },
+          {
+            "$match": {
+              "$or": [
+                {
+                  "antallRoller": {
+                    "$gt": 0
+                  }
+                },
+                {
+                  "antallEierskap": {
+                    "$gt": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "$group": {
+              "_id": "$partinavn",
+              "politikere": {
+                "$addToSet": "$personKey"
+              },
+              "antallRolleoppføringer": {
+                "$sum": "$antallRoller"
+              },
+              "antallEierskap": {
+                "$sum": "$antallEierskap"
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "parti": "$_id",
+              "antallPolitikere": {
+                "$size": "$politikere"
+              },
+              "antallRolleoppføringer": 1,
+              "antallEierskap": 1
+            }
+          },
+          {
+            "$sort": {
+              "antallPolitikere": -1,
+              "parti": 1
+            }
+          }
+        ]
+      },
+      "generated_query": {
+        "op": "aggregate",
+        "collection": "personer",
+        "pipeline": [
+          {
+            "$match": {
+              "$or": [
+                {
+                  "relasjoner.antallRoller": {
+                    "$gt": 0
+                  }
+                },
+                {
+                  "relasjoner.antallEierskap": {
+                    "$gt": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "$match": {
+              "politiker.erPolitiker": true
+            }
+          },
+          {
+            "$group": {
+              "_id": "$politiker.partinavn",
+              "unike_politikere": {
+                "$addToSet": {
+                  "navn": "$navn",
+                  "fødselsdato": "$fødselsdato"
+                }
+              },
+              "rolleoppføringer": {
+                "$sum": "$relasjoner.antallRoller"
+              },
+              "eierskap": {
+                "$sum": "$relasjoner.antallEierskap"
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "parti": "$_id",
+              "antall_unike_politikere": {
+                "$size": "$unike_politikere"
+              },
+              "rolleoppføringer": 1,
+              "eierskap": 1
+            }
+          }
+        ]
+      },
+      "generated_raw_text": "{\"op\":\"aggregate\",\"collection\":\"personer\",\"pipeline\":[{\"$match\":{\"$or\":[{\"relasjoner.antallRoller\":{\"$gt\":0}},{\"relasjoner.antallEierskap\":{\"$gt\":0}}]}},{\"$match\":{\"politiker.erPolitiker\":true}},{\"$group\":{\"_id\":\"$politiker.partinavn\",\"unike_politikere\":{\"$addToSet\":{\"navn\":\"$navn\",\"fødselsdato\":\"$fødselsdato\"}},\"rolleoppføringer\":{\"$sum\":\"$relasjoner.antallRoller\"},\"eierskap\":{\"$sum\":\"$relasjoner.antallEierskap\"}}},{\"$project\":{\"_id\":0,\"parti\":\"$_id\",\"antall_unike_politikere\":{\"$size\":\"$unike_politikere\"},\"rolleoppføringer\":1,\"eierskap\":1}}]}",
+      "scores": {
+        "precision": 0.3182,
+        "recall": 0.3889,
+        "f1": 0.35,
+        "true_positive": 7,
+        "gold_count": 18,
+        "generated_count": 22,
+        "missing_count": 11,
+        "extra_count": 15,
+        "missing_examples": [
+          [
+            "Høyre",
+            0,
+            23,
+            30
+          ],
+          [
+            "Venstre",
+            12,
+            15,
+            2
+          ],
+          [
+            "Arbeiderpartiet",
+            0,
+            11,
+            11
+          ],
+          [
+            "Senterpartiet",
+            0,
+            10,
+            10
+          ],
+          [
+            "Fremskrittspartiet",
+            0,
+            4,
+            5
+          ]
+        ],
+        "extra_examples": [
+          [
+            "Arbeiderpartiet",
+            0,
+            15,
+            15
+          ],
+          [
+            "Ålesundlista Tverrpolitisk liste for Ålesund",
+            0,
+            1,
+            1
+          ],
+          [
+            "Industri- og Næringspartiet",
+            0,
+            4,
+            6
+          ],
+          [
+            "Høyre",
+            0,
+            31,
+            39
+          ],
+          [
+            "SV - Sosialistisk Venstreparti",
+            3,
+            7,
+            9
+          ]
+        ],
+        "comparison_mode": "aggregate row values, ignoring output alias names",
+        "empty_result_equivalence": false,
+        "empty_result_note": null
+      },
+      "projection_score": null,
+      "counts": {
+        "gold": 18,
+        "generated": 22
+      },
+      "timing_ms": {
+        "llm": 2260,
+        "gold_query": 0,
+        "generated_query": 77,
+        "scoring": 1,
+        "total": 2338
+      },
+      "examples": {
+        "gold_first_3": [
+          {
+            "antallRolleoppføringer": 30,
+            "antallEierskap": 0,
+            "parti": "Høyre",
+            "antallPolitikere": 23
+          },
+          {
+            "antallRolleoppføringer": 15,
+            "antallEierskap": 2,
+            "parti": "Venstre",
+            "antallPolitikere": 12
+          },
+          {
+            "antallRolleoppføringer": 11,
+            "antallEierskap": 0,
+            "parti": "Arbeiderpartiet",
+            "antallPolitikere": 11
+          }
+        ],
+        "generated_first_3": [
+          {
+            "rolleoppføringer": 15,
+            "eierskap": 0,
+            "parti": "Arbeiderpartiet",
+            "antall_unike_politikere": 15
+          },
+          {
+            "rolleoppføringer": 13,
+            "eierskap": 0,
+            "parti": "Høgre",
+            "antall_unike_politikere": 9
+          },
+          {
+            "rolleoppføringer": 1,
+            "eierskap": 0,
+            "parti": "Ålesundlista Tverrpolitisk liste for Ålesund",
+            "antall_unike_politikere": 1
+          }
+        ],
+        "missing": [
+          [
+            "Høyre",
+            0,
+            23,
+            30
+          ],
+          [
+            "Venstre",
+            12,
+            15,
+            2
+          ],
+          [
+            "Arbeiderpartiet",
+            0,
+            11,
+            11
+          ],
+          [
+            "Senterpartiet",
+            0,
+            10,
+            10
+          ],
+          [
+            "Fremskrittspartiet",
+            0,
+            4,
+            5
+          ]
+        ],
+        "extra": [
+          [
+            "Arbeiderpartiet",
+            0,
+            15,
+            15
+          ],
+          [
+            "Ålesundlista Tverrpolitisk liste for Ålesund",
+            0,
+            1,
+            1
+          ],
+          [
+            "Industri- og Næringspartiet",
+            0,
+            4,
+            6
+          ],
+          [
+            "Høyre",
+            0,
+            31,
+            39
+          ],
+          [
+            "SV - Sosialistisk Venstreparti",
+            3,
+            7,
+            9
+          ]
+        ]
+      },
+      "gold_cache": {
+        "hit": true,
+        "path": "src\\text_to_query\\gold_cache\\structured_complex\\groundtruthStructured\\q105_393c0d69b257b241.json",
+        "created_at": "2026-05-24T02:18:25"
+      },
+      "generated_finish_reason": "stop"
+    }
+  ]
+}

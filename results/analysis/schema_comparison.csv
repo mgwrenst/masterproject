@@ -1,0 +1,9 @@
+benchmark_set,structure,model,comparison,left,right,left_success_rate,right_success_rate,delta_success_rate,left_f1,right_f1,delta_f1,shared_questions,right_wins,left_wins,ties,largest_right_gains,largest_left_gains
+complex,flat,gpt-4.1-mini,advanced minus naive,naive,advanced,0.6,1.0,0.4,0.6651,1.0,0.3349,5,2,0,3,Q105 (+0.9187); Q101 (+0.7561),Q101 (+0.7561); Q105 (+0.9187)
+complex,flat,gpt-5-mini,advanced minus naive,naive,advanced,0.5667,0.7222,0.1555,0.5667,0.7222,0.1555,5,2,0,3,Q105 (+0.5000); Q101 (+0.3333),Q101 (+0.3333); Q105 (+0.5000)
+complex,structured,gpt-4.1-mini,advanced minus naive,naive,advanced,0.4667,0.5,0.0333,0.5281,0.5868,0.0587,5,2,1,2,Q101 (+0.1167); Q105 (+0.1138); Q102 (-0.5714),Q102 (-0.5714); Q105 (+0.1138); Q101 (+0.1167)
+complex,structured,gpt-5-mini,advanced minus naive,naive,advanced,0.4,0.5611,0.1611,0.5143,0.5611,0.0468,5,1,0,4,Q102 (+0.4286),Q102 (+0.4286)
+normal,flat,gpt-4.1-mini,advanced minus naive,naive,advanced,0.6188,0.6097,-0.0091,0.7689,0.7368,-0.0321,55,5,6,44,Q22 (+1.0000); Q19 (+1.0000); Q51 (+0.2132); Q52 (+0.0953); Q29 (+0.0002),Q15 (-0.5468); Q24 (-0.3333); Q17 (-0.3331); Q55 (-0.2778); Q10 (-0.1827)
+normal,flat,gpt-5-mini,advanced minus naive,naive,advanced,0.7531,0.7407,-0.0124,0.8393,0.8404,0.0011,55,6,9,40,Q22 (+1.0000); Q14 (+0.6667); Q39 (+0.3333); Q12 (+0.3333); Q18 (+0.3320),Q27 (-0.6913); Q50 (-0.4667); Q45 (-0.3333); Q30 (-0.3126); Q41 (-0.1587)
+normal,structured,gpt-4.1-mini,advanced minus naive,naive,advanced,0.5501,0.5,-0.0501,0.6769,0.6303,-0.0466,55,8,9,38,Q13 (+1.0000); Q22 (+0.5484); Q55 (+0.5473); Q54 (+0.4872); Q53 (+0.4074),Q24 (-1.0000); Q47 (-1.0000); Q34 (-0.8823); Q48 (-0.6667); Q30 (-0.6253)
+normal,structured,gpt-5-mini,advanced minus naive,naive,advanced,0.6374,0.6526,0.0152,0.7792,0.7581,-0.0211,55,10,7,38,Q22 (+1.0000); Q50 (+0.7000); Q51 (+0.5295); Q52 (+0.3809); Q44 (+0.3333),Q47 (-1.0000); Q30 (-0.9379); Q8 (-0.7079); Q39 (-0.6667); Q20 (-0.6242)
