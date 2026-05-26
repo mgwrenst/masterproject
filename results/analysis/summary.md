@@ -13,6 +13,8 @@ Generated from 48 result files.
 - `latex/model_comparison.tex`: model-to-model deltas while holding structure and schema description fixed.
 - `latex/schema_description_effect.tex`: naive versus advanced schema description deltas.
 - `latex/structure_effect.tex`: flat versus structured database deltas.
+- `latex/operation_performance.tex`: broad query operation types ranked by average F1.
+- `latex/query_type_performance.tex`: detailed query categories ranked by average F1.
 - `latex/difficult_questions.tex`: questions with the lowest average F1 across configurations.
 
 The LaTeX fragments use `booktabs`, so add `\usepackage{booktabs}` in Overleaf if it is not already included.

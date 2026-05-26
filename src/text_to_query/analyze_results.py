@@ -241,6 +241,28 @@ def nested_summary_rows(runs: list[dict[str, Any]], field: str) -> list[dict[str
     return rows
 
 
+def overall_type_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    grouped = defaultdict(list)
+    for row in rows:
+        grouped[(row["benchmark_set"], row["name"])].append(row)
+
+    output = []
+    for (bench, name), items in sorted(grouped.items()):
+        output.append(
+            {
+                "benchmark_set": bench,
+                "name": name,
+                "configurations": len(items),
+                "questions_mean": mean(item["questions_mean"] for item in items),
+                "success_rate_mean": mean(item["success_rate_mean"] for item in items),
+                "avg_precision_mean": mean(item["avg_precision_mean"] for item in items),
+                "avg_recall_mean": mean(item["avg_recall_mean"] for item in items),
+                "avg_f1_mean": mean(item["avg_f1_mean"] for item in items),
+            }
+        )
+    return sorted(output, key=lambda row: (row["benchmark_set"], -row["avg_f1_mean"], row["name"]))
+
+
 def question_rows(runs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     grouped = defaultdict(list)
     text = {}
@@ -349,6 +371,8 @@ def write_summary_markdown(
         "- `latex/model_comparison.tex`: model-to-model deltas while holding structure and schema description fixed.",
         "- `latex/schema_description_effect.tex`: naive versus advanced schema description deltas.",
         "- `latex/structure_effect.tex`: flat versus structured database deltas.",
+        "- `latex/operation_performance.tex`: broad query operation types ranked by average F1.",
+        "- `latex/query_type_performance.tex`: detailed query categories ranked by average F1.",
         "- `latex/difficult_questions.tex`: questions with the lowest average F1 across configurations.",
         "",
         "The LaTeX fragments use `booktabs`, so add `\\usepackage{booktabs}` in Overleaf if it is not already included.",
@@ -411,6 +435,8 @@ def main() -> None:
     structure_comparison = comparison_rows(summary_rows, "structure")
     operation_rows = nested_summary_rows(runs, "by_operation")
     category_rows = nested_summary_rows(runs, "by_category")
+    operation_overall = overall_type_rows(operation_rows)
+    category_overall = overall_type_rows(category_rows)
     per_question = question_rows(runs)
     difficult_questions = difficulty_rows(per_question)
 
@@ -462,6 +488,14 @@ def main() -> None:
         "benchmark_set", "structure", "schema", "model", "name", "runs",
         "questions_mean", "successful_mean", "success_rate_mean",
         "avg_precision_mean", "avg_recall_mean", "avg_f1_mean",
+    ])
+    write_csv(csv_dir / "operation_performance_overall.csv", operation_overall, [
+        "benchmark_set", "name", "configurations", "questions_mean",
+        "success_rate_mean", "avg_precision_mean", "avg_recall_mean", "avg_f1_mean",
+    ])
+    write_csv(csv_dir / "query_type_performance_overall.csv", category_overall, [
+        "benchmark_set", "name", "configurations", "questions_mean",
+        "success_rate_mean", "avg_precision_mean", "avg_recall_mean", "avg_f1_mean",
     ])
     write_csv(csv_dir / "per_question_by_config.csv", per_question, [
         "benchmark_set", "question_id", "structure", "schema", "model", "runs",
@@ -550,6 +584,46 @@ def main() -> None:
             for row in structure_comparison
         ],
         align="lllrrr",
+    )
+    write_latex_table(
+        latex_dir / "operation_performance.tex",
+        "Broad query operation performance averaged across configurations.",
+        "tab:operation-performance",
+        ["Benchmark", "Operation", "Configs", "Questions", "Success (%)", "P", "R", "F1"],
+        [
+            [
+                row["benchmark_set"].title(),
+                row["name"].replace("_", " "),
+                row["configurations"],
+                num(row["questions_mean"], 1),
+                pct(row["success_rate_mean"]),
+                num(row["avg_precision_mean"]),
+                num(row["avg_recall_mean"]),
+                num(row["avg_f1_mean"]),
+            ]
+            for row in operation_overall
+        ],
+        align="llrrrrrr",
+    )
+    main_category_rows = [row for row in category_overall if row["benchmark_set"] == "main"]
+    write_latex_table(
+        latex_dir / "query_type_performance.tex",
+        "Detailed query type performance on the main benchmark averaged across configurations.",
+        "tab:query-type-performance",
+        ["Query type", "Configs", "Questions", "Success (%)", "P", "R", "F1"],
+        [
+            [
+                row["name"].replace("_", " "),
+                row["configurations"],
+                num(row["questions_mean"], 1),
+                pct(row["success_rate_mean"]),
+                num(row["avg_precision_mean"]),
+                num(row["avg_recall_mean"]),
+                num(row["avg_f1_mean"]),
+            ]
+            for row in main_category_rows
+        ],
+        align="lrrrrrr",
     )
     write_latex_table(
         latex_dir / "difficult_questions.tex",
