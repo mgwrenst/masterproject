@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{Model comparison with fixed database structure and schema description.}
+\label{tab:model-comparison}
+\begin{tabular}{lllrrr}
+\toprule
+Benchmark & Structure & Schema & F1 4.1 & F1 5 & Delta F1 \\
+\midrule
+Complex & Flat & Advanced & 1.000 & 0.722 & -0.278 \\
+Complex & Flat & Naive & 0.665 & 0.567 & -0.098 \\
+Complex & Structured & Advanced & 0.587 & 0.561 & -0.026 \\
+Complex & Structured & Naive & 0.528 & 0.514 & -0.014 \\
+Main & Flat & Advanced & 0.737 & 0.840 & 0.104 \\
+Main & Flat & Naive & 0.769 & 0.839 & 0.070 \\
+Main & Structured & Advanced & 0.630 & 0.758 & 0.128 \\
+Main & Structured & Naive & 0.677 & 0.779 & 0.102 \\
+\bottomrule
+\end{tabular}
+\end{table}

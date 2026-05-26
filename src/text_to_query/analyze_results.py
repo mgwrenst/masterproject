@@ -2,720 +2,583 @@ import argparse
 import csv
 import json
 import math
-from collections import Counter, defaultdict
-from dataclasses import dataclass
+from collections import defaultdict
 from pathlib import Path
 from statistics import mean, stdev
 from typing import Any
 
 
 METRICS = ("success_rate", "avg_precision", "avg_recall", "avg_f1")
-QUESTION_METRICS = ("precision", "recall", "f1")
+METRIC_LABELS = {
+    "success_rate": "Success",
+    "avg_precision": "Precision",
+    "avg_recall": "Recall",
+    "avg_f1": "F1",
+}
 
 
-@dataclass(frozen=True)
-class ResultFile:
-    path: Path
-    data: dict[str, Any]
+def load_json(path: Path) -> dict[str, Any]:
+    with path.open(encoding="utf-8") as file:
+        return json.load(file)
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Analyze text-to-query evaluation result JSON files and create thesis-ready tables."
-    )
-    parser.add_argument("--results-dir", default="results", help="Root folder containing evaluation JSON files.")
-    parser.add_argument("--output-dir", default="results/analysis", help="Folder where analysis files are written.")
-    parser.add_argument(
-        "--include-analysis-json",
-        action="store_true",
-        help="Also read JSON files under the analysis folder. Normally these are skipped.",
-    )
-    parser.add_argument(
-        "--latest-only",
-        action="store_true",
-        help="Keep only the latest run for each benchmark/structure/schema/model/run-number key.",
-    )
-    return parser.parse_args()
+def pct(value: float | None) -> str:
+    if value is None or math.isnan(value):
+        return "--"
+    return f"{value * 100:.1f}"
 
 
-def main() -> None:
-    args = parse_args()
-    results_dir = Path(args.results_dir)
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    result_files = load_result_files(results_dir, output_dir, args.include_analysis_json)
-    if args.latest_only:
-        result_files = latest_result_files(result_files)
-
-    run_rows = [run_record(item) for item in result_files]
-    question_rows = [
-        question_record(item, question)
-        for item in result_files
-        for question in item.data.get("questions", [])
-    ]
-
-    grouped_runs = aggregate_runs(run_rows)
-    category_rows = aggregate_questions(
-        question_rows,
-        ["benchmark_set", "structure", "schema_version", "model", "category"],
-    )
-    operation_rows = aggregate_questions(
-        question_rows,
-        ["benchmark_set", "structure", "schema_version", "model", "operation"],
-    )
-    question_by_config_rows = aggregate_questions(
-        question_rows,
-        ["benchmark_set", "structure", "schema_version", "model", "question_id"],
-        include_question_text=True,
-    )
-    question_difficulty_rows = aggregate_questions(
-        question_rows,
-        ["benchmark_set", "question_id"],
-        include_question_text=True,
-    )
-    failure_rows = [row for row in question_rows if not row["success"] or row["status"] != "ok"]
-
-    model_comparison_rows = compare_dimension(
-        question_rows,
-        grouped_runs,
-        dimension="model",
-        left_value="gpt-4.1-mini",
-        right_value="gpt-5-mini",
-        fixed_fields=["benchmark_set", "structure", "schema_version"],
-        label="gpt-5-mini minus gpt-4.1-mini",
-    )
-    schema_comparison_rows = compare_dimension(
-        question_rows,
-        grouped_runs,
-        dimension="schema_version",
-        left_value="naive",
-        right_value="advanced",
-        fixed_fields=["benchmark_set", "structure", "model"],
-        label="advanced minus naive",
-    )
-    structure_comparison_rows = compare_dimension(
-        question_rows,
-        grouped_runs,
-        dimension="structure",
-        left_value="flat",
-        right_value="structured",
-        fixed_fields=["benchmark_set", "schema_version", "model"],
-        label="structured minus flat",
-    )
-
-    findings = build_findings(
-        run_rows=run_rows,
-        grouped_runs=grouped_runs,
-        category_rows=category_rows,
-        question_difficulty_rows=question_difficulty_rows,
-        failure_rows=failure_rows,
-        model_comparison_rows=model_comparison_rows,
-        schema_comparison_rows=schema_comparison_rows,
-        structure_comparison_rows=structure_comparison_rows,
-    )
-
-    write_csv(output_dir / "run_level.csv", run_rows)
-    write_csv(output_dir / "run_group_summary.csv", grouped_runs)
-    write_csv(output_dir / "category_summary.csv", category_rows)
-    write_csv(output_dir / "operation_summary.csv", operation_rows)
-    write_csv(output_dir / "question_by_config.csv", question_by_config_rows)
-    write_csv(output_dir / "question_difficulty.csv", question_difficulty_rows)
-    write_csv(output_dir / "failure_cases.csv", failure_rows)
-    write_csv(output_dir / "model_comparison.csv", model_comparison_rows)
-    write_csv(output_dir / "schema_comparison.csv", schema_comparison_rows)
-    write_csv(output_dir / "structure_comparison.csv", structure_comparison_rows)
-
-    write_json(output_dir / "deep_analysis.json", findings)
-    write_markdown(output_dir / "key_findings.md", findings)
-
-    print(f"Analyzed {len(run_rows)} run files and {len(question_rows)} question results.")
-    print(f"Wrote analysis outputs to {output_dir}")
+def num(value: float | None, digits: int = 3) -> str:
+    if value is None or math.isnan(value):
+        return "--"
+    return f"{value:.{digits}f}"
 
 
-def load_result_files(results_dir: Path, output_dir: Path, include_analysis_json: bool) -> list[ResultFile]:
-    files = []
-    output_dir_resolved = output_dir.resolve()
-    for path in sorted(results_dir.rglob("*.json")):
-        if path.name.startswith("."):
-            continue
-        if not include_analysis_json and is_relative_to(path.resolve(), output_dir_resolved):
-            continue
-        try:
-            with path.open(encoding="utf-8") as file:
-                data = json.load(file)
-        except (OSError, json.JSONDecodeError):
-            continue
-        if not isinstance(data, dict) or "run" not in data or "summary" not in data:
-            continue
-        files.append(ResultFile(path=path, data=data))
-    return files
+def benchmark_set(structure: str, benchmark: str) -> str:
+    raw = f"{structure} {benchmark}".lower()
+    return "complex" if "complex" in raw else "main"
 
 
-def is_relative_to(path: Path, parent: Path) -> bool:
-    try:
-        path.relative_to(parent)
-        return True
-    except ValueError:
-        return False
+def structure_base(structure: str) -> str:
+    return "structured" if "structured" in structure else "flat"
 
 
-def latest_result_files(result_files: list[ResultFile]) -> list[ResultFile]:
-    latest: dict[tuple[Any, ...], ResultFile] = {}
-    for item in result_files:
-        record = run_record(item)
-        key = (
-            record["benchmark_set"],
-            record["structure"],
-            record["schema_version"],
-            record["model"],
-            record["run_number"],
-        )
-        current = latest.get(key)
-        if current is None or timestamp(item) > timestamp(current):
-            latest[key] = item
-    return sorted(latest.values(), key=lambda item: str(item.path))
+def schema_version(schema_description: str) -> str:
+    return "advanced" if "advanced" in schema_description else "naive"
 
 
-def timestamp(item: ResultFile) -> str:
-    return str(item.data.get("run", {}).get("timestamp", ""))
-
-
-def run_record(item: ResultFile) -> dict[str, Any]:
-    run = item.data.get("run", {})
-    summary = item.data.get("summary", {})
-    benchmark_name = Path(str(run.get("benchmark", item.path.parent.parent.name))).stem
-    schema_name = Path(str(run.get("schema", item.path.parent.name))).stem
-    structure = infer_structure(run, benchmark_name, schema_name)
-    schema_version = infer_schema_version(schema_name)
-    benchmark_set = "complex" if "complex" in benchmark_name else "normal"
-    timing = summary.get("timing_ms", {}) or {}
-    errors = summary.get("errors", {}) or {}
-
+def normalize_run(path: Path, data: dict[str, Any]) -> dict[str, Any]:
+    run = data["run"]
+    summary = data["summary"]
+    structure = run.get("structure") or Path(run.get("benchmark", "")).stem
+    schema_description = Path(run.get("schema", "")).stem
     return {
-        "path": str(item.path),
-        "timestamp": run.get("timestamp"),
-        "label": run.get("label"),
-        "benchmark": run.get("benchmark"),
-        "benchmark_set": benchmark_set,
+        "path": str(path),
+        "timestamp": run.get("timestamp", ""),
+        "label": run.get("label", path.stem),
+        "model": run.get("model", ""),
         "structure": structure,
-        "schema": run.get("schema"),
-        "schema_description": schema_name,
-        "schema_version": schema_version,
-        "model": run.get("model"),
-        "run_number": infer_run_number(run.get("label")),
-        "database": run.get("database"),
-        "total_questions": number(summary.get("total_questions")),
-        "scored_questions": number(summary.get("scored_questions")),
-        "successful_questions": number(summary.get("successful_questions")),
-        "failed_questions": number(summary.get("failed_questions")),
-        "success_rate": number(summary.get("success_rate")),
-        "avg_precision": number(summary.get("avg_precision")),
-        "avg_recall": number(summary.get("avg_recall")),
-        "avg_f1": number(summary.get("avg_f1")),
-        "total_run_ms": number(timing.get("total_run")),
-        "avg_per_question_ms": number(timing.get("avg_per_question")),
-        "avg_llm_ms": number(timing.get("avg_llm")),
-        "avg_generated_query_ms": number(timing.get("avg_generated_query")),
-        "avg_scoring_ms": number(timing.get("avg_scoring")),
-        "errors_total": number(errors.get("total")),
-        "llm_errors": number(errors.get("llm_error")),
-        "gold_query_errors": number(errors.get("gold_query_error")),
-        "generated_query_errors": number(errors.get("generated_query_error")),
+        "structure_base": structure_base(structure),
+        "schema_description": schema_description,
+        "schema_version": schema_version(schema_description),
+        "benchmark": run.get("benchmark", ""),
+        "benchmark_set": benchmark_set(structure, run.get("benchmark", "")),
+        "total_questions": summary.get("total_questions", 0),
+        "scored_questions": summary.get("scored_questions", summary.get("total_questions", 0)),
+        "successful_questions": summary.get("successful_questions", 0),
+        "failed_questions": summary.get("failed_questions", 0),
+        "success_rate": summary.get("success_rate", 0.0),
+        "avg_precision": summary.get("avg_precision", 0.0),
+        "avg_recall": summary.get("avg_recall", 0.0),
+        "avg_f1": summary.get("avg_f1", 0.0),
+        "error_total": summary.get("errors", {}).get("total", 0),
+        "avg_time_ms": summary.get("timing_ms", {}).get("avg_per_question", 0),
+        "by_operation": summary.get("by_operation", {}),
+        "by_category": summary.get("by_category", {}),
+        "questions": data.get("questions", []),
     }
 
 
-def infer_structure(run: dict[str, Any], benchmark_name: str, schema_name: str) -> str:
-    database = str(run.get("database", "")).lower()
-    source = " ".join([benchmark_name, schema_name, database])
-    if "structured" in source:
-        return "structured"
-    if "flat" in source or "groundtruth" in database:
-        return "flat"
-    return "unknown"
-
-
-def infer_schema_version(schema_name: str) -> str:
-    if schema_name.endswith("_advanced") or "advanced" in schema_name:
-        return "advanced"
-    if schema_name.endswith("_naive") or "naive" in schema_name:
-        return "naive"
-    return "unknown"
-
-
-def infer_run_number(label: Any) -> str:
-    if not isinstance(label, str):
-        return ""
-    marker = "_run"
-    if marker not in label:
-        return ""
-    return label.rsplit(marker, 1)[-1]
-
-
-def question_record(item: ResultFile, question: dict[str, Any]) -> dict[str, Any]:
-    base = run_record(item)
-    scores = question.get("scores", {}) or {}
-    counts = question.get("counts", {}) or {}
-    timing = question.get("timing_ms", {}) or {}
-    projection_score = question.get("projection_score") or {}
-    status = question.get("status", "")
-    success = bool(question.get("success", question.get("match", False)))
-    return {
-        "path": base["path"],
-        "timestamp": base["timestamp"],
-        "label": base["label"],
-        "benchmark_set": base["benchmark_set"],
-        "structure": base["structure"],
-        "schema_version": base["schema_version"],
-        "schema_description": base["schema_description"],
-        "model": base["model"],
-        "run_number": base["run_number"],
-        "question_id": question.get("id"),
-        "question": question.get("question"),
-        "category": question.get("category", "uncategorized"),
-        "operation": question.get("operation"),
-        "status": status,
-        "success": success,
-        "failure_reason": question.get("failure_reason") or question.get("error"),
-        "precision": number(scores.get("precision")),
-        "recall": number(scores.get("recall")),
-        "f1": number(scores.get("f1")),
-        "true_positive": number(scores.get("true_positive")),
-        "gold_count": number(scores.get("gold_count", counts.get("gold"))),
-        "generated_count": number(scores.get("generated_count", counts.get("generated"))),
-        "missing_count": number(scores.get("missing_count")),
-        "extra_count": number(scores.get("extra_count")),
-        "comparison_mode": scores.get("comparison_mode"),
-        "empty_result_equivalence": bool(scores.get("empty_result_equivalence", False)),
-        "projection_precision": number(projection_score.get("precision")),
-        "projection_recall": number(projection_score.get("recall")),
-        "llm_ms": number(timing.get("llm")),
-        "gold_query_ms": number(timing.get("gold_query")),
-        "generated_query_ms": number(timing.get("generated_query")),
-        "scoring_ms": number(timing.get("scoring")),
-        "total_ms": number(timing.get("total")),
-    }
-
-
-def aggregate_runs(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    groups = group_by(rows, ["benchmark_set", "structure", "schema_version", "model"])
-    output = []
-    for key, items in groups.items():
-        row = dict(zip(["benchmark_set", "structure", "schema_version", "model"], key))
-        row["runs"] = len(items)
-        row["total_questions_per_run"] = first_non_null(items, "total_questions")
-        row["mean_success_rate"] = avg(items, "success_rate")
-        row["sd_success_rate"] = sample_sd(items, "success_rate")
-        row["min_success_rate"] = min_value(items, "success_rate")
-        row["max_success_rate"] = max_value(items, "success_rate")
-        row["mean_precision"] = avg(items, "avg_precision")
-        row["mean_recall"] = avg(items, "avg_recall")
-        row["mean_f1"] = avg(items, "avg_f1")
-        row["sd_f1"] = sample_sd(items, "avg_f1")
-        row["mean_total_run_ms"] = avg(items, "total_run_ms")
-        row["mean_avg_per_question_ms"] = avg(items, "avg_per_question_ms")
-        row["total_errors"] = sum_value(items, "errors_total")
-        row["total_llm_errors"] = sum_value(items, "llm_errors")
-        row["total_generated_query_errors"] = sum_value(items, "generated_query_errors")
-        output.append(round_row(row))
-    return sorted(output, key=lambda row: (row["benchmark_set"], row["structure"], row["schema_version"], row["model"]))
-
-
-def aggregate_questions(
-    rows: list[dict[str, Any]],
-    fields: list[str],
-    include_question_text: bool = False,
-) -> list[dict[str, Any]]:
-    groups = group_by(rows, fields)
-    output = []
-    for key, items in groups.items():
-        row = dict(zip(fields, key))
-        if include_question_text:
-            row["question"] = first_non_null(items, "question")
-            row["category"] = first_non_null(items, "category")
-            row["operation"] = first_non_null(items, "operation")
-        row["question_runs"] = len(items)
-        row["unique_questions"] = len({item.get("question_id") for item in items})
-        row["successes"] = sum(1 for item in items if item.get("success"))
-        row["success_rate"] = row["successes"] / row["question_runs"] if row["question_runs"] else None
-        row["avg_precision"] = avg(items, "precision")
-        row["avg_recall"] = avg(items, "recall")
-        row["avg_f1"] = avg(items, "f1")
-        row["sd_f1"] = sample_sd(items, "f1")
-        row["avg_gold_count"] = avg(items, "gold_count")
-        row["avg_generated_count"] = avg(items, "generated_count")
-        row["avg_missing_count"] = avg(items, "missing_count")
-        row["avg_extra_count"] = avg(items, "extra_count")
-        row["errors"] = sum(1 for item in items if item.get("status") != "ok")
-        row["avg_total_ms"] = avg(items, "total_ms")
-        output.append(round_row(row))
-    return sorted(output, key=sort_aggregate_row)
-
-
-def compare_dimension(
-    question_rows: list[dict[str, Any]],
-    grouped_runs: list[dict[str, Any]],
-    dimension: str,
-    left_value: str,
-    right_value: str,
-    fixed_fields: list[str],
-    label: str,
-) -> list[dict[str, Any]]:
-    run_lookup = {
-        tuple(row[field] for field in ["benchmark_set", "structure", "schema_version", "model"]): row
-        for row in grouped_runs
-    }
-    dimension_values = {left_value, right_value}
-    candidate_keys = {
-        tuple(row[field] for field in fixed_fields)
-        for row in question_rows
-        if row.get(dimension) in dimension_values
-    }
-
-    output = []
-    for key in sorted(candidate_keys):
-        left_key = dict(zip(fixed_fields, key))
-        right_key = dict(zip(fixed_fields, key))
-        left_key[dimension] = left_value
-        right_key[dimension] = right_value
-
-        left_run_key = run_key_from_parts(left_key)
-        right_run_key = run_key_from_parts(right_key)
-        if left_run_key not in run_lookup or right_run_key not in run_lookup:
+def load_runs(results_dir: Path) -> list[dict[str, Any]]:
+    runs = []
+    for path in sorted(results_dir.rglob("*.json")):
+        if "analysis" in path.parts:
             continue
-
-        left_questions = matching_question_averages(question_rows, left_key)
-        right_questions = matching_question_averages(question_rows, right_key)
-        shared_ids = sorted(set(left_questions) & set(right_questions), key=lambda value: str(value))
-        deltas = [right_questions[question_id]["avg_f1"] - left_questions[question_id]["avg_f1"] for question_id in shared_ids]
-        right_wins = sum(1 for value in deltas if value > 0.000001)
-        left_wins = sum(1 for value in deltas if value < -0.000001)
-        ties = len(deltas) - right_wins - left_wins
-
-        row = dict(zip(fixed_fields, key))
-        row["comparison"] = label
-        row["left"] = left_value
-        row["right"] = right_value
-        row["left_success_rate"] = run_lookup[left_run_key]["mean_success_rate"]
-        row["right_success_rate"] = run_lookup[right_run_key]["mean_success_rate"]
-        row["delta_success_rate"] = row["right_success_rate"] - row["left_success_rate"]
-        row["left_f1"] = run_lookup[left_run_key]["mean_f1"]
-        row["right_f1"] = run_lookup[right_run_key]["mean_f1"]
-        row["delta_f1"] = row["right_f1"] - row["left_f1"]
-        row["shared_questions"] = len(shared_ids)
-        row["right_wins"] = right_wins
-        row["left_wins"] = left_wins
-        row["ties"] = ties
-        row["largest_right_gains"] = format_question_deltas(shared_ids, left_questions, right_questions, reverse=True)
-        row["largest_left_gains"] = format_question_deltas(shared_ids, left_questions, right_questions, reverse=False)
-        output.append(round_row(row))
-    return output
+        data = load_json(path)
+        if "run" in data and "summary" in data:
+            runs.append(normalize_run(path, data))
+    return runs
 
 
-def run_key_from_parts(parts: dict[str, Any]) -> tuple[Any, ...]:
-    return (
-        parts.get("benchmark_set"),
-        parts.get("structure"),
-        parts.get("schema_version"),
-        parts.get("model"),
-    )
-
-
-def matching_question_averages(rows: list[dict[str, Any]], filters: dict[str, Any]) -> dict[Any, dict[str, Any]]:
-    matches = [
-        row for row in rows
-        if all(row.get(field) == value for field, value in filters.items())
-    ]
-    groups = group_by(matches, ["question_id"])
-    return {
-        question_id: {
-            "avg_f1": avg(items, "f1") or 0,
-            "success_rate": sum(1 for item in items if item.get("success")) / len(items),
-            "question": first_non_null(items, "question"),
-        }
-        for (question_id,), items in groups.items()
-    }
-
-
-def format_question_deltas(
-    question_ids: list[Any],
-    left_questions: dict[Any, dict[str, Any]],
-    right_questions: dict[Any, dict[str, Any]],
-    reverse: bool,
-    limit: int = 5,
-) -> str:
-    rows = []
-    for question_id in question_ids:
-        delta = right_questions[question_id]["avg_f1"] - left_questions[question_id]["avg_f1"]
-        rows.append((delta, question_id))
-    rows.sort(reverse=reverse)
-    selected = [(delta, question_id) for delta, question_id in rows if abs(delta) > 0.000001][:limit]
-    return "; ".join(f"Q{question_id} ({delta:+.4f})" for delta, question_id in selected)
-
-
-def build_findings(
-    run_rows: list[dict[str, Any]],
-    grouped_runs: list[dict[str, Any]],
-    category_rows: list[dict[str, Any]],
-    question_difficulty_rows: list[dict[str, Any]],
-    failure_rows: list[dict[str, Any]],
-    model_comparison_rows: list[dict[str, Any]],
-    schema_comparison_rows: list[dict[str, Any]],
-    structure_comparison_rows: list[dict[str, Any]],
-) -> dict[str, Any]:
-    best_runs = sorted(grouped_runs, key=lambda row: row.get("mean_success_rate") or 0, reverse=True)[:10]
-    worst_runs = sorted(grouped_runs, key=lambda row: row.get("mean_success_rate") or 0)[:10]
-    hardest_categories = sorted(category_rows, key=lambda row: (row.get("success_rate") or 0, row.get("avg_f1") or 0))[:15]
-    easiest_categories = sorted(category_rows, key=lambda row: (row.get("success_rate") or 0, row.get("avg_f1") or 0), reverse=True)[:15]
-    hardest_questions = sorted(question_difficulty_rows, key=lambda row: (row.get("success_rate") or 0, row.get("avg_f1") or 0))[:20]
-    slowest_questions = sorted(question_difficulty_rows, key=lambda row: row.get("avg_total_ms") or 0, reverse=True)[:20]
-
-    failure_reasons = Counter(row.get("failure_reason") or row.get("status") or "unknown" for row in failure_rows)
-    zero_zero = [
-        row for row in failure_rows
-        if row.get("precision") == 0 and row.get("recall") == 0
-    ]
-    same_count_zero_zero = [
-        row for row in zero_zero
-        if row.get("gold_count") == row.get("generated_count")
-    ]
-
-    return {
-        "overview": {
-            "run_files": len(run_rows),
-            "run_groups": len(grouped_runs),
-            "benchmarks": sorted({row["benchmark_set"] for row in run_rows}),
-            "models": sorted({row["model"] for row in run_rows}),
-            "structures": sorted({row["structure"] for row in run_rows}),
-            "schema_versions": sorted({row["schema_version"] for row in run_rows}),
-            "question_runs": sum(int(row.get("total_questions") or 0) for row in run_rows),
-            "failure_question_runs": len(failure_rows),
-        },
-        "best_run_groups": best_runs,
-        "worst_run_groups": worst_runs,
-        "hardest_categories": hardest_categories,
-        "easiest_categories": easiest_categories,
-        "hardest_questions": hardest_questions,
-        "slowest_questions": slowest_questions,
-        "failure_patterns": {
-            "failure_reason_counts": dict(failure_reasons.most_common()),
-            "zero_precision_zero_recall": len(zero_zero),
-            "zero_zero_same_gold_generated_count": len(same_count_zero_zero),
-            "same_count_zero_zero_examples": same_count_zero_zero[:20],
-        },
-        "model_comparison": model_comparison_rows,
-        "schema_comparison": schema_comparison_rows,
-        "structure_comparison": structure_comparison_rows,
-    }
-
-
-def write_markdown(path: Path, findings: dict[str, Any]) -> None:
-    lines = [
-        "# Result Analysis",
-        "",
-        "Generated by `python src/text_to_query/analyze_results.py`.",
-        "",
-        "## Scope",
-        "",
-    ]
-    overview = findings["overview"]
-    lines.extend(
-        [
-            f"- Run files analyzed: {overview['run_files']}",
-            f"- Run groups: {overview['run_groups']}",
-            f"- Benchmarks: {', '.join(overview['benchmarks'])}",
-            f"- Models: {', '.join(overview['models'])}",
-            f"- Question-runs: {overview['question_runs']}",
-            f"- Failed/error question-runs: {overview['failure_question_runs']}",
-            "",
-        ]
-    )
-
-    add_table(
-        lines,
-        "Best Overall Configurations",
-        findings["best_run_groups"],
-        ["benchmark_set", "structure", "schema_version", "model", "runs", "mean_success_rate", "mean_f1", "sd_f1"],
-    )
-    add_table(
-        lines,
-        "Weakest Overall Configurations",
-        findings["worst_run_groups"],
-        ["benchmark_set", "structure", "schema_version", "model", "runs", "mean_success_rate", "mean_f1", "sd_f1"],
-    )
-    add_table(
-        lines,
-        "Hardest Categories",
-        findings["hardest_categories"],
-        ["benchmark_set", "structure", "schema_version", "model", "category", "success_rate", "avg_f1", "question_runs"],
-    )
-    add_table(
-        lines,
-        "Hardest Questions",
-        findings["hardest_questions"],
-        ["benchmark_set", "question_id", "category", "operation", "success_rate", "avg_f1", "question"],
-    )
-    add_table(
-        lines,
-        "Model Comparison",
-        findings["model_comparison"],
-        ["benchmark_set", "structure", "schema_version", "delta_success_rate", "delta_f1", "right_wins", "left_wins", "ties"],
-    )
-    add_table(
-        lines,
-        "Schema Description Comparison",
-        findings["schema_comparison"],
-        ["benchmark_set", "structure", "model", "delta_success_rate", "delta_f1", "right_wins", "left_wins", "ties"],
-    )
-    add_table(
-        lines,
-        "Database Structure Comparison",
-        findings["structure_comparison"],
-        ["benchmark_set", "schema_version", "model", "delta_success_rate", "delta_f1", "right_wins", "left_wins", "ties"],
-    )
-
-    patterns = findings["failure_patterns"]
-    lines.extend(
-        [
-            "## Failure Patterns",
-            "",
-            f"- Zero precision and zero recall cases: {patterns['zero_precision_zero_recall']}",
-            f"- Zero-zero cases with equal gold/generated counts: {patterns['zero_zero_same_gold_generated_count']}",
-            "",
-            "| Reason | Count |",
-            "|---|---:|",
-        ]
-    )
-    for reason, count in list(patterns["failure_reason_counts"].items())[:12]:
-        lines.append(f"| {markdown_cell(reason)} | {count} |")
-    lines.append("")
-
-    path.write_text("\n".join(lines), encoding="utf-8")
-
-
-def add_table(lines: list[str], title: str, rows: list[dict[str, Any]], columns: list[str], limit: int = 12) -> None:
-    lines.extend([f"## {title}", ""])
-    if not rows:
-        lines.extend(["No matching data.", ""])
-        return
-    lines.append("| " + " | ".join(columns) + " |")
-    lines.append("| " + " | ".join("---" for _ in columns) + " |")
-    for row in rows[:limit]:
-        lines.append("| " + " | ".join(markdown_cell(row.get(column)) for column in columns) + " |")
-    lines.append("")
-
-
-def markdown_cell(value: Any) -> str:
-    if value is None:
-        return ""
-    if isinstance(value, float):
-        return f"{value:.4f}"
-    text = str(value).replace("\n", " ").replace("|", "\\|")
-    if len(text) > 120:
-        return text[:117] + "..."
-    return text
-
-
-def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
-    if not rows:
-        path.write_text("", encoding="utf-8")
-        return
-    columns = list(rows[0].keys())
+def write_csv(path: Path, rows: list[dict[str, Any]], columns: list[str]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=columns)
+        writer = csv.DictWriter(file, fieldnames=columns, extrasaction="ignore")
         writer.writeheader()
         writer.writerows(rows)
 
 
-def write_json(path: Path, data: dict[str, Any]) -> None:
-    with path.open("w", encoding="utf-8") as file:
-        json.dump(data, file, indent=2, ensure_ascii=False)
+def latex_escape(value: Any) -> str:
+    text = str(value)
+    replacements = {
+        "\\": r"\textbackslash{}",
+        "&": r"\&",
+        "%": r"\%",
+        "$": r"\$",
+        "#": r"\#",
+        "_": r"\_",
+        "{": r"\{",
+        "}": r"\}",
+    }
+    return "".join(replacements.get(char, char) for char in text)
 
 
-def group_by(rows: list[dict[str, Any]], fields: list[str]) -> dict[tuple[Any, ...], list[dict[str, Any]]]:
-    groups: dict[tuple[Any, ...], list[dict[str, Any]]] = defaultdict(list)
+def write_latex_table(
+    path: Path,
+    caption: str,
+    label: str,
+    headers: list[str],
+    rows: list[list[Any]],
+    align: str | None = None,
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    align = align or ("l" + "r" * (len(headers) - 1))
+    lines = [
+        r"\begin{table}[htbp]",
+        r"\centering",
+        r"\small",
+        rf"\caption{{{latex_escape(caption)}}}",
+        rf"\label{{{latex_escape(label)}}}",
+        rf"\begin{{tabular}}{{{align}}}",
+        r"\toprule",
+        " & ".join(latex_escape(header) for header in headers) + r" \\",
+        r"\midrule",
+    ]
     for row in rows:
-        groups[tuple(row.get(field) for field in fields)].append(row)
-    return groups
+        lines.append(" & ".join(latex_escape(value) for value in row) + r" \\")
+    lines.extend([r"\bottomrule", r"\end{tabular}", r"\end{table}", ""])
+    path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def first_non_null(rows: list[dict[str, Any]], field: str) -> Any:
-    for row in rows:
-        value = row.get(field)
-        if value is not None and value != "":
-            return value
-    return None
+def summarize_groups(runs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    grouped = defaultdict(list)
+    for run in runs:
+        key = (
+            run["benchmark_set"],
+            run["structure_base"],
+            run["schema_version"],
+            run["model"],
+        )
+        grouped[key].append(run)
+
+    rows = []
+    for (bench, structure, schema, model), items in sorted(grouped.items()):
+        row = {
+            "benchmark_set": bench,
+            "structure": structure,
+            "schema": schema,
+            "model": model,
+            "runs": len(items),
+            "questions_per_run": items[0]["total_questions"] if items else 0,
+            "scored_per_run": items[0]["scored_questions"] if items else 0,
+            "errors_mean": mean(item["error_total"] for item in items),
+            "avg_time_ms_mean": mean(item["avg_time_ms"] for item in items),
+        }
+        for metric in METRICS:
+            values = [item[metric] for item in items]
+            row[f"{metric}_mean"] = mean(values)
+            row[f"{metric}_std"] = stdev(values) if len(values) > 1 else 0.0
+            row[f"{metric}_min"] = min(values)
+            row[f"{metric}_max"] = max(values)
+        rows.append(row)
+    return rows
 
 
-def number(value: Any) -> float | int | None:
-    if value is None or value == "":
-        return None
-    if isinstance(value, bool):
-        return int(value)
-    if isinstance(value, (int, float)):
-        if isinstance(value, float) and math.isnan(value):
-            return None
-        return value
-    try:
-        numeric = float(value)
-    except (TypeError, ValueError):
-        return None
-    if numeric.is_integer():
-        return int(numeric)
-    return numeric
+def comparison_rows(summary_rows: list[dict[str, Any]], dimension: str) -> list[dict[str, Any]]:
+    others = {
+        "model": ["benchmark_set", "structure", "schema"],
+        "schema": ["benchmark_set", "structure", "model"],
+        "structure": ["benchmark_set", "schema", "model"],
+    }[dimension]
+    grouped = defaultdict(dict)
+    for row in summary_rows:
+        key = tuple(row[field] for field in others)
+        grouped[key][row[dimension]] = row
+
+    preferred_pairs = {
+        "model": ("gpt-4.1-mini", "gpt-5-mini"),
+        "schema": ("naive", "advanced"),
+        "structure": ("flat", "structured"),
+    }
+    left, right = preferred_pairs[dimension]
+    rows = []
+    for key, values in sorted(grouped.items()):
+        if left not in values or right not in values:
+            continue
+        base = dict(zip(others, key, strict=True))
+        left_row = values[left]
+        right_row = values[right]
+        output = {**base, f"{dimension}_a": left, f"{dimension}_b": right}
+        for metric in METRICS:
+            output[f"{metric}_a"] = left_row[f"{metric}_mean"]
+            output[f"{metric}_b"] = right_row[f"{metric}_mean"]
+            output[f"{metric}_delta"] = right_row[f"{metric}_mean"] - left_row[f"{metric}_mean"]
+        rows.append(output)
+    return rows
 
 
-def values(rows: list[dict[str, Any]], field: str) -> list[float]:
-    return [
-        float(row[field])
-        for row in rows
-        if isinstance(row.get(field), (int, float)) and not isinstance(row.get(field), bool)
+def nested_summary_rows(runs: list[dict[str, Any]], field: str) -> list[dict[str, Any]]:
+    grouped = defaultdict(list)
+    for run in runs:
+        values = run.get(field, {})
+        for name, item in values.items():
+            key = (
+                run["benchmark_set"],
+                run["structure_base"],
+                run["schema_version"],
+                run["model"],
+                name,
+            )
+            grouped[key].append(item)
+
+    rows = []
+    for (bench, structure, schema, model, name), items in sorted(grouped.items()):
+        row = {
+            "benchmark_set": bench,
+            "structure": structure,
+            "schema": schema,
+            "model": model,
+            "name": name,
+            "runs": len(items),
+            "questions_mean": mean(item.get("questions", 0) for item in items),
+            "successful_mean": mean(item.get("successful", 0) for item in items),
+        }
+        for metric in METRICS:
+            values = [item.get(metric, 0.0) for item in items]
+            row[f"{metric}_mean"] = mean(values)
+            row[f"{metric}_std"] = stdev(values) if len(values) > 1 else 0.0
+        rows.append(row)
+    return rows
+
+
+def question_rows(runs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    grouped = defaultdict(list)
+    text = {}
+    for run in runs:
+        for question in run["questions"]:
+            scores = question.get("scores") or {}
+            key = (
+                run["benchmark_set"],
+                question.get("id"),
+                run["structure_base"],
+                run["schema_version"],
+                run["model"],
+            )
+            grouped[key].append(
+                {
+                    "success": 1.0 if question.get("success") else 0.0,
+                    "f1": scores.get("f1", 0.0),
+                    "precision": scores.get("precision", 0.0),
+                    "recall": scores.get("recall", 0.0),
+                    "status": question.get("status", ""),
+                }
+            )
+            text[(run["benchmark_set"], question.get("id"))] = {
+                "question": question.get("question", ""),
+                "category": question.get("category", ""),
+                "operation": question.get("operation", ""),
+            }
+
+    rows = []
+    for (bench, qid, structure, schema, model), items in sorted(grouped.items(), key=lambda item: (item[0][0], item[0][1], item[0][2], item[0][3], item[0][4])):
+        meta = text[(bench, qid)]
+        rows.append(
+            {
+                "benchmark_set": bench,
+                "question_id": qid,
+                "structure": structure,
+                "schema": schema,
+                "model": model,
+                "runs": len(items),
+                "question": meta["question"],
+                "category": meta["category"],
+                "operation": meta["operation"],
+                "success_rate_mean": mean(item["success"] for item in items),
+                "precision_mean": mean(item["precision"] for item in items),
+                "recall_mean": mean(item["recall"] for item in items),
+                "f1_mean": mean(item["f1"] for item in items),
+                "error_runs": sum(1 for item in items if item["status"] != "ok"),
+            }
+        )
+    return rows
+
+
+def difficulty_rows(question_data: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    grouped = defaultdict(list)
+    meta = {}
+    for row in question_data:
+        key = (row["benchmark_set"], row["question_id"])
+        grouped[key].append(row)
+        meta[key] = row
+
+    rows = []
+    for key, items in sorted(grouped.items(), key=lambda item: (item[0][0], item[0][1])):
+        first = meta[key]
+        rows.append(
+            {
+                "benchmark_set": key[0],
+                "question_id": key[1],
+                "category": first["category"],
+                "operation": first["operation"],
+                "question": first["question"],
+                "configurations": len(items),
+                "success_rate_mean": mean(item["success_rate_mean"] for item in items),
+                "f1_mean": mean(item["f1_mean"] for item in items),
+                "error_runs": sum(item["error_runs"] for item in items),
+            }
+        )
+    return sorted(rows, key=lambda row: (row["benchmark_set"], row["f1_mean"], row["success_rate_mean"], row["question_id"]))
+
+
+def write_summary_markdown(
+    path: Path,
+    runs: list[dict[str, Any]],
+    summary_rows: list[dict[str, Any]],
+    model_comparison: list[dict[str, Any]],
+    schema_comparison: list[dict[str, Any]],
+    structure_comparison: list[dict[str, Any]],
+    difficult_questions: list[dict[str, Any]],
+) -> None:
+    best = max(summary_rows, key=lambda row: row["avg_f1_mean"])
+    lines = [
+        "# Result analysis",
+        "",
+        f"Generated from {len(runs)} result files.",
+        "",
+        "## Best aggregate configuration",
+        "",
+        (
+            f"- {best['benchmark_set']} / {best['structure']} / {best['schema']} / {best['model']}: "
+            f"success {pct(best['success_rate_mean'])}%, F1 {num(best['avg_f1_mean'])} across {best['runs']} run(s)."
+        ),
+        "",
+        "## Recommended thesis tables",
+        "",
+        "- `latex/main_config_comparison.tex`: compact overview of the ordinary benchmark.",
+        "- `latex/complex_config_comparison.tex`: compact overview of the complex pipeline benchmark.",
+        "- `latex/model_comparison.tex`: model-to-model deltas while holding structure and schema description fixed.",
+        "- `latex/schema_description_effect.tex`: naive versus advanced schema description deltas.",
+        "- `latex/structure_effect.tex`: flat versus structured database deltas.",
+        "- `latex/difficult_questions.tex`: questions with the lowest average F1 across configurations.",
+        "",
+        "The LaTeX fragments use `booktabs`, so add `\\usepackage{booktabs}` in Overleaf if it is not already included.",
+        "",
+        "## Notes for interpretation",
+        "",
+        "- Mean values aggregate repeated runs of the same benchmark, structure, schema description, and model.",
+        "- Delta tables report the second condition minus the first condition, so positive values mean the second condition performed better.",
+        "- The CSV files contain fuller versions of the same data and are better suited for appendix tables or manual checks.",
+        "",
+        "## Quick findings",
+        "",
     ]
 
+    for title, rows, dim in [
+        ("Model effect", model_comparison, "model"),
+        ("Schema-description effect", schema_comparison, "schema"),
+        ("Structure effect", structure_comparison, "structure"),
+    ]:
+        if not rows:
+            continue
+        strongest = max(rows, key=lambda row: abs(row["avg_f1_delta"]))
+        lines.append(
+            f"- {title}: largest F1 delta is {num(strongest['avg_f1_delta'])} "
+            f"for {', '.join(strongest[field] for field in strongest if field in {'benchmark_set', 'structure', 'schema', 'model'})}."
+        )
 
-def avg(rows: list[dict[str, Any]], field: str) -> float | None:
-    nums = values(rows, field)
-    return mean(nums) if nums else None
+    lines.extend(["", "## Most difficult questions", ""])
+    for row in difficult_questions[:10]:
+        question = row["question"]
+        if len(question) > 140:
+            question = question[:137] + "..."
+        lines.append(
+            f"- Q{row['question_id']} ({row['benchmark_set']}, {row['category']}): "
+            f"F1 {num(row['f1_mean'])}, success {pct(row['success_rate_mean'])}% - {question}"
+        )
 
-
-def sample_sd(rows: list[dict[str, Any]], field: str) -> float | None:
-    nums = values(rows, field)
-    return stdev(nums) if len(nums) > 1 else 0 if len(nums) == 1 else None
-
-
-def min_value(rows: list[dict[str, Any]], field: str) -> float | None:
-    nums = values(rows, field)
-    return min(nums) if nums else None
-
-
-def max_value(rows: list[dict[str, Any]], field: str) -> float | None:
-    nums = values(rows, field)
-    return max(nums) if nums else None
-
-
-def sum_value(rows: list[dict[str, Any]], field: str) -> float:
-    return sum(values(rows, field))
-
-
-def round_row(row: dict[str, Any]) -> dict[str, Any]:
-    rounded = {}
-    for key, value in row.items():
-        if isinstance(value, float):
-            rounded[key] = round(value, 4)
-        else:
-            rounded[key] = value
-    return rounded
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def sort_aggregate_row(row: dict[str, Any]) -> tuple[Any, ...]:
-    return (
-        row.get("benchmark_set"),
-        row.get("structure", ""),
-        row.get("schema_version", ""),
-        row.get("model", ""),
-        row.get("success_rate") if row.get("success_rate") is not None else 999,
-        str(row.get("category") or row.get("operation") or row.get("question_id") or ""),
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Create thesis-ready analysis tables from saved evaluation results.")
+    parser.add_argument("--results-dir", default="results", help="Directory containing result JSON files.")
+    parser.add_argument("--output-dir", default="results/analysis", help="Directory for analysis outputs.")
+    args = parser.parse_args()
+
+    results_dir = Path(args.results_dir)
+    output_dir = Path(args.output_dir)
+    csv_dir = output_dir / "csv"
+    latex_dir = output_dir / "latex"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    runs = load_runs(results_dir)
+    if not runs:
+        raise SystemExit(f"No result JSON files found under {results_dir}")
+
+    summary_rows = summarize_groups(runs)
+    model_comparison = comparison_rows(summary_rows, "model")
+    schema_comparison = comparison_rows(summary_rows, "schema")
+    structure_comparison = comparison_rows(summary_rows, "structure")
+    operation_rows = nested_summary_rows(runs, "by_operation")
+    category_rows = nested_summary_rows(runs, "by_category")
+    per_question = question_rows(runs)
+    difficult_questions = difficulty_rows(per_question)
+
+    summary_columns = [
+        "benchmark_set",
+        "structure",
+        "schema",
+        "model",
+        "runs",
+        "questions_per_run",
+        "scored_per_run",
+        "success_rate_mean",
+        "success_rate_std",
+        "avg_precision_mean",
+        "avg_recall_mean",
+        "avg_f1_mean",
+        "avg_f1_std",
+        "errors_mean",
+        "avg_time_ms_mean",
+    ]
+    write_csv(csv_dir / "config_summary.csv", summary_rows, summary_columns)
+    write_csv(csv_dir / "run_summary_all.csv", runs, [
+        "timestamp", "label", "model", "structure", "structure_base", "schema_description",
+        "schema_version", "benchmark", "benchmark_set", "total_questions", "scored_questions",
+        "successful_questions", "failed_questions", "success_rate", "avg_precision",
+        "avg_recall", "avg_f1", "error_total", "avg_time_ms", "path",
+    ])
+    write_csv(csv_dir / "model_comparison.csv", model_comparison, [
+        "benchmark_set", "structure", "schema", "model_a", "model_b",
+        "success_rate_a", "success_rate_b", "success_rate_delta",
+        "avg_f1_a", "avg_f1_b", "avg_f1_delta",
+    ])
+    write_csv(csv_dir / "schema_description_effect.csv", schema_comparison, [
+        "benchmark_set", "structure", "model", "schema_a", "schema_b",
+        "success_rate_a", "success_rate_b", "success_rate_delta",
+        "avg_f1_a", "avg_f1_b", "avg_f1_delta",
+    ])
+    write_csv(csv_dir / "structure_effect.csv", structure_comparison, [
+        "benchmark_set", "schema", "model", "structure_a", "structure_b",
+        "success_rate_a", "success_rate_b", "success_rate_delta",
+        "avg_f1_a", "avg_f1_b", "avg_f1_delta",
+    ])
+    write_csv(csv_dir / "operation_summary.csv", operation_rows, [
+        "benchmark_set", "structure", "schema", "model", "name", "runs",
+        "questions_mean", "successful_mean", "success_rate_mean",
+        "avg_precision_mean", "avg_recall_mean", "avg_f1_mean",
+    ])
+    write_csv(csv_dir / "category_summary.csv", category_rows, [
+        "benchmark_set", "structure", "schema", "model", "name", "runs",
+        "questions_mean", "successful_mean", "success_rate_mean",
+        "avg_precision_mean", "avg_recall_mean", "avg_f1_mean",
+    ])
+    write_csv(csv_dir / "per_question_by_config.csv", per_question, [
+        "benchmark_set", "question_id", "structure", "schema", "model", "runs",
+        "category", "operation", "success_rate_mean", "precision_mean",
+        "recall_mean", "f1_mean", "error_runs", "question",
+    ])
+    write_csv(csv_dir / "question_difficulty.csv", difficult_questions, [
+        "benchmark_set", "question_id", "category", "operation", "configurations",
+        "success_rate_mean", "f1_mean", "error_runs", "question",
+    ])
+
+    for bench in ("main", "complex"):
+        rows = [row for row in summary_rows if row["benchmark_set"] == bench]
+        table_rows = [
+            [
+                row["structure"].title(),
+                row["schema"].title(),
+                row["model"],
+                row["runs"],
+                pct(row["success_rate_mean"]),
+                num(row["avg_precision_mean"]),
+                num(row["avg_recall_mean"]),
+                num(row["avg_f1_mean"]),
+            ]
+            for row in rows
+        ]
+        write_latex_table(
+            latex_dir / f"{bench}_config_comparison.tex",
+            f"{bench.title()} benchmark performance by configuration.",
+            f"tab:{bench}-config-comparison",
+            ["Structure", "Schema", "Model", "Runs", "Success (%)", "P", "R", "F1"],
+            table_rows,
+            align="lllrrrrr",
+        )
+
+    write_latex_table(
+        latex_dir / "model_comparison.tex",
+        "Model comparison with fixed database structure and schema description.",
+        "tab:model-comparison",
+        ["Benchmark", "Structure", "Schema", "F1 4.1", "F1 5", "Delta F1"],
+        [
+            [
+                row["benchmark_set"].title(),
+                row["structure"].title(),
+                row["schema"].title(),
+                num(row["avg_f1_a"]),
+                num(row["avg_f1_b"]),
+                num(row["avg_f1_delta"]),
+            ]
+            for row in model_comparison
+        ],
+        align="lllrrr",
     )
+    write_latex_table(
+        latex_dir / "schema_description_effect.tex",
+        "Effect of advanced schema descriptions compared with naive descriptions.",
+        "tab:schema-description-effect",
+        ["Benchmark", "Structure", "Model", "F1 naive", "F1 advanced", "Delta F1"],
+        [
+            [
+                row["benchmark_set"].title(),
+                row["structure"].title(),
+                row["model"],
+                num(row["avg_f1_a"]),
+                num(row["avg_f1_b"]),
+                num(row["avg_f1_delta"]),
+            ]
+            for row in schema_comparison
+        ],
+        align="lllrrr",
+    )
+    write_latex_table(
+        latex_dir / "structure_effect.tex",
+        "Effect of structured database design compared with flat database design.",
+        "tab:structure-effect",
+        ["Benchmark", "Schema", "Model", "F1 flat", "F1 structured", "Delta F1"],
+        [
+            [
+                row["benchmark_set"].title(),
+                row["schema"].title(),
+                row["model"],
+                num(row["avg_f1_a"]),
+                num(row["avg_f1_b"]),
+                num(row["avg_f1_delta"]),
+            ]
+            for row in structure_comparison
+        ],
+        align="lllrrr",
+    )
+    write_latex_table(
+        latex_dir / "difficult_questions.tex",
+        "Questions with the lowest average F1 across configurations.",
+        "tab:difficult-questions",
+        ["Benchmark", "Question", "Category", "Success (%)", "F1"],
+        [
+            [
+                row["benchmark_set"].title(),
+                f"Q{row['question_id']}",
+                row["category"].replace("_", " "),
+                pct(row["success_rate_mean"]),
+                num(row["f1_mean"]),
+            ]
+            for row in difficult_questions[:12]
+        ],
+        align="lllrr",
+    )
+
+    write_summary_markdown(
+        output_dir / "summary.md",
+        runs,
+        summary_rows,
+        model_comparison,
+        schema_comparison,
+        structure_comparison,
+        difficult_questions,
+    )
+    print(f"Wrote analysis outputs to {output_dir}")
 
 
 if __name__ == "__main__":
