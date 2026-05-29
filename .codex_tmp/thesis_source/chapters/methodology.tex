@@ -1,0 +1,451 @@
+\chapter{Methodology} \label{ch:methodology}
+
+This chapter describes the method used to evaluate whether Large Language Models (LLMs) can generate executable MongoDB queries from Norwegian natural language questions. The chapter first presents the overall research design. It then describes the data preparation process, the construction of the two MongoDB database structures, the schema descriptions, benchmark construction, experimental system, evaluation metrics, experimental procedure, and limitations of the methodology.
+
+\section{Research Design}
+
+\subsection{Choice of Research Design}
+
+The aim of this thesis is to evaluate how effectively LLM-generated query code can retrieve correct and complete information from a MongoDB database in response to natural language questions. The study also investigates how query-generation quality is affected by three experimental factors: database structure, schema-description style, and model version.
+
+A controlled experimental design was chosen because it makes it possible to compare several configurations while keeping the underlying data, benchmark questions, evaluation procedure, and scoring metrics constant. This design is appropriate because the purpose of the study is not to observe a deployed system in use, but to measure how accurately different text-to-query configurations perform under repeatable conditions.
+
+The experiment was implemented as a software pipeline. Each benchmark question was submitted to an LLM together with a schema description. The model returned a MongoDB query in JSON format. The generated query was executed against a local MongoDB database, and the result was compared with the result from a manually written gold-standard query for the same question.
+
+\subsection{Experimental Approach}
+
+The evaluation is execution-based. This means that a generated query is not judged by whether it is textually identical to the gold-standard query. Instead, it is judged by whether executing it retrieves the same required information. This is important because several different MongoDB queries may be semantically equivalent even if they use different syntax, aliases, pipeline stages, or intermediate projections.
+
+The experimental pipeline consists of the following steps:
+
+\begin{enumerate}
+    \item Load a benchmark question and its gold-standard MongoDB query.
+    \item Load the schema description for the current database and user-expertise condition.
+    \item Construct a prompt containing system instructions, the schema description, and the Norwegian natural language question.
+    \item Send the prompt to the selected LLM.
+    \item Parse the model response as a JSON object representing a MongoDB query.
+    \item Execute the generated query against the relevant MongoDB database.
+    \item Execute or load the cached result of the gold-standard query.
+    \item Compare the generated result with the gold result using precision, recall, and F1-score.
+    \item Store the generated query, execution result, score, runtime, and failure information.
+\end{enumerate}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.8cm,
+        every node/.style={draw, rounded corners, align=center, minimum width=3.4cm, minimum height=0.8cm},
+        arrow/.style={-{Stealth[length=2mm]}, thick}
+    ]
+        \node (question) {Benchmark\\question};
+        \node (schema) [below=of question] {Schema\\description};
+        \node (prompt) [below=of schema] {Prompt\\construction};
+        \node (llm) [below=of prompt] {LLM query\\generation};
+        \node (execute) [below=of llm] {MongoDB\\execution};
+        \node (score) [below=of execute] {Gold-result\\comparison};
+        \node (store) [below=of score] {Result storage\\and analysis};
+
+        \draw[arrow] (question) -- (schema);
+        \draw[arrow] (schema) -- (prompt);
+        \draw[arrow] (prompt) -- (llm);
+        \draw[arrow] (llm) -- (execute);
+        \draw[arrow] (execute) -- (score);
+        \draw[arrow] (score) -- (store);
+    \end{tikzpicture}
+    \caption{Overview of the text-to-query evaluation pipeline.}
+    \label{fig:pipeline}
+\end{figure}
+
+\subsection{Experimental Variables}
+
+The independent variables in the experiment are:
+
+\begin{itemize}
+    \item \textbf{Database structure:} flat MongoDB representation versus structured hybrid MongoDB representation.
+    \item \textbf{Schema-description style:} naive natural-language schema description versus technical field-level schema description.
+    \item \textbf{Model version:} \texttt{gpt-4.1-mini} versus \texttt{gpt-5-mini}.
+\end{itemize}
+
+The dependent variables are:
+
+\begin{itemize}
+    \item Precision.
+    \item Recall.
+    \item F1-score.
+    \item Success rate.
+    \item Runtime per benchmark question.
+    \item Error type and failure reason.
+\end{itemize}
+
+All configurations use the same processed data, the same natural language questions, the same scoring logic, and the same success definition. This makes the results comparable across the experimental conditions.
+
+\subsection{Overview of the Methodological Process}
+
+The methodology consists of the following phases:
+
+\begin{enumerate}
+    \item Collection and preprocessing of CSV exports from the source data.
+    \item Construction of a flat MongoDB database.
+    \item Construction of a structured hybrid MongoDB database from the flat database.
+    \item Creation of naive and technical schema descriptions for both database structures.
+    \item Construction of benchmark questions and manually written gold-standard queries.
+    \item Validation of gold-standard queries across the flat and structured benchmark variants.
+    \item Implementation of the text-to-query evaluation pipeline.
+    \item Execution of experiments across database structures, schema descriptions, models, and benchmark sets.
+    \item Aggregation and analysis of precision, recall, F1-score, runtime, and failure cases.
+\end{enumerate}
+
+\section{Data Preparation}
+
+\subsection{Data Sources}
+
+The datasets used in this study were provided by Samarbeidsdesken and originated from structured data used in investigative journalism. The data had been exported as CSV files and primarily contained information retrieved from Norwegian public registers and related sources. The purpose of the data was to support exploration of possible relationships between politicians, companies, ownership structures, company roles, and financial interests.
+
+The raw data consisted of seven CSV files:
+
+\begin{itemize}
+    \item \texttt{aksjeeiebok.csv}, containing shareholder register entries.
+    \item \texttt{bankrupt\_2020\_120925.csv}, containing bankrupt company records.
+    \item \texttt{companies\_active\_companies\_pop\_100925\_v3.csv}, containing active company records.
+    \item \texttt{nace.csv}, containing NACE industry-code descriptions.
+    \item \texttt{ownerships\_2023\_2025.csv}, containing ownership relationships.
+    \item \texttt{persons\_active\_companies\_pop\_100925\_v3\_keep.csv}, containing persons and company roles.
+    \item \texttt{politikere.csv}, containing politician and election-result records.
+\end{itemize}
+
+The data contained several interconnected entities. Relationships were represented through organisation numbers, UUIDs, company names, person names, birth dates, and birth years. These identifiers made it possible to connect information across datasets, for example between politicians and persons with company roles, or between companies and ownership records.
+
+Some of these relationships are probabilistic rather than guaranteed. For example, politician records and company-role records may be connected through a combination of name and birth date or birth year, not through a shared unique person identifier. This is sufficient for experimental query evaluation, but in a real journalistic investigation such matches would require human verification before publication.
+
+\subsection{Preprocessing Implementation}
+
+The source data was processed from CSV files using a Python preprocessing script based on pandas. The script reads the raw CSV files, applies file-specific transformations, and writes the processed files to a separate processed-data directory. The processed CSV files are then used as the input for the MongoDB import scripts.
+
+The final processed dataset consists of five CSV files:
+
+\begin{itemize}
+    \item \texttt{aksjeeiebok.csv}: 762,063 rows and 10 columns.
+    \item \texttt{eierskap.csv}: 275 rows and 25 columns.
+    \item \texttt{personer.csv}: 4,095 rows and 26 columns.
+    \item \texttt{politikere.csv}: 53,366 rows and 11 columns.
+    \item \texttt{selskap.csv}: 2,001 rows and 10 columns.
+\end{itemize}
+
+A complete overview of the raw and processed CSV files is provided in the appendix. The main purpose of the preprocessing stage was to make the data more consistent, readable, and suitable for repeated query-generation experiments.
+
+\subsection{Data Cleaning and Transformation}
+
+\subsubsection{Removal of Irrelevant Attributes}
+
+Several raw files contained administrative fields, surrogate keys, duplicated columns, or columns that were not relevant to the benchmark tasks. These columns were removed to reduce schema complexity. For example, separate birth-day and birth-month fields were removed where a complete birth-date or birth-year field was already available. This reduced prompt complexity while preserving the attributes needed for realistic journalistic questions.
+
+\subsubsection{Renaming of Fields}
+
+Many raw source fields had long technical names, such as \texttt{shareholder\_person.birth\_date} or \texttt{company\_share\_ownership.voting\_share\_count}. These were renamed to clearer Norwegian field names such as \texttt{eierPersonFødselsdato} and \texttt{eierskapStemmeantall}. The renaming was important because the benchmark questions are written in Norwegian. More readable field names make the relationship between the natural language question and the database schema easier for both humans and models to interpret.
+
+\subsubsection{NACE Enrichment}
+
+The company files contained NACE industry codes. During preprocessing, the \texttt{nace.csv} reference file was used to add a descriptive \texttt{naceBeskrivelse} field next to \texttt{naceKode}. This allowed benchmark questions to refer to industries by description rather than only by numerical code.
+
+\subsubsection{Value Normalization}
+
+Known gender UUIDs were mapped to the Norwegian values \texttt{Mann} and \texttt{Kvinne}. Selected date fields were converted to UTC ISO 8601 strings where parsing succeeded. Shareholder names in \texttt{aksjeeiebok.csv} were title-cased to improve consistency when matching or displaying names.
+
+\subsubsection{Merging of Company Files}
+
+The active-company file and bankrupt-company file had the same relevant structure. After preprocessing, they were merged into one processed \texttt{selskap.csv} file. Bankruptcy information was preserved through the field \texttt{konkursFlagg}, while forced-liquidation status was preserved through \texttt{likvidasjonFlagg}. This made it possible to query all companies through one collection while still distinguishing company status.
+
+\section{MongoDB Database Setup}
+
+MongoDB was selected because the thesis focuses on text-to-query generation over JSON-like document data. MongoDB stores data as BSON documents grouped into collections, which makes it suitable for evaluating both flat and nested document structures.
+
+Two local MongoDB databases were created:
+
+\begin{itemize}
+    \item \texttt{groundtruth}, a flat database imported directly from the processed CSV files.
+    \item \texttt{groundtruthStructured}, a structured hybrid database built from the flat database.
+\end{itemize}
+
+Both databases use the same underlying processed data. The purpose of creating two representations was to test whether database structure affects the quality of LLM-generated MongoDB queries.
+
+\subsection{Flat Database Structure}
+
+The flat database, \texttt{groundtruth}, was created by importing each processed CSV file as a separate MongoDB collection. Each CSV row became one MongoDB document, and each processed CSV column became a top-level document field.
+
+The flat database contains the following collections:
+
+\begin{itemize}
+    \item \texttt{selskap}
+    \item \texttt{personer}
+    \item \texttt{politikere}
+    \item \texttt{eierskap}
+    \item \texttt{aksjeeiebok}
+\end{itemize}
+
+This structure resembles a relational database exported into MongoDB. Related information is stored in separate collections and must often be connected through fields such as \texttt{orgNr}, \texttt{selskapOrgNr}, \texttt{utstederOrgNr}, \texttt{navn}, \texttt{fødselsdato}, or UUID fields. Queries involving relationships across entities therefore often require aggregation pipelines and \texttt{\$lookup} stages.
+
+Indexes were created for common lookup and filtering fields. Examples include organisation numbers, names, birth dates, politician party names, election status, ownership year, shareholder name, and company status flags. These indexes were created to make repeated benchmark execution more practical.
+
+\subsection{Structured Hybrid Database Structure}
+
+The second database, \texttt{groundtruthStructured}, was created to evaluate whether a more document-oriented structure affects query-generation performance. This database was built from the flat database and reorganizes the same information into a hybrid structure.
+
+The structured database is hybrid rather than fully embedded. It contains entity-centered documents with embedded summaries, while also preserving complete source records in separate collections. This design was chosen because a fully embedded structure would be impractical for some relationships. For example, a company may have many shareholder-register entries, ownership records, or role records. Embedding all related records without limits could create very large documents and make aggregation-heavy queries less efficient.
+
+The structured database contains:
+
+\begin{itemize}
+    \item \texttt{selskap}, where each document represents one company and contains nested objects such as \texttt{bransje}, \texttt{datoer}, \texttt{status}, and \texttt{relasjoner}.
+    \item \texttt{personer}, where each document represents one identified person or politician and contains embedded summaries of roles, ownerships, and shareholder-register entries where available.
+    \item \texttt{roller}, which preserves the original role-level records from the flat \texttt{personer} collection.
+    \item \texttt{politikere}, \texttt{eierskap}, and \texttt{aksjeeiebok}, which preserve complete source records as standalone collections.
+\end{itemize}
+
+Embedded arrays in company and person documents are limited to 100 items per relationship type. The documents also include relationship counters such as \texttt{relasjoner.antallRoller}, \texttt{relasjoner.antallEierskap}, and \texttt{relasjoner.antallAksjeeierbok}. This allows some questions to be answered directly from an entity document while preserving complete records for detailed queries and large aggregations.
+
+The structured database therefore tests a different trade-off. Some questions may become easier because related information is available inside one document. Other questions may become harder because the model must choose between embedded summaries and standalone collections, and because nested field paths and arrays increase query complexity.
+
+\section{Database Schema Descriptions}
+
+In the text-to-query pipeline, the LLM does not have direct knowledge of the database unless this information is included in the prompt. The schema description therefore serves as the model's main source of information about available collections, fields, relationships, and intended use of the data.
+
+Four schema descriptions were created:
+
+\begin{itemize}
+    \item \texttt{flat\_naive.yaml}
+    \item \texttt{flat\_advanced.yaml}
+    \item \texttt{structured\_naive.yaml}
+    \item \texttt{structured\_advanced.yaml}
+\end{itemize}
+
+All schema descriptions are written in Norwegian, matching the language of the benchmark questions.
+
+\subsection{Naive Schema Descriptions}
+
+The naive schema descriptions are written as natural-language explanations. They are intended to approximate the type of database description that could be written by a journalist or non-technical domain user. They describe what each collection contains, which fields are important, and what kinds of questions the collection can answer.
+
+Although the descriptions are non-technical in style, they still include explicit collection and field names. This was necessary because MongoDB queries must use exact field names. Without explicit field names, the model would be more likely to generate queries against fields that do not exist.
+
+\subsection{Technical Schema Descriptions}
+
+The technical schema descriptions provide a more database-oriented representation. They list collections, field paths, expected data types, nested structures, arrays, and selected example or allowed values. For the structured database, this includes nested paths such as \texttt{status.konkursFlagg}, \texttt{bransje.naceBeskrivelse}, and fields inside embedded arrays.
+
+The technical descriptions represent the kind of schema documentation that a database-aware user, developer, or data engineer might provide. Comparing naive and technical descriptions makes it possible to evaluate whether more detailed schema information improves query-generation quality, or whether additional detail increases prompt complexity without improving results.
+
+\section{Benchmark Construction}
+
+\subsection{Benchmark Design}
+
+The benchmark was constructed manually. Each benchmark item consists of a Norwegian natural language question, a category label, and a gold-standard MongoDB query. The benchmark was designed to cover information needs relevant to investigative journalism, such as finding politicians connected to companies, identifying ownership relationships, counting roles, retrieving shareholder records, and aggregating values across parties, companies, or years.
+
+Two benchmark sets were created:
+
+\begin{itemize}
+    \item A standard benchmark with 55 questions for each database structure.
+    \item A complex benchmark with 5 aggregation-heavy questions for each database structure.
+\end{itemize}
+
+The flat and structured standard benchmarks contain the same natural language tasks, but the gold-standard queries are adapted to the corresponding database structure. The same applies to the complex benchmarks.
+
+\subsection{Benchmark Categories}
+
+The standard benchmark contains eleven categories, with five questions in each category:
+
+\begin{itemize}
+    \item \texttt{selection\_conditions}
+    \item \texttt{find\_projection}
+    \item \texttt{alias\_projection}
+    \item \texttt{text\_or\_pattern\_filter}
+    \item \texttt{distinct}
+    \item \texttt{aggregate\_group\_count}
+    \item \texttt{aggregate\_group\_sum}
+    \item \texttt{aggregate\_group\_avg}
+    \item \texttt{aggregate\_having\_sort\_limit}
+    \item \texttt{lookup\_join}
+    \item \texttt{quantifier\_exists}
+\end{itemize}
+
+These categories were selected to test a range of query-generation skills. Some tasks require simple filtering or projection, while others require grouping, aggregation, sorting, limiting, joining, or testing the existence of related records. This makes it possible to analyze whether certain query types are more difficult for the models.
+
+\subsection{Gold-Standard Queries}
+
+Each benchmark question was paired with a manually written gold-standard MongoDB query. The gold query defines the intended interpretation of the natural language question and serves as the reference for evaluation.
+
+The supported gold-query operations are:
+
+\begin{itemize}
+    \item \texttt{find}, for document retrieval and projection.
+    \item \texttt{distinct}, for retrieving unique values.
+    \item \texttt{aggregate}, for aggregation pipelines, joins, grouping, sorting, and more complex transformations.
+\end{itemize}
+
+In the standard benchmark, each database representation contains 14 \texttt{find} questions, 5 \texttt{distinct} questions, and 36 \texttt{aggregate} questions. The complex benchmark contains 5 \texttt{aggregate} questions for each database representation.
+
+\subsection{Flat and Structured Benchmark Variants}
+
+Separate benchmark files were created for the flat and structured databases:
+
+\begin{itemize}
+    \item \texttt{flat.json}
+    \item \texttt{structured.json}
+    \item \texttt{flat\_complex.json}
+    \item \texttt{structured\_complex.json}
+\end{itemize}
+
+The natural language questions were kept equivalent across the flat and structured variants. The gold queries, however, had to differ because the database schemas differ. In the structured benchmark, some queries use nested field paths, embedded arrays, or the separate \texttt{roller} collection. In the flat benchmark, equivalent tasks often require joins between separate collections.
+
+Gold-query validation was performed before running the LLM experiments. The validation script executes the gold queries against the flat and structured databases and compares the result values for matching benchmark IDs. This reduces the risk that differences in LLM performance are caused by inconsistent benchmark definitions rather than by the experimental variables.
+
+\subsection{Complex Query Benchmarks}
+
+The complex benchmark was added to test more difficult aggregation-pipeline tasks. These questions require several pipeline stages and often combine matching, lookup operations, array processing, grouping, computed counts, sorting, and projection.
+
+The purpose of the complex benchmark is not to represent the average user question. Instead, it isolates tasks where query construction is expected to be difficult. This makes it possible to analyze whether the models can handle more demanding investigative queries, and whether errors increase when the generated query must preserve several constraints at the same time.
+
+\section{Experimental System}
+
+\subsection{System Architecture}
+
+The experimental system was implemented in Python. It consists of separate modules for configuration, benchmark loading, schema loading, prompt construction, LLM query generation, MongoDB execution, gold-result caching, scoring, result storage, and analysis.
+
+The system uses a local MongoDB instance. The flat database is created by importing the processed CSV files into MongoDB. The structured database is then created from the flat database. LLM calls are made through the OpenAI API. Results are stored as JSON files under the \texttt{results} directory, and summary rows are appended to \texttt{results/run\_index.jsonl}.
+
+\subsection{Prompt Construction}
+
+The prompt contains two main parts: a fixed system instruction and a user message. The system instruction tells the model to translate Norwegian natural language questions into MongoDB queries and to return only one valid JSON object. It also defines the supported operations: \texttt{find}, \texttt{distinct}, and \texttt{aggregate}. The instruction requires exact collection and field names from the schema and asks the model to use dot notation for nested fields.
+
+The user message contains the schema description and the benchmark question. The model is therefore given both the database context and the specific information need in the same prompt. The response is expected to be a JSON object representing an executable MongoDB query.
+
+\subsection{Query Generation and Execution}
+
+The generated model response is parsed as JSON. If parsing fails, the question is marked as an LLM error. If parsing succeeds, the resulting query is executed against the relevant MongoDB database.
+
+Only three operations are supported by the execution engine: \texttt{find}, \texttt{distinct}, and \texttt{aggregate}. Aggregation queries are executed with disk use enabled. A maximum query execution time is configured to prevent individual queries from running indefinitely. In the implemented experiments, the query time limit is 60,000 milliseconds.
+
+\subsection{Result Storage and Analysis}
+
+For each question, the system stores the question ID, natural language question, benchmark category, gold query, generated query, raw model response, status, score, result counts, timing information, and examples of missing or extra values. For each run, it also stores aggregate metrics such as average precision, recall, F1-score, success rate, runtime, and error counts.
+
+After the experiments, an analysis script reads the saved result files and generates CSV summaries, LaTeX tables, and Markdown summaries. These outputs are used in the results chapter and support comparisons across database structures, schema-description styles, benchmark categories, operation types, and model versions.
+
+\section{Evaluation Methodology}
+
+\subsection{Execution-Based Evaluation}
+
+The evaluation compares the output of the generated query with the output of the gold-standard query. This approach was chosen because the goal of the system is to retrieve correct information, not to reproduce one exact query string.
+
+The comparison logic depends on the operation type. For \texttt{distinct} queries, the compared units are the distinct scalar values. For \texttt{aggregate} queries, the compared units are normalized aggregate-row values, and output alias names are ignored as long as the returned values match. For \texttt{find} queries with projections, the comparison focuses on the field-value pairs required by the gold projection.
+
+MongoDB object IDs are converted to strings before comparison. Returned values are normalized into stable JSON representations so that result order does not affect scoring.
+
+\subsection{Precision, Recall, and F1-Score}
+
+Precision measures how much of the generated output is relevant:
+
+\[
+\text{Precision} = \frac{\text{true positives}}{\text{generated results}}
+\]
+
+Recall measures how much of the gold output was retrieved:
+
+\[
+\text{Recall} = \frac{\text{true positives}}{\text{gold results}}
+\]
+
+F1-score is the harmonic mean of precision and recall:
+
+\[
+\text{F1} = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}
+\]
+
+Extra returned documents or values reduce precision. Missing expected documents or values reduce recall. For projected \texttt{find} queries, field precision is also considered, so returning unnecessary fields can reduce the final precision score.
+
+\subsection{Success Definition}
+
+A benchmark question is marked as successful when all of the following conditions are met:
+
+\begin{itemize}
+    \item Recall is 1.0.
+    \item All required projected fields are included, when the gold query uses projection.
+    \item Precision is at least 0.5.
+\end{itemize}
+
+The precision threshold allows a query to be considered successful even if it returns some extra information, as long as it retrieves all required information and does not return excessive irrelevant output. This reflects the intended journalistic use case, where complete retrieval may be more important than perfectly minimal output, but where too much irrelevant output still reduces usefulness.
+
+If both the gold query and generated query return no results, the implementation treats this as full result equivalence. This is a practical scoring decision, but it does not prove that the generated query is semantically equivalent to the gold query.
+
+\section{Experimental Configurations}
+
+\subsection{Main Configurations}
+
+The main experiment combines two database structures, two schema-description styles, and two model versions:
+
+\begin{itemize}
+    \item Database structures: \texttt{groundtruth} and \texttt{groundtruthStructured}.
+    \item Schema descriptions: naive and technical.
+    \item Models: \texttt{gpt-4.1-mini} and \texttt{gpt-5-mini}.
+\end{itemize}
+
+This results in eight configurations for the standard benchmark. The same eight configurations are also used for the complex benchmark.
+
+\subsection{Model and Runtime Settings}
+
+The experiments use a temperature of 0.0 to reduce randomness in model output. The maximum response length is set to 3,000 tokens. MongoDB query execution is limited to 60 seconds per query. Gold-query results are cached so that repeated runs do not unnecessarily re-execute expensive gold queries.
+
+\subsection{Repeated Runs}
+
+Each full configuration was executed three times. Repeated runs are useful because LLM outputs can vary even when the temperature is low. The analysis reports arithmetic means across repeated runs, and stability tables are generated to show variation between runs.
+
+\section{Experimental Procedure}
+
+The experiment was conducted as follows:
+
+\begin{enumerate}
+    \item Run the CSV preprocessing script to create the processed dataset.
+    \item Import the processed CSV files into the flat MongoDB database \texttt{groundtruth}.
+    \item Build the structured hybrid MongoDB database \texttt{groundtruthStructured}.
+    \item Execute the gold queries for both database structures and compare flat and structured gold results.
+    \item Run the standard benchmark for all combinations of database structure, schema description, and model.
+    \item Run the complex benchmark for the same configurations.
+    \item Store all per-question and per-run results as JSON files.
+    \item Generate aggregate CSV files, LaTeX tables, and Markdown summaries for analysis.
+\end{enumerate}
+
+The command-line interface supports running individual structures, schema versions, benchmark sets, models, repeated runs, and individual question IDs. This made it possible to test single questions during development and then run complete experiment batches for final analysis.
+
+\section{Validity and Limitations}
+
+\subsection{Internal Validity}
+
+The controlled design improves internal validity because the same data, benchmark questions, scoring logic, and execution environment are used across configurations. Gold-query validation further reduces the risk that differences between the flat and structured benchmarks are caused by inconsistent expected results.
+
+However, internal validity depends on the correctness of the manually written gold-standard queries. If a gold query contains an error, the evaluation will reward generated queries that reproduce that error and penalize queries that may be correct under another interpretation. To reduce this risk, gold queries were executed and compared before the main experiments.
+
+\subsection{Construct Validity}
+
+Precision, recall, and F1-score measure whether the generated query retrieves the same values as the gold query. These metrics are suitable for evaluating retrieval correctness, but they do not capture every aspect of usefulness in a journalistic workflow. For example, a query may be syntactically complex, difficult to inspect, or risky to use even if it returns the correct values. The study therefore evaluates retrieval quality, not full usability or trustworthiness in a newsroom setting.
+
+The success definition also includes a precision threshold of 0.5. This threshold reflects the assumption that retrieving all required information is essential, while some extra output may still be acceptable if a journalist or technical reviewer can inspect the results. Other thresholds could lead to different success-rate values.
+
+\subsection{External Validity}
+
+The dataset and benchmark are based on a specific investigative-journalism domain involving Norwegian companies, politicians, ownership, and shareholder data. The results may not generalize directly to other domains, other languages, larger production databases, or other database systems.
+
+The benchmark questions were manually designed and may not fully represent how journalists would phrase questions in practice. The study therefore evaluates controlled text-to-query performance rather than natural user interaction in a deployed interface.
+
+\subsection{Reliability}
+
+The implementation improves reliability by storing benchmark files, schema descriptions, generated queries, scores, and run summaries. Repeated runs make it possible to inspect variation between executions. Gold-result caching also makes repeated evaluation more consistent and efficient.
+
+However, LLM-based systems can change over time as hosted models are updated. Even with the same prompt and temperature, future executions may not produce identical outputs. The stored result files therefore serve as the record of the experimental runs used in this thesis.
+
+\subsection{Ethical and Practical Limitations}
+
+The data concerns public figures, companies, and ownership relationships. Even when data is publicly available, linking records across sources can produce sensitive implications. This is especially important when matches are based on names and birth dates rather than unique identifiers. In practical journalistic use, generated queries and returned matches should therefore be reviewed before being used as evidence.
+
+The system is intended to support exploration, not to replace journalistic verification. It can help users formulate and execute database queries, but the generated query code and retrieved results still require critical inspection.
+
+\section{Chapter Summary}
+
+This chapter has described the methodology used to evaluate LLM-generated MongoDB queries. The study uses a controlled experimental design with two database structures, two schema-description styles, two model versions, and two benchmark sets. The data was prepared from CSV exports, imported into a flat MongoDB database, and reorganized into a structured hybrid database. Manually written gold-standard queries were used for execution-based evaluation, and generated query results were scored using precision, recall, F1-score, success rate, runtime, and failure analysis. The next chapter presents the results of these experiments.
+

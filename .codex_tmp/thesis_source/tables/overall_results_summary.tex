@@ -1,0 +1,29 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{Overall performance summary across all evaluated configurations.}
+\label{tab:overall-results-summary}
+\begin{tabular}{llrrrrr}
+\toprule
+Benchmark & Configuration & Runs & Precision & Recall & F1 & Runtime (s) \\
+\midrule
+Standard & Flat + Naive + GPT-4.1-mini & 3 & 0.777 & 0.790 & 0.769 & 3.02 \\
+Standard & Flat + Naive + GPT-5-mini & 3 & 0.839 & 0.853 & 0.839 & 7.62 \\
+Standard & Flat + Technical + GPT-4.1-mini & 3 & 0.747 & 0.757 & 0.737 & 2.44 \\
+Standard & Flat + Technical + GPT-5-mini & 3 & 0.851 & 0.842 & 0.840 & 9.52 \\
+Standard & Structured + Naive + GPT-4.1-mini & 3 & 0.685 & 0.704 & 0.677 & \textbf{2.24} \\
+Standard & Structured + Naive + GPT-5-mini & 3 & 0.787 & 0.784 & 0.779 & 8.16 \\
+Standard & Structured + Technical + GPT-4.1-mini & 3 & 0.631 & 0.681 & 0.630 & 2.32 \\
+Standard & Structured + Technical + GPT-5-mini & 3 & 0.759 & 0.792 & 0.758 & 9.87 \\
+Complex & Flat + Naive + GPT-4.1-mini & 3 & 0.658 & 0.674 & 0.665 & 6.38 \\
+Complex & Flat + Naive + GPT-5-mini & 3 & 0.567 & 0.567 & 0.567 & 29.07 \\
+Complex & Flat + Technical + GPT-4.1-mini & 3 & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} & 10.24 \\
+Complex & Flat + Technical + GPT-5-mini & 3 & 0.722 & 0.722 & 0.722 & 28.53 \\
+Complex & Structured + Naive + GPT-4.1-mini & 3 & 0.547 & 0.521 & 0.528 & 3.01 \\
+Complex & Structured + Naive + GPT-5-mini & 3 & 0.578 & 0.484 & 0.514 & 22.80 \\
+Complex & Structured + Technical + GPT-4.1-mini & 3 & 0.578 & 0.597 & 0.587 & 15.22 \\
+Complex & Structured + Technical + GPT-5-mini & 3 & 0.561 & 0.561 & 0.561 & 22.22 \\
+\bottomrule
+\end{tabular}
+\par\footnotesize{Values are means across three runs. Bold indicates the best value in each metric column.}
+\end{table}

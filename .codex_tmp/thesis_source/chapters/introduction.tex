@@ -1,0 +1,71 @@
+\chapter{Introduction} \label{ch:intro}
+
+Recent advances in Artificial Intelligence (AI), particularly Large Language Models (LLMs), have introduced new possibilities for interacting with complex information systems through natural language. Tasks that previously required specialized technical expertise, can now be automated or simplified by AI-driven systems. One emerging research area, is text-to-query systems, which aim to make structured data more accessible by allowing users to retrieve information without requiring technical knowledge of database systems and query languages. Through natural language, LLMs can be used to translate the user requests into executable database queries. Such systems may lower the technical barrier for database exploration, thereby improving accessibility for users without formal technical expertise. 
+
+Generating reliable query code, however, remains a technical challenge. To successfully retrieve relevant information, generated database queries must not only to be syntactically correct, but also semantically aligned with the user's intention. Errors in the generated query code may lead to incorrect, incomplete or misleading information. This is particularly challenging in domains where factual correctness and information verification are essential. 
+
+Journalism is one such domain where access to reliable and verifiable information plays a critical role. While LLMs are increasingly used for tasks such as summarization, transcription and language correction, their tendency to generate hallucinated or factually incorrect information, limits their reliability as a direct sources of information. This creates a need for a "human in the loop" approach, where generated information must be verified before it can being used in journalistic work. However, investigative journalism may involve a significant amount of information, making manual verification of all generated information impractical. Furthermore, LLMs largely operate as "black-box" systems, making it difficult to inspect or explain the reasoning process behind the generated information.
+
+An alternative approach is therefore to use LLMs as interfaces for generating executable query code over structured and verifiable data sources. Rather than relying on the LLM to generate factual information directly, the model is used to retrieve information from existing datasets through generated database queries. This may improve verifiability be allowing the generated query code itself to be inspected and validated. Such an approach can be viewed as a "coder in the loop" framework, where technical experts focus on verifying the generated query code rather than manually retrieving and processing the underlying data. 
+
+
+\section{Motivation}
+
+This project is made in collaboration with "Samarbeidsdesken", a joint initiative between SUJO (Centre for Investigative Journalism), NRK and LLA (Norwegian Local News Association). 
+The initiative aims to strengthen investigative journalism among smaller local newspapers by combining resources and expertise related to research, data analysis and investigative reporting.  
+
+Investigative journalism often involves extensive analysis of large amounts of structured information in order to uncover hidden relationships, corruption, conflicts of interest or abuse of power. This process frequently requires journalists to retrieve and analyze information stored in databases. Accessing such information typically requires technical knowledge of database systems, query languages and underlying data structures. 
+
+While larger news organizations usually have dedicated technical teams capable of assisting journalists, smaller local newspapers may lack such resources. As a result, journalists can become dependent on external technical assistance when working with databases, which may slow down the investigative process and reduce their ability to work independently.
+
+The intended user in this thesis is therefore an investigative journalist working with structured public data. The approach assumes that the journalist understands the meaning of the underlying data and how information is represented in format such as JSON, but does not necessarily possess expertise in database systems or query languages. The journalist is expected to describe the available data and information needs using natural language, while the LLM assists by generating executable query code. Public datasets used in investigative journalism are commonly distributed in structured formats such as CSV, Excel, XML and JSON. This thesis focuses specifically on JSON-based document databases through MongoDB, as such strcutres are well suited for evaluating modern text-to-query systems operating over semi-structured data. 
+
+The motivation being this thesis is therefore to investigate whether LLM-generated query code can help lower the technical barrier for database exploration, allowing journalists to interact with databases through Norwegian natural language as part of a more independent data exploration workflow. To investigate this, a prototype text-to-query system is developed and experimentally evaluated using MongoDB databases and benchmark-based testing. 
+
+
+\section{Research Questions}
+
+The primary objective of this thesis is to evaluate whether Large Language Models (LLMs) can support investigative journalists in retrieving information from databases through natural language interaction. More specifically, the study investigates whether LLM-generated query code can reduce the need for external technical assistance while still retrieving factually correct and complete information.
+
+The primary research question is defined as follows:
+
+\begin{quote}
+    \textit{To what extent can LLM-generated query code retrieve factually correct and complete information from a database in response to natural language queries?}
+\end{quote}
+
+To further investigate this problem, the study is divided into the following secondary research questions:
+
+\begin{enumerate}
+    \item \textbf{Database Structure} \\
+    How does database structure, including flat and nested representation, affect the quality of the LLM-generated query code?
+
+    \item \textbf{Model version} \\
+    How do different versions of a Large Language Model influence the quality of the generated code?
+
+    \item \textbf{User expertise} \\
+    How does the user's level of technical expertise, reflected in query formulation and database description, influence the quality of LLM-generated query code?
+
+    Two levels of user expertise are considered in this study:
+
+\begin{itemize}
+    \item \textbf{Naive user} - Uses everyday, non-technical language with minimal awareness of database structure and schema design. 
+
+    \item \textbf{Database-aware user} - Demonstrates familiarity with structure of database
+\end{itemize}
+
+    \item \textbf{Failure Analysis} \\
+    Are there specific categories of natural language queries that consistently lead to errors or failures in LLM-generated query code?
+\end{enumerate}
+
+
+
+\section{Thesis Outline}
+
+\begin{itemize}
+    \item \textbf{Chapter 2: Background} - Presents concepts related to text-to-query systems, MongoDB, Large Language Models, and evaluation metrics used in this research.
+    \item \textbf{Chapter 3: Methodology} - Describes the data preparation process, database creation, experimental setup and evaluation methods used throughout the study. 
+   \item \textbf{Chapter 4: Results} - Presents the results from the conducted experiments and compares the performance across different configurations. 
+    \item \textbf{Chapter 5: Discussion} - Interprets the findings, discuss limitations and reflect on the implications of using LLM-generated query code in investigative journalism. 
+   \item \textbf{Chapter 6: Conclusion} - Summarizes the findings of the study, answers the research questions and discusses the implications for the design of AI-assisted text-to-query systems in investigative journalism. Also presents recommendations for future system design, verification workflows and ares for further research. 
+\end{itemize}
+

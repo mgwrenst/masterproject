@@ -1,0 +1,55 @@
+%\documentclass[a4paper,12pt]{book} % If you want A4 format
+\documentclass[b5paper,12pt]{book} % If you want b5 format
+
+\input{settings}
+
+\author{Martin Gajan Ananthan Wrensted}
+\title{Empowering Journalists With AI-Driven Data Exploration}
+\newcommand{\Thesisplaintitle}{Empowering Journalists With AI-Driven Data Exploration} 
+\date{2026}
+\newcommand{\Thesisfulldate}{\today}
+
+
+
+
+\begin{document}
+
+\frontmatter
+
+\input{frontmatter/titlepage}
+\input{frontmatter/copyright}
+\input{frontmatter/acknowledgements}
+\input{frontmatter/abstract}
+\tableofcontents
+
+\mainmatter
+
+% !TEX encoding = UTF-8 Unicode
+
+\input{chapters/introduction}
+
+\input{chapters/background}
+
+
+% \input{chapters/test}
+
+\input{chapters/methodology}
+
+\input{chapters/results}
+
+\input{chapters/discussion}
+
+\input{chapters/conclusion}
+
+% add more chapters as needed
+\appendix
+\renewcommand{\chaptermark}[1]{\markboth{\small Appendix \thechapter. #1}{}}
+
+\chapter{Title of the first appendix} \label{app:freq}
+
+% add more appendices as needed
+\backmatter
+\bibliographystyle{model5-names} % or another bib style
+\bibliography{references}
+
+\end{document}

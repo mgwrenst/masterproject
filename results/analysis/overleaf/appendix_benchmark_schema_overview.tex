@@ -1,0 +1,78 @@
+% Requires: \usepackage{booktabs,longtable,array}
+% Recommended before including this file:
+% \newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Benchmark files and operation types.}
+\label{tab:appendix-benchmark-files}
+\begin{tabular}{lrrrr}
+\toprule
+Benchmark file & Questions & Find & Distinct & Aggregate \\
+\midrule
+\texttt{flat.json} & 55 & 14 & 5 & 36 \\
+\texttt{structured.json} & 55 & 14 & 5 & 36 \\
+\texttt{flat\_complex.json} & 5 & 0 & 0 & 5 \\
+\texttt{structured\_complex.json} & 5 & 0 & 0 & 5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{longtable}{P{0.34\linewidth}rrrr}
+\caption{Standard benchmark categories.}
+\label{tab:appendix-standard-benchmark-categories}\\
+\toprule
+Category & Flat & Structured & Questions per representation & Purpose \\
+\midrule
+\endfirsthead
+\toprule
+Category & Flat & Structured & Questions per representation & Purpose \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\texttt{selection\_conditions} & 5 & 5 & 5 & Filtering documents by one or more conditions. \\
+\texttt{find\_projection} & 5 & 5 & 5 & Returning selected fields from matching documents. \\
+\texttt{alias\_projection} & 5 & 5 & 5 & Projecting or renaming output fields. \\
+\texttt{text\_or\_pattern\_filter} & 5 & 5 & 5 & Matching names, text values or simple patterns. \\
+\texttt{distinct} & 5 & 5 & 5 & Returning unique values. \\
+\texttt{aggregate\_group\_count} & 5 & 5 & 5 & Grouping records and counting occurrences. \\
+\texttt{aggregate\_group\_sum} & 5 & 5 & 5 & Grouping records and summing numeric fields. \\
+\texttt{aggregate\_group\_avg} & 5 & 5 & 5 & Grouping records and computing averages. \\
+\texttt{aggregate\_having\_sort\_limit} & 5 & 5 & 5 & Filtering grouped results, sorting and limiting outputs. \\
+\texttt{lookup\_join} & 5 & 5 & 5 & Connecting information across collections or embedded relationships. \\
+\texttt{quantifier\_exists} & 5 & 5 & 5 & Testing existence or absence of related records. \\
+\end{longtable}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Complex benchmark category.}
+\label{tab:appendix-complex-benchmark-category}
+\begin{tabular}{lrrp{0.48\linewidth}}
+\toprule
+Category & Flat & Structured & Purpose \\
+\midrule
+\texttt{complex\_pipeline\_stress} & 5 & 5 & Stress tests requiring multi-stage aggregation pipelines, cross-collection matching and grouped summaries. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Schema descriptions used as model context.}
+\label{tab:appendix-schema-descriptions}
+\begin{tabular}{lp{0.32\linewidth}p{0.38\linewidth}}
+\toprule
+File & Description style & Main content \\
+\midrule
+\texttt{flat\_naive.yaml} & Natural-language flat schema & Describes the flat collections and how they can be used for questions about companies, people, politicians, ownership and shareholder records. \\
+\texttt{flat\_advanced.yaml} & Technical flat schema & Lists collection fields, field types and selected allowed/example values for the flat database. \\
+\texttt{structured\_naive.yaml} & Natural-language structured schema & Describes the structured document model, including embedded relationship summaries under company and person documents. \\
+\texttt{structured\_advanced.yaml} & Technical structured schema & Lists top-level and nested field paths, array structures, relationship counters, booleans and selected allowed/example values. \\
+\bottomrule
+\end{tabular}
+\end{table}
+

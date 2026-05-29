@@ -1,0 +1,17 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{Standard query benchmark performance.}
+\label{tab:standard-query-results}
+\begin{tabular}{lrrr}
+\toprule
+Configuration & Precision & Recall & F1 \\
+\midrule
+Flat + GPT-4.1-mini & 0.762 & 0.774 & 0.753 \\
+Flat + GPT-5-mini & 0.845 & 0.847 & 0.840 \\
+Structured + GPT-4.1-mini & 0.658 & 0.693 & 0.654 \\
+Structured + GPT-5-mini & 0.773 & 0.788 & 0.769 \\
+\bottomrule
+\end{tabular}
+\par\footnotesize{Values are averaged across naive and technical schema descriptions.}
+\end{table}

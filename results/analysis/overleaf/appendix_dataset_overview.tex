@@ -1,0 +1,66 @@
+% Requires: \usepackage{booktabs,longtable,array}
+% Recommended before including this file:
+% \newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\begin{longtable}{P{0.26\linewidth}rrcP{0.38\linewidth}}
+\caption{Raw CSV files before preprocessing.}
+\label{tab:appendix-raw-csv-files}\\
+\toprule
+File & Rows & Columns & Delimiter & Main contents \\
+\midrule
+\endfirsthead
+\toprule
+File & Rows & Columns & Delimiter & Main contents \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\texttt{aksjeeiebok.csv} & 762,063 & 10 & \texttt{;} & Shareholder register entries with organisation number, company name, shareholder name, birth year or organisation number, country code, share counts and year. \\
+\texttt{bankrupt\_2020\_120925.csv} & 572 & 10 & \texttt{,} & Bankrupt company records with company identifiers, status flags, NACE code, organisation type and establishment/dissolution dates. \\
+\texttt{companies\_active\_companies\_pop\_100925\_v3.csv} & 1,429 & 10 & \texttt{,} & Active company records with the same company fields as the bankrupt-company file. \\
+\texttt{nace.csv} & 1,783 & 8 & \texttt{;} & NACE code reference table used to enrich company records with industry descriptions. \\
+\texttt{ownerships\_2023\_2025.csv} & 275 & 35 & \texttt{,} & Ownership records containing person owners, company owners, share-issuer companies, ownership percentages, share counts and voting rights. \\
+\texttt{persons\_active\_companies\_pop\_100925\_v3\_keep.csv} & 4,095 & 57 & \texttt{,} & Person, address, company and company-role records. \\
+\texttt{politikere.csv} & 53,366 & 11 & \texttt{;} & Politician records with party, municipality, birth date, list placement, personal votes, transfers, ranking and election status. \\
+\end{longtable}
+
+\begin{longtable}{P{0.22\linewidth}rrP{0.50\linewidth}}
+\caption{Processed CSV files used to populate the experimental databases.}
+\label{tab:appendix-processed-csv-files}\\
+\toprule
+File & Rows & Columns & Columns \\
+\midrule
+\endfirsthead
+\toprule
+File & Rows & Columns & Columns \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\texttt{aksjeeiebok.csv} & 762,063 & 10 & \texttt{orgNr}, \texttt{selskap}, \texttt{aksjeklasse}, \texttt{aksjonærNavn}, \texttt{fødselsår}, \texttt{postnr/sted}, \texttt{landkode}, \texttt{antallAksjer}, \texttt{antallAksjerSelskap}, \texttt{år}. \\
+\texttt{eierskap.csv} & 275 & 25 & \texttt{eierPersonUUID}, \texttt{eierPersonNavn}, \texttt{eierPersonFødselsdato}, \texttt{eierPersonFødselsår}, \texttt{eierPersonKjønn}, \texttt{eierPersonPostkode}, \texttt{eierPersonPoststed}, \texttt{eierPersonAdresse}, \texttt{eierPersonKommuneNr}, \texttt{eierPersonKommune}, \texttt{eierSelskapNavn}, \texttt{eierSelskapUUID}, \texttt{eierSelskapOrgNr}, \texttt{utstederNavn}, \texttt{utstederUUID}, \texttt{utstederOrgNr}, \texttt{eierskapUUID}, \texttt{eierskapår}, \texttt{eierskapAndel}, \texttt{eierskapAntall}, \texttt{eierskapAksjonær}, \texttt{eierskapStemmeandel}, \texttt{eierskapStemmeantall}, \texttt{eierskapTotalAntall}, \texttt{eierskapTotalStemmeantall}. \\
+\texttt{personer.csv} & 4,095 & 26 & \texttt{uuid}, \texttt{navn}, \texttt{fødselsdato}, \texttt{fødselsår}, \texttt{kjønn}, \texttt{postnummer}, \texttt{land}, \texttt{poststed}, \texttt{adresse}, \texttt{landkode}, \texttt{registrertTid}, \texttt{oppdatertTid}, \texttt{kommuneNr}, \texttt{kommuneNavn}, \texttt{selskapNavn}, \texttt{selskapUUID}, \texttt{selskapOrgNr}, \texttt{selskapRegistrert}, \texttt{selskapOppdatert}, \texttt{selskapRolleUUID}, \texttt{selskapRolle}, \texttt{rolleRegistrert}, \texttt{rolleOppdatert}, \texttt{selskapRolleRang}, \texttt{rolleUUID}, \texttt{rolleStartdato}. \\
+\texttt{politikere.csv} & 53,366 & 11 & \texttt{navn}, \texttt{partinavn}, \texttt{kommunenummer}, \texttt{kommune}, \texttt{fødselsdato}, \texttt{listeplass}, \texttt{stemmetillegg}, \texttt{personstemmer}, \texttt{slengere}, \texttt{endelig\_rangering}, \texttt{innvalgt}. \\
+\texttt{selskap.csv} & 2,001 & 10 & \texttt{navn}, \texttt{uuid}, \texttt{orgNr}, \texttt{konkursFlagg}, \texttt{likvidasjonFlagg}, \texttt{naceKode}, \texttt{naceBeskrivelse}, \texttt{organisasjonstype}, \texttt{oppløstDato}, \texttt{etablertDato}. \\
+\end{longtable}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Summary of preprocessing operations applied before database loading.}
+\label{tab:appendix-preprocessing-summary}
+\begin{tabular}{P{0.24\linewidth}P{0.64\linewidth}}
+\toprule
+Operation & Description \\
+\midrule
+Column selection & Source-specific administrative, surrogate-key and unused metadata columns are removed from company, ownership and person-role files. \\
+Column renaming & Raw source names are mapped to Norwegian, query-oriented names such as \texttt{orgNr}, \texttt{navn}, \texttt{selskapRolle}, \texttt{eierskapAndel} and \texttt{naceBeskrivelse}. \\
+NACE enrichment & Company files are joined with \texttt{nace.csv} so that \texttt{naceKode} is accompanied by \texttt{naceBeskrivelse}. \\
+Gender mapping & Known gender UUID values are converted to \texttt{Mann} and \texttt{Kvinne}. \\
+Date normalization & Known date fields are converted to UTC ISO 8601 strings where parsing succeeds. \\
+Name normalization & Shareholder names in the shareholder-register file are title-cased. \\
+Company merge & Processed active-company and bankrupt-company temporary files are concatenated into the final \texttt{selskap.csv}. \\
+\bottomrule
+\end{tabular}
+\end{table}
+

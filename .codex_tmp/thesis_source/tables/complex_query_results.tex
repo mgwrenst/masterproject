@@ -1,0 +1,17 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{Complex query benchmark performance.}
+\label{tab:complex-query-results}
+\begin{tabular}{lrrr}
+\toprule
+Configuration & Precision & Recall & F1 \\
+\midrule
+Flat + GPT-4.1-mini & 0.829 & 0.837 & 0.833 \\
+Flat + GPT-5-mini & 0.644 & 0.644 & 0.644 \\
+Structured + GPT-4.1-mini & 0.563 & 0.559 & 0.557 \\
+Structured + GPT-5-mini & 0.569 & 0.523 & 0.538 \\
+\bottomrule
+\end{tabular}
+\par\footnotesize{Values are averaged across naive and technical schema descriptions.}
+\end{table}

@@ -1,0 +1,101 @@
+\chapter{Results} \label{ch:results}
+
+This chapter presents the results from the experimental evaluation of the text-to-query system created in this study. The experiments were conducted across multiple configurations involving different database structures, schema descriptions and language models. 
+
+Each configuration was executed three times in order to measure consistency and reduce 
+
+The reported results focus primarily on precision, recall and F1-score. In addition, the success rate, execution stability and query generation behaviour is included. 
+
+\section{Overview of Experimental Results}
+
+\section{Overall Performance}
+
+\input{tables/overall_results_summary}
+
+\section{Impact of Database Structure}
+    \subsection{Flat Database Results}
+    \subsection{Structured Database Results}
+    \subsection{Comparison of Database Structures}
+
+\section{Impact of Model Selection}
+    \subsection{GPT-4.1-mini}
+    \subsection{GPT-5-mini}
+    \subsection{Model Comparison}
+
+\section{Impact of User Expertise and Schema Descriptions}
+    \subsection{Naive Descriptions}
+    \subsection{Technical Descriptions}
+    \subsection{Comparison Across Expertise Levels}
+
+\section{Complex Query Evaluation}
+
+\section{Execution Time and Efficiency}
+
+\section{Summary of Findings}
+
+
+
+\input{tables/average_runtime}
+\input{tables/standard_query_results}
+\input{tables/complex_query_results}
+\input{tables/difficult_questions}
+\input{tables/flat_vs_structured_gpt_41_mini}
+\input{tables/flat_vs_structured_gpt_5_mini}
+\input{tables/model_comparison}
+\input{tables/operation_performance}
+\input{tables/query_type_performance}
+\input{tables/schema_description_comparison}
+\input{tables/standard_vs_complex_benchmark}
+
+
+
+
+\section{Overview of Experiments}
+
+
+\subsection{Experimental Setup}
+
+As presented in the Methodology chapter, this study used a benchmark framework to conduct the experiments. A Large Language Model (LLM) was use to generated a MongoDB query for each benchmark question using natural language in Norwegian. A database description was sent along with the query input. The generated query was then executed against a MongoDB database and the retrieved results were compared against a corresponding gold-standard query results. 
+
+The evaluation focused on the relevance of the retrieved information. This was measured using precision, recall and F1-score. If a query failed to execute due to syntax or runtime errors, it was treated as unsuccessful.
+
+\subsection{Experimental Variables}
+
+
+
+
+\subsection{Benchmark Query Set}
+
+\subsection{Evaluation Procedure}
+
+The procedure for evaluating the 
+
+\section{Evaluation Metrics and Result Presentation}
+
+
+
+\section{Overall System Performance}
+
+
+
+\section{Impact of Database Structure}
+
+
+
+\section{Impact of User Expertise and Database Description}
+
+
+
+\section{Impact of Model Selection}
+
+
+
+\section{Performance Across Query Categories}
+
+
+
+\section{Error Analysis}
+
+
+
+\section{Summary of Findings}

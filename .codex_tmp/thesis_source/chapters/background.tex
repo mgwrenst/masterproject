@@ -1,0 +1,255 @@
+\chapter{Background}
+\label{ch:background}
+
+In this chapter, the theoretical background and central concepts relevant to this thesis are presented. First, I an overview of text-to-query systems will be provided. Then 
+important database concepts and MongoDB-related terminology are introduced, followed by a discussion of Large Language Models (LLMs) and query generation. Finally, methods for evaluating text-to-query systems and relevant previous research are reviewed.
+
+\section{Introduction to Text-to-Query}
+
+\subsection{Definition of Text-to-Query}
+
+Text-to-query is an AI technique that converts plain language into structured and executable queries. It is most commonly used for databases queries, allowing users to interact with complex databases by asking questions in natural language without having to write the query syntax themselves. The core idea behind text-to-query system is that a user provides a natural language questions \(Q\), together with a database schema \(S\), describing the structure of the database. The system will then generate a query \(T\) which can be executed against the database in order to retrieve the requested information. 
+
+\[
+Q \xrightarrow[S]{\text{text-to-query system}} T
+\]
+
+Where:
+
+\begin{itemize}
+    \item \(Q\) represents the natural language question
+    \item \(S\) represents the database schema
+    \item \(T\) represents the generated database query
+\end{itemize}
+
+An example could be a user asking the following question:
+
+\begin{quote}
+    "Which politicians owns shares in a company?
+\end{quote}
+
+Based on the database schema provided, the system will attempt to generate a corresponding database query to retrieve the information needed to answer the question. 
+
+
+\subsection{Development of Text-to-Query Systems}
+\subsection{Modern LLM-based Text-to-Query}
+\subsection{Challenges in Text-to-Query}
+
+\section{Database Concepts}
+
+Databases are systems used to store, organize and retrieve information. They are important in information systems as they make it possible to store large amounts of data in a structured way. The organization of a database will affect how information can be searched, connected and retrieved. For text-to-query systems, database structure is important as a system need to understand how data is organized and connected before it can generate accurate queries. 
+
+
+\subsection{Structured and Semi-Structured Data}
+
+Data can be organized in many different ways, but the two most commonly used are structured and semi-structured. 
+
+Structured data follows a predefined schema. It means that data is organized according to a fixed structure and each record is expected to contain the same types of fields. Relational databases are an example of databases using structured data. In these systems, the information is usually stored in tables with rows and columns. 
+
+Semi-structured data is more flexible compared to structured data. It does not require every record to follow the exact schema. Instead, they may contain records that have different fields, nested objects or arrays. These types of data is commonly represented using formats such as JSON or BSON. 
+
+\subsection{Relational and NoSQL Databases}
+
+Relational databases organize data into tables consisting of rows and columns. Each table has a predefined schema, where columns describe the attributes of the data, while a row represent a record in the database. Each record is then expected to contain a value in each of the columns. Relationships between tables are commonly represented using keys, seuch as primary keys and foreign keys. 
+
+Structured Query Language (SQL) is the most commonly used query language when interacting relational databases. SQL is widely used in the industry has therefore been the focus of many text-to-query experiments. 
+
+NoSQL databases are a broader category of database systems that do not follow the traditional relational table mode. Their purpose were to support more flexible data models, scalability and different types of data organization. Common types include key-value databases, graph databases and document-oriented databases. 
+
+MongoDB belongs to the document-oriented category of NoSQl and stores data as documents grouped into collections. This also allows related information be represented using nested objects and arrays.
+
+The distinction between relation and NoSQL databases is relevant because this thesis focus on MongoDB rather than SQL-based systems. As most text-to-query research has focused on SQL, MongoDB introduces different challenges related to document structures, nested fields, arrays and aggregation pipelines. 
+
+\subsection{MongoDB}
+
+MongoDB is a NoSQL, document-oriented database. Instead of storing information in rows and columns like relational databases, MongoDB stores data as flexible, BSON documents. BSOn is a binary representation of JSON-like documents and supports data types such as string, numbers, arrays, dates and nested objects. 
+
+It also allows documents within the same collection to contain different structures and fields depending on the stored information. This flexibility makes MongoDB particularly suitable for handling semi-structured and hierarchical data. 
+
+
+\subsubsection{Documents and Collections}
+
+A document is the primary data structure used in MongoDB and represents a single stored record. Documents are represented using field-value pairs and are structurally similar to JSON objects.
+
+A simple example of a MongoDB document is shown below:
+
+\begin{verbatim}
+{   
+    "navn": "Ola Nordmann",
+    "rolle": "Politiker,
+    "kjønn": "Mann",
+}
+\end{verbatim}
+
+Each document contains information describing a particular entity, such as a person or company.
+They are stored inside collections which is a group of related documents. It is conceptually similar to a table in relational database. However, unlike relational tables, documents within the same collection are not required to follow the exact same schema. Different documents may contain different fields depending on the available information. 
+
+Documents can also contain nested objects and arrays. This allows complex hierarchical relationships to be represented directly within the same document instead of distributing information across multiple collections. 
+
+\subsubsection{Fields and Data Types}
+
+A field is an individual attribute stored within a document. They are comparable to columns in relation databases and consists of a key and a corresponding value. MongoDB supports different types of field like: strings, integers, arrays, boolean, dates and nested objects. 
+
+\subsubsection{Database Structures in MongoDB}
+
+MongoDB documents can be organized using different structural approaches. The two most common are flat structures and nested structures. 
+
+In a flat structure, most information is stored directly at the top level of the document. This creates a simple and uniform structure, making it easy to access fields without having to navigate hierarchical paths. 
+
+For example, address information in a flat stucture may be represented as seperate fields:
+
+\begin{verbatim}
+{   
+    "navn": "Ola Nordmann",
+    "gate": "Bygaten 1",
+    "by": "Bergen",
+    "postnummer": "5003"
+}
+\end{verbatim}
+
+As all fields exist at the same level, flat structures are generally simpler to query. 
+
+Nested structure is another way to organize data in MongoDB. Related information is then grouped together hierarchically using objects or arrays. Instead of storing address information as separate top-level fields, the information could be grouped inside an address object:
+
+\begin{verbatim}
+{   
+    "navn": "Ola Nordmann",
+    "adresse": {
+        "gate": "Bygaten 1",
+        "by": "Bergen",
+        "postnummer": "5003"
+    }
+}
+\end{verbatim}
+
+Nested structures allow information to be organized more naturally. It also supports arrays of embedded objects, allowing one document to represent more complex relationships. For example, company roles associated with a person may be embedded directly within the same document:
+
+\begin{verbatim}
+{   
+    "navn": "Ola Nordmann",
+    "roller": [
+        {
+            "selskap": "ABC AS",
+            "rolle": "Styremedlem"
+        },
+        {
+            "selskap": "XYZ AS",
+            "rolle": "Daglig leder"
+        }
+    ]
+}
+\end{verbatim}
+
+Embedding is when related information is stored directly inside the same document rather than in separate collections. 
+
+Another important approach to organization is referencing. Like in relational databases where relationships are established through foreign keys, MongoDB supports referencing where related documents are connected using identifiers such as IDs. 
+
+MongoDB also supports indexing, which improves query performance by allowing the database to locate matching documents more efficiently. Indexes can be created on specific fields, including nested fields. They are commonly used to optimize filtering, sorting and lookup operations. 
+\section{MongoDB Query Language (MQL)}
+
+
+\subsection{Overview of MQL}
+
+MongoDB Query Language (MQL) is the proprietary query language for MongoDB which allows for the retrieval, filtering, updating and aggregating data stored in the database. As MongoDB is document-oriented, MQL is designed to work with document structures, nested fields and arrays. The documents are stored in a JSON-like format and contains fields, nested objects and arrays.
+
+MQL queries are also written using JSON-like syntax. Conditions are usually expressed as field-value pairs where the field name identifies the attribute to query and the value defines the condition that must be satisfied. A query could for example search for documents where a company has a specific organization number.
+
+A central feature of MQL is that it supports querying both flat and nested fields. Nested fields are accessed using dot notation. For example, a company could have a nested status object called "bankruptcyFlagg" that is used to filter companies based on bankruptcy status. The fields would be targeted as "status.bankruptcyFlagg". This feature makes MQL well suited for JSON-like data structures where related information could be stored inside the same document. 
+    
+\subsection{Basic Query Structure}
+
+Queries in MQL can be expressed through different interfaces, such as MongoDB shell, drivers or structured query objects. In this project, queries are represented as structured JSON objects. This format still follows MongoDB query semantics, but separates queries into explicit components such as the operation type, collection name, filter, project and aggregation pipeline. 
+
+
+
+
+\subsection{Query Operators}
+
+In MQL, operators are used to express specific query conditions. 
+
+\subsubsection{Comparison Operators}
+
+
+\subsubsection{Logical Operators}
+
+
+\subsubsection{Array Operators}
+
+
+\subsubsection{Aggregation Operators}
+
+
+\subsection{Aggregation Pipelines}
+
+
+\subsection{MQL in Text-to-Query Systems}
+
+
+
+\section{Large Language Models and Query Generation}
+\subsection{Large Language Models}
+\subsection{LLMs for Text-to-Query}
+\subsection{Prompting and Schema-Guided Generation}
+
+\section{Evaluation of Text-to-Query Systems}
+
+Evaluation is an important component of text-to-query research. It determines how effective a system is at generating queries that retrieve the intended information from a database. Since text-to-query systems translates natural language into executable database queries, evaluation must consider both the correctness of the retrieved information and how accurately the generated query reflects the user's request. 
+
+Evaluating text-to-query systems can be challenging because multiple different queries can produce the same correct results. Generated queries may also retrieve incomplete information or include unrelated results. Therefore, text-to-query evaluation commonly relies on several complementary metrics and concepts, including relevance, precision, recall, F1-score and execution-based evaluation. 
+
+\subsection{Relevance}
+
+Relevance is a central concept in both Information Retrieval and text-to-query evaluation. It describes whether the information retrieved by a system output satisfies the user's information need. Traditional Information Retrieval systems often uses binary relevance. This means that a retrieved document is considered either relevant or irrelevant. 
+
+In a text-to-query setting, evaluating relevance can be more complex. A generated query may retrieve partially correct information, omit relevant results or include unrelated information. Therefore, relevance in text-to-query evaluation is not strictly binary, but instead related to how accurately and completely the generated query retrieves the intended information.
+
+Evaluation is commonly performed by comparing the systems output against a predefined gold standard containing the expected relevant results. To measure the different aspects of retrieval quality, metrics such as precision, recall and F1-score frequently used. 
+
+    
+\subsection{Precision and Recall}
+
+Precision and recall are two commonly used metrics for evaluating text-to-query performance. Together, they measure how accurately and completely a system retrieves relevant information.
+
+Recall is used to measure the proportion of relevant information that was successfully retrieved by the generated query. It's focus is on retrieval completness and indicates how much of the expected information was included in the query result. 
+
+\[
+Recall = \frac{Relvant\ Retrieved}{Total\ Relevant}
+\]
+
+A high recall score indicates that most or all relevant information was retrieved, while a low recall indicates that important information was omitted. 
+
+Precision is used to measure how much of the retrieved information actually is relevant to the user's request. It focuses on retrieval accuracy and the amount of unrelated information included in the result. 
+
+\[
+Precision = \frac{Relvant\ Retrieved}{Total\ Retrieved}
+\]
+
+A high precision score indicates that the retrieved results contained little or no irrelevant information, while a low score would mean that the query retrieved excessive or unrelated data. 
+
+Precision and recall represents competing objectives. A high recall could be achieved through retrieving large amounts of information, but this could reduce the precision if unrelated information is included. Similarlu, a high precision could be achieved while still omitting important information. 
+
+\subsection{F1-score}
+
+To balance precision and recall, one can use the F1-score. It represents the harmonic mean of precision and recall to provide a single combined measure of retreival performance. 
+
+\[
+F1 = 2 \cdot \frac{Precision \cdot Recall}{Precision + Recall}
+\]
+
+This metrics is useful when both retrieval completeness and retrieval accuracy are considered important. A high F1-score would indicate that a system achieves both high precision and high recall. 
+
+\subsection{Execution-Based Evaluation}
+
+There are different approaches for evaluating text-to-query systems. While some rely on exact query matching, where the generated query is compared directly against a predefined reference query, others focus on execution-based evaluation. This means comparing the retrieved output against a predefined gold-standard result instead. 
+
+\subsection{Challenges in Evaluation}
+
+There are several challenges when evaluating text-to-query systems. 
+
+
+\section{Previous Research}
+    \subsection{Traditional Text-to-SQL Research}
+    \subsection{LLM-based Text-to-SQL Research}
+    \subsection{Research on Schema Representation}
+    \subsection{Research on Database Structure}
+    \subsection{Limitations in Existing Research}

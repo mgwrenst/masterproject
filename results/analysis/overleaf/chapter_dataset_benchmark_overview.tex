@@ -1,0 +1,56 @@
+% Requires: \usepackage{booktabs}
+% Optional for p{} columns: \usepackage{array}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Dataset files used to construct the MongoDB test databases.}
+\label{tab:dataset-files-overview}
+\begin{tabular}{lrrp{0.42\linewidth}}
+\toprule
+Dataset & Rows & Columns & Role in the experiment \\
+\midrule
+\texttt{aksjeeiebok.csv} & 762,063 & 10 & Shareholder register entries by company, shareholder, year and share class. \\
+\texttt{selskap.csv} & 2,001 & 10 & Processed company records, created by merging active and bankrupt companies. \\
+\texttt{personer.csv} & 4,095 & 26 & Person-company role records, where one person may occur multiple times. \\
+\texttt{politikere.csv} & 53,366 & 11 & Politician, party, municipality and election-result records. \\
+\texttt{eierskap.csv} & 275 & 25 & Ownership records linking owners to share-issuing companies. \\
+\bottomrule
+\end{tabular}
+\par\footnotesize{Rows and columns refer to the processed CSV files used for database loading.}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Database and schema-description variants evaluated in the benchmark.}
+\label{tab:schema-variant-overview}
+\begin{tabular}{lp{0.63\linewidth}}
+\toprule
+Variant & Description \\
+\midrule
+Flat database & Separate MongoDB collections resembling relational tables: \texttt{selskap}, \texttt{personer}, \texttt{politikere}, \texttt{eierskap} and \texttt{aksjeeiebok}. Cross-collection questions usually require matching on organisation number, name, birth date or UUID. \\
+Structured database & Document-oriented MongoDB representation where \texttt{selskap} and \texttt{personer} contain embedded relationship summaries in addition to separate collections for detailed records. \\
+Naive schema description & Natural-language description of each collection and its intended use. \\
+Technical schema description & Field-level schema with types, nested paths and selected example values. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Benchmark composition.}
+\label{tab:benchmark-composition}
+\begin{tabular}{lrrrp{0.34\linewidth}}
+\toprule
+Benchmark & Questions & Find & Distinct & Aggregate / purpose \\
+\midrule
+Flat standard & 55 & 14 & 5 & 36 aggregate questions covering filtering, projection, grouping, sorting, joins and quantifiers. \\
+Structured standard & 55 & 14 & 5 & Same natural-language tasks adapted to the structured database. \\
+Flat complex & 5 & 0 & 0 & Complex aggregation-pipeline stress tests. \\
+Structured complex & 5 & 0 & 0 & Same complex tasks adapted to the structured database. \\
+\bottomrule
+\end{tabular}
+\end{table}
+

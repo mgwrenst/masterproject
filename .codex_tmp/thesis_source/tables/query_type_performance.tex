@@ -1,0 +1,25 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{Performance by query category.}
+\label{tab:query-type-performance}
+\begin{tabular}{llrrr}
+\toprule
+Benchmark & Query type & Precision & Recall & F1 \\
+\midrule
+Standard & Distinct & 1.000 & 1.000 & 1.000 \\
+Standard & Alias Projection & 0.936 & 0.936 & 0.936 \\
+Standard & Find Projection & 0.899 & 0.954 & 0.911 \\
+Standard & Text Or Pattern Filter & 0.836 & 0.987 & 0.846 \\
+Standard & Aggregate Group Avg & 0.777 & 0.777 & 0.777 \\
+Standard & Aggregate Having Sort Limit & 0.755 & 0.755 & 0.755 \\
+Standard & Selection Conditions & 0.733 & 0.740 & 0.735 \\
+Standard & Lookup Join & 0.625 & 0.755 & 0.670 \\
+Standard & Aggregate Group Count & 0.666 & 0.666 & 0.666 \\
+Standard & Quantifier Exists & 0.753 & 0.601 & 0.627 \\
+Standard & Aggregate Group Sum & 0.378 & 0.378 & 0.378 \\
+Complex & Complex Pipeline Stress & 0.651 & 0.641 & 0.643 \\
+\bottomrule
+\end{tabular}
+\par\footnotesize{Values are averaged across configurations containing each query category.}
+\end{table}
