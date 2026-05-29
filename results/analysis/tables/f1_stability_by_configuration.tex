@@ -1,0 +1,29 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{F1-score stability across repeated runs.}
+\label{tab:f1-stability}
+\begin{tabular}{llrr}
+\toprule
+Benchmark & Configuration & Mean F1 & F1 SD \\
+\midrule
+Standard & Flat + Naive + GPT-4.1-mini & 0.769 & 0.012 \\
+Standard & Flat + Naive + GPT-5-mini & 0.839 & 0.008 \\
+Standard & Flat + Technical + GPT-4.1-mini & 0.737 & 0.009 \\
+Standard & Flat + Technical + GPT-5-mini & 0.840 & 0.009 \\
+Standard & Structured + Naive + GPT-4.1-mini & 0.677 & 0.022 \\
+Standard & Structured + Naive + GPT-5-mini & 0.779 & 0.007 \\
+Standard & Structured + Technical + GPT-4.1-mini & 0.630 & 0.015 \\
+Standard & Structured + Technical + GPT-5-mini & 0.758 & 0.023 \\
+Complex & Flat + Naive + GPT-4.1-mini & 0.665 & 0.028 \\
+Complex & Flat + Naive + GPT-5-mini & 0.567 & 0.058 \\
+Complex & Flat + Technical + GPT-4.1-mini & 1.000 & 0.000 \\
+Complex & Flat + Technical + GPT-5-mini & 0.722 & 0.048 \\
+Complex & Structured + Naive + GPT-4.1-mini & 0.528 & 0.049 \\
+Complex & Structured + Naive + GPT-5-mini & 0.514 & 0.000 \\
+Complex & Structured + Technical + GPT-4.1-mini & 0.587 & 0.001 \\
+Complex & Structured + Technical + GPT-5-mini & 0.561 & 0.211 \\
+\bottomrule
+\end{tabular}
+\par\footnotesize{Standard deviation is computed over the three runs for each configuration.}
+\end{table}

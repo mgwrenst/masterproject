@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{Suggested review level by query type.}
+\label{tab:review-requirement-guidance}
+\begin{tabular}{lll}
+\toprule
+Query type & Observed reliability & Suggested review level \\
+\midrule
+Distinct & High & Journalist can use independently \\
+Find / projection & High & Journalist can use independently \\
+Simple aggregation & Medium & Review recommended \\
+Lookup join & Low/medium & Coder review required \\
+Quantifier exists & Low/medium & Coder review required \\
+Group sum / complex pipeline & Low & Coder review required \\
+\bottomrule
+\end{tabular}
+\par\footnotesize{This table is interpretive and is intended for the discussion chapter rather than the descriptive results chapter.}
+\end{table}

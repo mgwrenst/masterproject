@@ -1,0 +1,29 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{Average runtime per question by configuration.}
+\label{tab:runtime}
+\begin{tabular}{llllrr}
+\toprule
+Benchmark & Structure & Schema & Model & Avg runtime (s) & Runtime SD \\
+\midrule
+Standard & Flat & Naive & GPT-4.1-mini & 3.02 & 0.49 \\
+Standard & Flat & Naive & GPT-5-mini & 7.62 & 1.31 \\
+Standard & Flat & Technical & GPT-4.1-mini & 2.44 & 0.24 \\
+Standard & Flat & Technical & GPT-5-mini & 9.52 & 2.46 \\
+Standard & Structured & Naive & GPT-4.1-mini & 2.24 & 0.48 \\
+Standard & Structured & Naive & GPT-5-mini & 8.16 & 1.77 \\
+Standard & Structured & Technical & GPT-4.1-mini & 2.32 & 0.26 \\
+Standard & Structured & Technical & GPT-5-mini & 9.87 & 3.36 \\
+Complex & Flat & Naive & GPT-4.1-mini & 6.38 & 1.54 \\
+Complex & Flat & Naive & GPT-5-mini & 29.07 & 5.91 \\
+Complex & Flat & Technical & GPT-4.1-mini & 10.24 & 0.50 \\
+Complex & Flat & Technical & GPT-5-mini & 28.53 & 6.14 \\
+Complex & Structured & Naive & GPT-4.1-mini & 3.01 & 0.21 \\
+Complex & Structured & Naive & GPT-5-mini & 22.80 & 5.40 \\
+Complex & Structured & Technical & GPT-4.1-mini & 15.22 & 0.42 \\
+Complex & Structured & Technical & GPT-5-mini & 22.22 & 3.40 \\
+\bottomrule
+\end{tabular}
+\par\footnotesize{Runtime is measured as average wall-clock time per benchmark question. Runtime SD is the standard deviation across the three repeated runs for the same configuration.}
+\end{table}

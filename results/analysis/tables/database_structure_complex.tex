@@ -1,0 +1,17 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{Flat versus structured database performance on the complex benchmark.}
+\label{tab:database-structure-complex}
+\begin{tabular}{llrrr}
+\toprule
+Model & Structure & Precision & Recall & F1 \\
+\midrule
+GPT-4.1-mini & Flat & 0.829 & 0.837 & 0.833 \\
+GPT-4.1-mini & Structured & 0.563 & 0.559 & 0.557 \\
+GPT-5-mini & Flat & 0.644 & 0.644 & 0.644 \\
+GPT-5-mini & Structured & 0.569 & 0.523 & 0.538 \\
+\bottomrule
+\end{tabular}
+\par\footnotesize{Values are averaged across naive and technical schema descriptions.}
+\end{table}

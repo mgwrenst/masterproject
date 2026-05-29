@@ -1,0 +1,25 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{Lowest-scoring benchmark questions across configurations.}
+\label{tab:lowest-scoring-questions}
+\begin{tabular}{llllrr}
+\toprule
+Benchmark & Question & Operation & Category & Success (\%) & F1 \\
+\midrule
+Standard & Q35 & Aggregate & Aggregate Group Count & 0.0 & 0.000 \\
+Standard & Q37 & Aggregate & Aggregate Group Sum & 0.0 & 0.000 \\
+Standard & Q38 & Aggregate & Aggregate Group Sum & 0.0 & 0.000 \\
+Standard & Q28 & Aggregate & Quantifier Exists & 25.0 & 0.250 \\
+Standard & Q52 & Aggregate & Lookup Join & 16.7 & 0.286 \\
+Standard & Q14 & Find & Selection Conditions & 29.2 & 0.292 \\
+Standard & Q41 & Aggregate & Aggregate Group Avg & 29.2 & 0.313 \\
+Standard & Q39 & Aggregate & Aggregate Group Sum & 37.5 & 0.375 \\
+Standard & Q27 & Aggregate & Quantifier Exists & 12.5 & 0.395 \\
+Standard & Q22 & Aggregate & Alias Projection & 37.5 & 0.399 \\
+Standard & Q50 & Aggregate & Aggregate Having Sort Limit & 29.2 & 0.442 \\
+Standard & Q34 & Aggregate & Aggregate Group Count & 0.0 & 0.474 \\
+\bottomrule
+\end{tabular}
+\par\footnotesize{Rows are ranked by mean F1 across all runs and configurations for the benchmark.}
+\end{table}

@@ -1,0 +1,17 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{Performance by MongoDB operation type.}
+\label{tab:operation-type-performance}
+\begin{tabular}{llrrr}
+\toprule
+Benchmark & Operation & Precision & Recall & F1 \\
+\midrule
+Standard & Distinct & 1.000 & 1.000 & 1.000 \\
+Standard & Find & 0.813 & 0.886 & 0.821 \\
+Standard & Aggregate & 0.704 & 0.700 & 0.692 \\
+Complex & Aggregate & 0.651 & 0.641 & 0.643 \\
+\bottomrule
+\end{tabular}
+\par\footnotesize{Values are averaged across configurations containing each operation type.}
+\end{table}

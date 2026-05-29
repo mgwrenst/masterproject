@@ -1,61 +1,61 @@
-benchmark_set,question_id,category,operation,configurations,success_rate_mean,f1_mean,error_runs,question
-complex,101,complex_pipeline_stress,aggregate,8,0.16666666666666666,0.2117375,0,"Finn partier med politikere som har selskapsroller. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere og antall rolleoppføringer."
-complex,105,complex_pipeline_stress,aggregate,8,0.16666666666666666,0.22022499999999998,2,"Finn partier der politikere har minst én selskapsrolle eller minst ett personlig eierskap. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere, antall rolleoppføringer og antall eierskap."
-complex,102,complex_pipeline_stress,aggregate,8,0.5833333333333333,0.6785666666666665,6,"Finn selskaper som både har eierskapsoppføringer i 2023 og aksjeeierbokoppføringer i 2023. Ta med navn, organisasjonsnummer, antall eierskapsoppføringer i 2023 og antall aksjeeierbokoppføringer i 2023."
-complex,104,complex_pipeline_stress,aggregate,8,0.875,0.875,3,"Finn de 20 selskapene med flest samlede rolleoppføringer og eierskapsoppføringer. Ta med navn, organisasjonsnummer, antall roller, antall eierskap og totalt antall relasjoner. Sorter synkende på totalt antall relasjoner og stigende på organisasjonsnummer ved likt antall."
-complex,103,complex_pipeline_stress,aggregate,8,0.9166666666666666,0.9166666666666666,2,"Finn politikere som både eier aksjer i et selskap og har en rolle i samme selskap. Identifiser politikere med navn og fødselsdato. Ta med navn, fødselsdato, parti, selskap, organisasjonsnummer, rolle og eierandel."
-main,35,aggregate_group_count,aggregate,8,0,0,0,Finn antall eierskapsoppføringer per år.
-main,37,aggregate_group_sum,aggregate,8,0,0,1,Finn totalt antall aksjer eid per person.
-main,38,aggregate_group_sum,aggregate,8,0,0,1,Finn totalt antall personstemmer og slengere per parti.
-main,28,quantifier_exists,aggregate,8,0.25,0.25,0,"Finn personer som både har selskapsrolle og eier aksjer. Ta med navn, fødselsdato, antall roller og antall eide selskaper."
-main,52,lookup_join,aggregate,8,0.16666666666666666,0.2860541666666667,5,"Finn politikere som eier aksjer. Ta med navn, fødselsdato, parti, selskap og eierandel."
-main,14,selection_conditions,find,8,0.2916666666666667,0.2916666666666667,0,"Finn norske aksjonærer i 2023. Ta med aksjonærnavn, selskap, organisasjonsnummer, aksjeklasse, landkode, år og antall aksjer."
-main,41,aggregate_group_avg,aggregate,8,0.29166666666666663,0.3134916666666666,0,Finn gjennomsnittlig eierandel per selskap.
-main,39,aggregate_group_sum,aggregate,8,0.375,0.375,0,Finn totalt antall aksjer og stemmer per selskap i eierskap.
-main,27,quantifier_exists,aggregate,8,0.125,0.3951125,0,"Finn selskaper som har minst ett eierskapsforhold. Ta med navn, organisasjonsnummer og antall eierskap."
-main,22,alias_projection,aggregate,8,0.375,0.3988,11,"Finn politikere med feltene politikerNavn, fødselsdato, parti, kommune og stemmer totalt."
-main,50,aggregate_having_sort_limit,aggregate,8,0.29166666666666663,0.44166666666666665,0,"Finn de 10 selskapene med flest aksjeeierbokoppføringer. Ta med navn, organisasjonsnummer og antall oppføringer."
-main,34,aggregate_group_count,aggregate,8,0,0.47352500000000003,0,Finn antall aksjonærer per landkode.
-main,36,aggregate_group_sum,aggregate,8,0.4583333333333333,0.4924625,0,Finn totalt antall aksjer i aksjeeierboken per selskap for 2023.
-main,30,quantifier_exists,aggregate,8,0,0.5080291666666666,1,Finn aktive selskaper som har aksjeeierbokoppføringer. Ta med navn og organisasjonsnummer.
-main,54,lookup_join,aggregate,8,0.16666666666666666,0.5355666666666666,3,"Finn selskaper som har politikere med selskapsrolle. Ta med selskapsnavn, organisasjonsnummer og antall politikerroller."
-main,12,selection_conditions,find,8,0.5416666666666666,0.5416666666666666,0,"Finn selskaper etablert mellom 2015 og 2020. Ta med navn, organisasjonsnummer og etableringsdato."
-main,17,text_or_pattern_filter,find,8,0.5416666666666666,0.5419416666666667,0,"Finn aksjeeierbokoppføringer der selskapsnavnet inneholder både INVEST og HOLDING. Ta med selskap, organisasjonsnummer, aksjonærnavn, aksjeklasse og år."
-main,48,aggregate_having_sort_limit,aggregate,8,0.5833333333333333,0.5833333333333333,0,"Finn personer med roller i flere enn ett selskap. Ta med navn, fødselsdato og antall selskaper."
-main,51,lookup_join,aggregate,8,0.6249999999999999,0.6252375,1,"Finn politikere som har selskapsroller. Ta med navn, fødselsdato, parti, selskap og rolle."
-main,44,aggregate_group_avg,aggregate,8,0.6666666666666666,0.7129583333333334,0,Finn gjennomsnittlig fødselsår per rolletype.
-main,8,find_projection,find,8,0.625,0.7395374999999998,0,"Finn navn, fødselsdato, parti og kommune for innvalgte politikere."
-main,47,aggregate_having_sort_limit,aggregate,8,0.75,0.75,0,Finn partier med flere enn 5 innvalgte politikere. Ta med parti og antall innvalgte.
-main,20,text_or_pattern_filter,find,8,0.625,0.7604,0,"Finn innvalgte politikere fra Fremskrittspartiet eller Framstegspartiet. Ta med navn, fødselsdato, parti og kommune."
-main,55,lookup_join,aggregate,8,0.7916666666666666,0.7706708333333332,0,"Finn politikere som har selskapsroller. Ta med navn, fødselsdato, parti og antall roller."
-main,53,lookup_join,aggregate,8,0.041666666666666664,0.7978333333333333,2,"Finn aksjeeierbokoppføringer for konkursbedrifter i 2023. Ta med aksjonærnavn, selskap, organisasjonsnummer og antall aksjer."
-main,10,find_projection,find,8,0,0.8140999999999999,0,"Finn personlige eierskap fra 2023. Ta med eiernavn, eierens fødselsdato, selskapsnavn, organisasjonsnummer, år, eierandel og antall aksjer."
-main,19,text_or_pattern_filter,find,8,0.8333333333333334,0.8257583333333334,4,"Finn personer født i 1990 eller senere som har en selskapsrolle. Ta med navn, fødselsdato, rolle, selskapsnavn og organisasjonsnummer."
-main,24,alias_projection,aggregate,8,0.8333333333333333,0.8333333333333333,0,"Finn personlige eierskap med feltene eier, eierFødselsdato, selskap, organisasjonsnummer, år og eierandel."
-main,32,aggregate_group_count,aggregate,8,0,0.8571,0,Finn antall selskaper per organisasjonstype.
-main,15,selection_conditions,find,8,0.75,0.8733208333333333,0,"Finn personlige eiere med eierandel over 0 prosent. Ta med eiernavn, eierens fødselsdato, selskapsnavn, organisasjonsnummer, år og eierandel."
-main,13,selection_conditions,find,8,0.875,0.875,3,"Finn politikere fra Høyre med mer enn 100 personstemmer. Ta med navn, fødselsdato, parti og personstemmer."
-main,45,aggregate_group_avg,aggregate,8,0.7916666666666666,0.9331,0,Finn gjennomsnittlig listeplass per parti.
-main,42,aggregate_group_avg,aggregate,8,0.9166666666666667,0.9351333333333334,0,Finn gjennomsnittlig antall personstemmer per parti.
-main,29,quantifier_exists,aggregate,8,0.41666666666666663,0.9566291666666665,0,"Finn politikere som ikke har registrerte selskapsroller. Ta med navn, fødselsdato og parti."
-main,18,text_or_pattern_filter,aggregate,8,0.9583333333333333,0.9585041666666667,0,Finn aksjeklasser på formen X-aksjer. Ta med aksjeklasse.
-main,43,aggregate_group_avg,aggregate,8,0,0.9882,0,Finn gjennomsnittlig antall aksjer per landkode i aksjeeierboken.
-main,26,quantifier_exists,aggregate,8,1,0.999775,0,"Finn selskaper som har minst én registrert rolle. Ta med navn, organisasjonsnummer og antall roller."
-main,1,distinct,distinct,8,1,1,0,Finn alle distinkte selskapsroller.
-main,2,distinct,distinct,8,1,1,0,Finn alle distinkte organisasjonstyper for selskaper.
-main,3,distinct,distinct,8,1,1,0,Finn alle distinkte partier blant politikere.
-main,4,distinct,distinct,8,1,1,0,Finn alle distinkte aksjeklasser i aksjeeierboken.
-main,5,distinct,distinct,8,1,1,0,Finn alle distinkte år med eierskapsoppføringer.
-main,6,find_projection,find,8,1,1,0,"Finn navn, organisasjonsnummer og oppløsningsdato for konkursbedrifter."
-main,7,find_projection,find,8,1,1,0,"Finn navn, organisasjonsnummer og etableringsdato for selskaper som ikke er i konkurs eller likvidasjon."
-main,9,find_projection,find,8,1,1,0,"Finn personer med rollen board_member. Ta med navn, fødselsdato, rolle, selskapsnavn og organisasjonsnummer."
-main,11,selection_conditions,find,8,1,1,0,Finn selskaper som både er i konkurs og under likvidasjon. Ta med navn og organisasjonsnummer.
-main,16,text_or_pattern_filter,find,8,1,1,0,"Finn selskaper der bransjebeskrivelsen inneholder bygg. Ta med navn, organisasjonsnummer og bransjebeskrivelse."
-main,21,alias_projection,aggregate,8,1,1,0,"Finn selskaper med feltene selskapsnavn, organisasjonsnummer og type."
-main,23,alias_projection,aggregate,8,1,1,0,"Finn rolleoppføringer med feltene personNavn, fødselsdato, selskap, organisasjonsnummer og rolle."
-main,25,alias_projection,aggregate,8,1,1,0,"Finn aksjeeierbokoppføringer med feltene aksjonær, selskap, organisasjonsnummer, aksjeklasse, aksjer og år."
-main,31,aggregate_group_count,aggregate,8,1,1,0,Finn antall rolleoppføringer per rolletype.
-main,33,aggregate_group_count,aggregate,8,1,1,0,Finn antall politikere per parti.
-main,40,aggregate_group_sum,aggregate,8,1,1,0,Finn totalt antall aksjer per aksjeklasse.
-main,46,aggregate_having_sort_limit,aggregate,8,1,1,0,"Finn selskaper med flere enn 10 registrerte rolleoppføringer. Ta med navn, organisasjonsnummer og antall roller."
-main,49,aggregate_having_sort_limit,aggregate,8,1,1,0,"Finn selskaper med flere enn 20 eierskapsoppføringer. Ta med navn, organisasjonsnummer og antall eierskap."
+benchmark,question_id,operation,category,observations,success_rate_mean,precision_mean,recall_mean,f1_mean,error_runs,question
+standard,35,aggregate,aggregate_group_count,24,0,0,0,0,0,Finn antall eierskapsoppføringer per år.
+standard,37,aggregate,aggregate_group_sum,24,0,0,0,0,1,Finn totalt antall aksjer eid per person.
+standard,38,aggregate,aggregate_group_sum,24,0,0,0,0,1,Finn totalt antall personstemmer og slengere per parti.
+standard,28,aggregate,quantifier_exists,24,0.25,0.25,0.25,0.25,0,"Finn personer som både har selskapsrolle og eier aksjer. Ta med navn, fødselsdato, antall roller og antall eide selskaper."
+standard,52,aggregate,lookup_join,24,0.16666666666666666,0.25017500000000004,0.4166666666666667,0.28605416666666666,5,"Finn politikere som eier aksjer. Ta med navn, fødselsdato, parti, selskap og eierandel."
+standard,14,find,selection_conditions,24,0.2916666666666667,0.2916666666666667,0.2916666666666667,0.2916666666666667,0,"Finn norske aksjonærer i 2023. Ta med aksjonærnavn, selskap, organisasjonsnummer, aksjeklasse, landkode, år og antall aksjer."
+standard,41,aggregate,aggregate_group_avg,24,0.2916666666666667,0.31349166666666667,0.31349166666666667,0.31349166666666667,0,Finn gjennomsnittlig eierandel per selskap.
+standard,39,aggregate,aggregate_group_sum,24,0.375,0.375,0.375,0.375,0,Finn totalt antall aksjer og stemmer per selskap i eierskap.
+standard,27,aggregate,quantifier_exists,24,0.125,1,0.28468750000000004,0.3951125,0,"Finn selskaper som har minst ett eierskapsforhold. Ta med navn, organisasjonsnummer og antall eierskap."
+standard,22,aggregate,alias_projection,24,0.375,0.3988541666666667,0.39875,0.39880000000000004,11,"Finn politikere med feltene politikerNavn, fødselsdato, parti, kommune og stemmer totalt."
+standard,50,aggregate,aggregate_having_sort_limit,24,0.2916666666666667,0.4416666666666667,0.4416666666666667,0.4416666666666667,0,"Finn de 10 selskapene med flest aksjeeierbokoppføringer. Ta med navn, organisasjonsnummer og antall oppføringer."
+standard,34,aggregate,aggregate_group_count,24,0,0.47352500000000003,0.47352500000000003,0.47352500000000003,0,Finn antall aksjonærer per landkode.
+standard,36,aggregate,aggregate_group_sum,24,0.4583333333333333,0.4924625,0.4924625,0.4924625,0,Finn totalt antall aksjer i aksjeeierboken per selskap for 2023.
+standard,30,aggregate,quantifier_exists,24,0,0.5253624999999998,0.4917791666666666,0.5080291666666664,1,Finn aktive selskaper som har aksjeeierbokoppføringer. Ta med navn og organisasjonsnummer.
+standard,54,aggregate,lookup_join,24,0.16666666666666666,0.4727791666666668,0.6354333333333336,0.5355666666666669,3,"Finn selskaper som har politikere med selskapsrolle. Ta med selskapsnavn, organisasjonsnummer og antall politikerroller."
+standard,12,find,selection_conditions,24,0.5416666666666666,0.5416666666666666,0.5416666666666666,0.5416666666666666,0,"Finn selskaper etablert mellom 2015 og 2020. Ta med navn, organisasjonsnummer og etableringsdato."
+standard,17,find,text_or_pattern_filter,24,0.5416666666666666,0.5418041666666665,1,0.5419416666666668,0,"Finn aksjeeierbokoppføringer der selskapsnavnet inneholder både INVEST og HOLDING. Ta med selskap, organisasjonsnummer, aksjonærnavn, aksjeklasse og år."
+standard,48,aggregate,aggregate_having_sort_limit,24,0.5833333333333334,0.5833333333333334,0.5833333333333334,0.5833333333333334,0,"Finn personer med roller i flere enn ett selskap. Ta med navn, fødselsdato og antall selskaper."
+standard,51,aggregate,lookup_join,24,0.625,0.5980041666666667,0.6659499999999999,0.6252375,1,"Finn politikere som har selskapsroller. Ta med navn, fødselsdato, parti, selskap og rolle."
+standard,44,aggregate,aggregate_group_avg,24,0.6666666666666666,0.7129583333333335,0.7129583333333335,0.7129583333333335,0,Finn gjennomsnittlig fødselsår per rolletype.
+standard,8,find,find_projection,24,0.625,0.6989999999999998,0.9368500000000002,0.7395375,0,"Finn navn, fødselsdato, parti og kommune for innvalgte politikere."
+standard,47,aggregate,aggregate_having_sort_limit,24,0.75,0.75,0.75,0.75,0,Finn partier med flere enn 5 innvalgte politikere. Ta med parti og antall innvalgte.
+standard,20,find,text_or_pattern_filter,24,0.625,0.7140750000000002,0.9365999999999999,0.7604000000000001,0,"Finn innvalgte politikere fra Fremskrittspartiet eller Framstegspartiet. Ta med navn, fødselsdato, parti og kommune."
+standard,55,aggregate,lookup_join,24,0.7916666666666666,0.7010875000000002,0.873225,0.7706708333333334,0,"Finn politikere som har selskapsroller. Ta med navn, fødselsdato, parti og antall roller."
+standard,53,aggregate,lookup_join,24,0.041666666666666664,0.7978333333333328,0.7978333333333328,0.7978333333333328,2,"Finn aksjeeierbokoppføringer for konkursbedrifter i 2023. Ta med aksjonærnavn, selskap, organisasjonsnummer og antall aksjer."
+standard,10,find,find_projection,24,0,0.7975999999999998,0.8333333333333334,0.8140999999999998,0,"Finn personlige eierskap fra 2023. Ta med eiernavn, eierens fødselsdato, selskapsnavn, organisasjonsnummer, år, eierandel og antall aksjer."
+standard,19,find,text_or_pattern_filter,24,0.8333333333333334,0.8194416666666666,0.8333333333333334,0.8257583333333334,4,"Finn personer født i 1990 eller senere som har en selskapsrolle. Ta med navn, fødselsdato, rolle, selskapsnavn og organisasjonsnummer."
+standard,24,aggregate,alias_projection,24,0.8333333333333334,0.8333333333333334,0.8333333333333334,0.8333333333333334,0,"Finn personlige eierskap med feltene eier, eierFødselsdato, selskap, organisasjonsnummer, år og eierandel."
+standard,32,aggregate,aggregate_group_count,24,0,0.8570999999999995,0.8570999999999995,0.8570999999999995,0,Finn antall selskaper per organisasjonstype.
+standard,15,find,selection_conditions,24,0.75,0.861125,0.8979875000000002,0.8733208333333334,0,"Finn personlige eiere med eierandel over 0 prosent. Ta med eiernavn, eierens fødselsdato, selskapsnavn, organisasjonsnummer, år og eierandel."
+standard,13,find,selection_conditions,24,0.875,0.875,0.875,0.875,3,"Finn politikere fra Høyre med mer enn 100 personstemmer. Ta med navn, fødselsdato, parti og personstemmer."
+standard,45,aggregate,aggregate_group_avg,24,0.7916666666666666,0.9331000000000002,0.9331000000000002,0.9331000000000002,0,Finn gjennomsnittlig listeplass per parti.
+standard,42,aggregate,aggregate_group_avg,24,0.9166666666666666,0.9351333333333334,0.9351333333333334,0.9351333333333334,0,Finn gjennomsnittlig antall personstemmer per parti.
+standard,29,aggregate,quantifier_exists,24,0.4166666666666667,0.9583333333333334,0.9549250000000002,0.9566291666666668,0,"Finn politikere som ikke har registrerte selskapsroller. Ta med navn, fødselsdato og parti."
+standard,18,aggregate,text_or_pattern_filter,24,0.9583333333333334,0.9584166666666668,1,0.9585041666666667,0,Finn aksjeklasser på formen X-aksjer. Ta med aksjeklasse.
+standard,43,aggregate,aggregate_group_avg,24,0,0.9881999999999994,0.9881999999999994,0.9881999999999994,0,Finn gjennomsnittlig antall aksjer per landkode i aksjeeierboken.
+standard,26,aggregate,quantifier_exists,24,1,0.9994750000000004,1,0.9997750000000004,0,"Finn selskaper som har minst én registrert rolle. Ta med navn, organisasjonsnummer og antall roller."
+standard,1,distinct,distinct,24,1,1,1,1,0,Finn alle distinkte selskapsroller.
+standard,2,distinct,distinct,24,1,1,1,1,0,Finn alle distinkte organisasjonstyper for selskaper.
+standard,3,distinct,distinct,24,1,1,1,1,0,Finn alle distinkte partier blant politikere.
+standard,4,distinct,distinct,24,1,1,1,1,0,Finn alle distinkte aksjeklasser i aksjeeierboken.
+standard,5,distinct,distinct,24,1,1,1,1,0,Finn alle distinkte år med eierskapsoppføringer.
+standard,6,find,find_projection,24,1,1,1,1,0,"Finn navn, organisasjonsnummer og oppløsningsdato for konkursbedrifter."
+standard,7,find,find_projection,24,1,1,1,1,0,"Finn navn, organisasjonsnummer og etableringsdato for selskaper som ikke er i konkurs eller likvidasjon."
+standard,9,find,find_projection,24,1,1,1,1,0,"Finn personer med rollen board_member. Ta med navn, fødselsdato, rolle, selskapsnavn og organisasjonsnummer."
+standard,11,find,selection_conditions,24,1,1,1,1,0,Finn selskaper som både er i konkurs og under likvidasjon. Ta med navn og organisasjonsnummer.
+standard,16,find,text_or_pattern_filter,24,1,1,1,1,0,"Finn selskaper der bransjebeskrivelsen inneholder bygg. Ta med navn, organisasjonsnummer og bransjebeskrivelse."
+standard,21,aggregate,alias_projection,24,1,1,1,1,0,"Finn selskaper med feltene selskapsnavn, organisasjonsnummer og type."
+standard,23,aggregate,alias_projection,24,1,1,1,1,0,"Finn rolleoppføringer med feltene personNavn, fødselsdato, selskap, organisasjonsnummer og rolle."
+standard,25,aggregate,alias_projection,24,1,1,1,1,0,"Finn aksjeeierbokoppføringer med feltene aksjonær, selskap, organisasjonsnummer, aksjeklasse, aksjer og år."
+standard,31,aggregate,aggregate_group_count,24,1,1,1,1,0,Finn antall rolleoppføringer per rolletype.
+standard,33,aggregate,aggregate_group_count,24,1,1,1,1,0,Finn antall politikere per parti.
+standard,40,aggregate,aggregate_group_sum,24,1,1,1,1,0,Finn totalt antall aksjer per aksjeklasse.
+standard,46,aggregate,aggregate_having_sort_limit,24,1,1,1,1,0,"Finn selskaper med flere enn 10 registrerte rolleoppføringer. Ta med navn, organisasjonsnummer og antall roller."
+standard,49,aggregate,aggregate_having_sort_limit,24,1,1,1,1,0,"Finn selskaper med flere enn 20 eierskapsoppføringer. Ta med navn, organisasjonsnummer og antall eierskap."
+complex,101,aggregate,complex_pipeline_stress,24,0.16666666666666666,0.20709999999999995,0.21759583333333335,0.2117375,0,"Finn partier med politikere som har selskapsroller. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere og antall rolleoppføringer."
+complex,105,aggregate,complex_pipeline_stress,24,0.16666666666666666,0.2149208333333333,0.22685416666666666,0.22022499999999998,2,"Finn partier der politikere har minst én selskapsrolle eller minst ett personlig eierskap. Identifiser politikere med navn og fødselsdato. Ta med parti, antall unike politikere, antall rolleoppføringer og antall eierskap."
+complex,102,aggregate,complex_pipeline_stress,24,0.5833333333333334,0.7314833333333333,0.6535166666666665,0.6785666666666668,6,"Finn selskaper som både har eierskapsoppføringer i 2023 og aksjeeierbokoppføringer i 2023. Ta med navn, organisasjonsnummer, antall eierskapsoppføringer i 2023 og antall aksjeeierbokoppføringer i 2023."
+complex,104,aggregate,complex_pipeline_stress,24,0.875,0.875,0.875,0.875,3,"Finn de 20 selskapene med flest samlede rolleoppføringer og eierskapsoppføringer. Ta med navn, organisasjonsnummer, antall roller, antall eierskap og totalt antall relasjoner. Sorter synkende på totalt antall relasjoner og stigende på organisasjonsnummer ved likt antall."
+complex,103,aggregate,complex_pipeline_stress,24,0.9166666666666666,0.9166666666666666,0.9166666666666666,0.9166666666666666,2,"Finn politikere som både eier aksjer i et selskap og har en rolle i samme selskap. Identifiser politikere med navn og fødselsdato. Ta med navn, fødselsdato, parti, selskap, organisasjonsnummer, rolle og eierandel."
