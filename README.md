@@ -4,6 +4,8 @@ Master's project in Information Science at the University of Bergen (UiB).
 
 This project tests whether an LLM can translate Norwegian natural-language questions into MongoDB queries.
 
+* 🎓 **Master's Thesis:** Text-to-Query system converting natural language to MongoDB/PostgreSQL queries [[Read Thesis PDF](https://github.com/mgwrenst/Empowering-Journalists-With-AI-Driven-Data-Exploration/blob/main/Empowering_Journalists_With_AI_Driven_Data_Exploration.pdf))]
+
 ## Setup
 
 Install dependencies:
